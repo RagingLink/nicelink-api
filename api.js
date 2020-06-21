@@ -18,18 +18,7 @@ var defaultStore = new MongoStore({
     collectionName: 'expressRateLimits'
 });
 
-var globalRateLimit = new RateLimit({
-    store: new MongoStore({
-        uri: 'mongodb+srv://brian:w7ZirQhJJazRbWsx@cluster0-lbaa7.gcp.mongodb.net/ratelimits?retryWrites=true&w=majority',
-        collectionName: 'globalRateLimits'
-    }),
-    max: 10 * 1000,
-    windowMs: 1000 * 60 * 60,
-    handler: (req, res, next) => {
-        res.type('json');
-        res.send(JSON.stringify(req.rateLimit));
-    }
-});
+
 
 var localRateLimit = new RateLimit({
     store: new MongoStore({
@@ -45,7 +34,7 @@ var localRateLimit = new RateLimit({
 }); 
 
 
-app.use('*', globalRateLimit, localRateLimit);
+app.use('*', localRateLimit);
 if (!wsInterval)
     var wsInterval;
 
