@@ -1,16 +1,50 @@
 const express = require('express')
 var Websocket = require('websocket');
-
 var WebsocketClient = Websocket.client;
 let client = new WebsocketClient();
 var http = require('http');
 var app = express();
-let shardData = { data: [] };
+
+const { RateLimiterMongo } = require('rate-limiter-flexible');
+const mongoose = require('mongoose');
 
 var server = http.createServer(app);
 app.set('trust proxy', 1)
 
+const mongoConn = mongoose.createConnection(`mongodb+srv://brian:w7ZirQhJJazRbWsx@cluster0-lbaa7.gcp.mongodb.net/rate-limiter?retryWrites=true&w=majority`,
+    {
+        reconnectTries: Number.MAX_VALUE,
+        reconnectInterval: 100
+    }
+);
 
+let rateLimiter = new RateLimiterMongo({
+    storeClient: mongoConn,
+    points: 5,
+    duration: 1
+});
+
+let rateLimit = async (req, res, next) => {
+    rateLimiter.consume(req.ip, 1)
+        .then((rateLimitRes) => {
+            next();
+        }).catch((rateLimitRes) => {
+            let rateLimitReset = new Date(Date.now() + rateLimitRes.msBeforeNext)
+            res.set({
+                "Retry-After": rateLimitRes.msBeforeNext / 1000,
+                "X-RateLimit-Limit": 5,
+                "X-RateLimit-Remaining": rateLimitRes.remainingPoints,
+                "X-RateLimit-Reset": rateLimitReset
+            })
+            res.type('json');
+            let rLimitJson = {
+                error: 'Exceeded ratelimit',
+                cooldown: rateLimitRes.msBeforeNext,
+                message: `Exceeded ratelimit, please try again ${moment(rateLimitReset)}`
+            };
+            res.status(429).send(JSON.stringify(rLimitJson));
+        });
+};
 
 if (!wsInterval)
     var wsInterval;
@@ -19,7 +53,7 @@ let checkInterval = async (ws) => {
     ws.send(JSON.stringify({ type: 'requestShards' }));
     console.log('Sent!');
 }
-
+app.use('*', rateLimit);
 app.get('/blargshards', (req, res, next) => {
     res.type('json')
     res.send(`${JSON.stringify(shardData.data, null, 2)}`);
@@ -27,6 +61,8 @@ app.get('/blargshards', (req, res, next) => {
 app.get('/', (req, res, next) => {
     res.send('<html><body><h1>Supported endpoints:</h1><ul><li>/blargshards</li></ul></body></html>')
 });
+
+let shardData = { data: [] };
 
 client.on('connect', async (wsClient) => {
     wsClient.on('message', event => {
