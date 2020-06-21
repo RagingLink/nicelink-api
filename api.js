@@ -45,7 +45,7 @@ let rateLimit = async (req, res, next) => {
             let rLimitJson = {
                 error: 'Exceeded ratelimit',
                 cooldown: rateLimitRes.msBeforeNext,
-                message: `Exceeded ratelimit, please try again ${moment(rateLimitReset)}`
+                message: `Exceeded ratelimit, please try again ${moment(rateLimitReset).fromNow()}`
             };
             res.status(429).send(JSON.stringify(rLimitJson));
         });
