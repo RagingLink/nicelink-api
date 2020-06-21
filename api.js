@@ -31,7 +31,7 @@ var globalRateLimit = new RateLimit({
 var localRateLimit = new RateLimit({
     store,
     max: 5,
-    windowMs: 10000,
+    windowMs: 1000,
     handler:  (req, res, next) => {
         res.type('json');
         res.send(JSON.stringify(req.rateLimit));
