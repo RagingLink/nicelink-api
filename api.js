@@ -8,7 +8,7 @@ var moment = require('moment');
 var WebsocketClient = Websocket.client;
 let client = new WebsocketClient();
 var http = require('http');
-
+var app = express();
 let shardData = { data: [] };
 
 var server = http.createServer(app);
