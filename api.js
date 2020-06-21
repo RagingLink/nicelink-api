@@ -13,13 +13,16 @@ let shardData = { data: [] };
 
 var server = http.createServer(app);
 
-var store = new MongoStore({
+var defaultStore = new MongoStore({
     uri: 'mongodb+srv://brian:w7ZirQhJJazRbWsx@cluster0-lbaa7.gcp.mongodb.net/ratelimits?retryWrites=true&w=majority',
     collectionName: 'expressRateLimits'
 });
 
 var globalRateLimit = new RateLimit({
-    store,
+    store: new MongoStore({
+        uri: 'mongodb+srv://brian:w7ZirQhJJazRbWsx@cluster0-lbaa7.gcp.mongodb.net/ratelimits?retryWrites=true&w=majority',
+        collectionName: 'globalRateLimits'
+    }),
     max: 10 * 1000,
     windowMs: 1000 * 60 * 60,
     handler: (req, res, next) => {
@@ -29,7 +32,10 @@ var globalRateLimit = new RateLimit({
 });
 
 var localRateLimit = new RateLimit({
-    store,
+    store: new MongoStore({
+        uri: 'mongodb+srv://brian:w7ZirQhJJazRbWsx@cluster0-lbaa7.gcp.mongodb.net/ratelimits?retryWrites=true&w=majority',
+        collectionName: 'localRateLimits'
+    }),
     max: 5,
     windowMs: 1000,
     handler:  (req, res, next) => {
