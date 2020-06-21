@@ -29,7 +29,7 @@ var localRateLimit = new RateLimit({
     windowMs: 1000,
     handler:  (req, res, next) => {
         res.type('json');
-        res.send(JSON.stringify(req.rateLimit));
+        res.status(429).send(JSON.stringify(req.rateLimit));
     }
 }); 
 
