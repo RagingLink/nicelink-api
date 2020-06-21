@@ -1,9 +1,9 @@
 const express = require('express')
 var Websocket = require('websocket');
 const { response } = require('express');
-var ExpressBrute = require('express-brute'),
-    MongoStore = require('express-brute-mongo'),
-    MongoClient = require('mongodb').MongoClient;
+
+var MongoStore = require('rate-limit-mongo');
+var RateLimit = require('express-rate-limit');
 var moment = require('moment');
 var WebsocketClient = Websocket.client;
 let client = new WebsocketClient();
@@ -13,51 +13,33 @@ let shardData = { data: [] };
 
 var server = http.createServer(app);
 
-var store = new MongoStore(function (ready) {
-    MongoClient.connect('mongodb+srv://brian:w7ZirQhJJazRbWsx@cluster0-lbaa7.gcp.mongodb.net/?retryWrites=true&w=majority', {
-        useUnifiedTopology: true,
-        useNewUrlParser: true
-    }, function (err, mongoClient) {
-        if (err) console.error(err);
-        let db = mongoClient.db('ratelimits');
-        ready(db.collection('bruteforce-store'));
-    });
+var store = new MongoStore({
+    uri: 'mongodb+srv://brian:w7ZirQhJJazRbWsx@cluster0-lbaa7.gcp.mongodb.net/ratelimits?retryWrites=true&w=majority',
+    collectionName: 'expressRateLimits'
 });
 
-let failCallback = function (req, res, next, nextValidRequestDate) {
-    res.type('json');
-    let error = {
-        message: "You've made too many failed attempts in a short period of time, please try again " + moment(nextValidRequestDate).fromNow(),
-        type: 'ratelimit',
-        cooldown: parseInt(moment(nextValidRequestDate).format('x') - moment.now())
+var globalRateLimit = new RateLimit({
+    store,
+    max: 10 * 1000,
+    windowMs: 1000 * 60 * 60,
+    handler: (req, res, next) => {
+        res.type('json');
+        res.send(JSON.stringify(req.rateLimit));
     }
-    res.status(429).send(JSON.stringify(error));
-};
-
-var handleStoreError = function (error) {
-    console.error(error); // log this error so we can figure out what went wrong
-};
-
-var localBruteforce = new ExpressBrute(store, {
-    freeRetries: 5,
-    minWait: 500,
-    maxWait: 10000,
-    failCallback,
-    handleStoreError
 });
 
-var globalBruteforce = new ExpressBrute(store, {
-    freeRetries: 1000,
-    minWait: 1000 * 60,
-    maxWait: 1000 * 60 * 5,
-    lifetime: 60 * 60 * 6,
-    attachResetToRequest: false,
-    refreshTimeoutOnRequest: false,
-    failCallback,
-    handleStoreError
-});
+var localRateLimit = new RateLimit({
+    store,
+    max: 5,
+    windowMs: 10000,
+    handler:  (req, res, next) => {
+        res.type('json');
+        res.send(JSON.stringify(req.rateLimit));
+    }
+}); 
 
-app.use('*', globalBruteforce.prevent, localBruteforce.getMiddleware());
+
+app.use('*', globalRateLimit, localRateLimit);
 if (!wsInterval)
     var wsInterval;
 
