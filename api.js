@@ -12,7 +12,7 @@ var app = express();
 let shardData = { data: [] };
 
 var server = http.createServer(app);
-
+app.set('trust proxy', 1)
 var defaultStore = new MongoStore({
     uri: 'mongodb+srv://brian:w7ZirQhJJazRbWsx@cluster0-lbaa7.gcp.mongodb.net/ratelimits?retryWrites=true&w=majority',
     collectionName: 'expressRateLimits'
