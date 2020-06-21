@@ -23,7 +23,8 @@ var defaultStore = new MongoStore({
 var localRateLimit = new RateLimit({
     store: new MongoStore({
         uri: 'mongodb+srv://brian:w7ZirQhJJazRbWsx@cluster0-lbaa7.gcp.mongodb.net/ratelimits?retryWrites=true&w=majority',
-        collectionName: 'localRateLimits'
+        collectionName: 'localRateLimits',
+        expireTimeMs: 1000
     }),
     max: 5,
     windowMs: 1000,
