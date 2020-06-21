@@ -8,6 +8,10 @@ var moment = require('moment');
 
 const { RateLimiterMongo } = require('rate-limiter-flexible');
 const mongoose = require('mongoose');
+mongoose.set('useNewUrlParser', true);
+mongoose.set('useFindAndModify', false);
+mongoose.set('useCreateIndex', true);
+mongoose.set('useUnifiedTopology', true);
 
 var server = http.createServer(app);
 app.set('trust proxy', 1)
