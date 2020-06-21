@@ -1,10 +1,6 @@
 const express = require('express')
 var Websocket = require('websocket');
-const { response } = require('express');
 
-var MongoStore = require('rate-limit-mongo');
-var RateLimit = require('express-rate-limit');
-var moment = require('moment');
 var WebsocketClient = Websocket.client;
 let client = new WebsocketClient();
 var http = require('http');
@@ -13,29 +9,9 @@ let shardData = { data: [] };
 
 var server = http.createServer(app);
 app.set('trust proxy', 1)
-var defaultStore = new MongoStore({
-    uri: 'mongodb+srv://brian:w7ZirQhJJazRbWsx@cluster0-lbaa7.gcp.mongodb.net/ratelimits?retryWrites=true&w=majority',
-    collectionName: 'expressRateLimits'
-});
 
 
 
-var localRateLimit = new RateLimit({
-    store: new MongoStore({
-        uri: 'mongodb+srv://brian:w7ZirQhJJazRbWsx@cluster0-lbaa7.gcp.mongodb.net/ratelimits?retryWrites=true&w=majority',
-        collectionName: 'localRateLimits',
-        expireTimeMs: 1000
-    }),
-    max: 5,
-    windowMs: 1000,
-    handler:  (req, res, next) => {
-        res.type('json');
-        res.status(429).send(JSON.stringify(req.rateLimit));
-    }
-}); 
-
-
-app.use('*', localRateLimit);
 if (!wsInterval)
     var wsInterval;
 
