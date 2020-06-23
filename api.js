@@ -2,7 +2,7 @@
  * @Author: RagingLink 
  * @Date: 2020-06-22 17:41:47
  * @Last Modified by: RagingLink
- * @Last Modified time: 2020-06-23 19:46:13
+ * @Last Modified time: 2020-06-23 19:46:53
  *
  * This project uses the AGPLv3 license. Please read the license file before using/adapting any of the code.
  */
@@ -27,11 +27,10 @@ app.set('views', path.join(__dirname, 'views'));
 
 const mongoConn = mongoose.createConnection(`mongodb+srv://brian:w7ZirQhJJazRbWsx@cluster0-lbaa7.gcp.mongodb.net/rate-limiter?retryWrites=true&w=majority`,
     {
-        reconnectTries: Number.MAX_VALUE,
-        reconnectInterval: 100,
         useNewUrlParser: true,
         useFindAndModify: false,
-        useCreateIndex: true
+        useCreateIndex: true,
+        useUnifiedTopology: true
     }
 );
 
