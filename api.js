@@ -1,3 +1,12 @@
+/**
+ * @Author: RagingLink 
+ * @Date: 2020-06-22 17:41:47
+ * @Last Modified by: RagingLink
+ * @Last Modified time: 2020-06-23 17:34:05
+ *
+ * This project uses the AGPLv3 license. Please read the license file before using/adapting any of the code.
+ */
+
 const express = require('express')
 var Websocket = require('websocket');
 var WebsocketClient = Websocket.client;
@@ -15,6 +24,8 @@ mongoose.set('useUnifiedTopology', true);
 
 var server = http.createServer(app);
 app.set('trust proxy', 1)
+app.set('view engine', 'hbs');
+app.set('views', path.join(__dirname, 'views'));
 
 const mongoConn = mongoose.createConnection(`mongodb+srv://brian:w7ZirQhJJazRbWsx@cluster0-lbaa7.gcp.mongodb.net/rate-limiter?retryWrites=true&w=majority`,
     {
@@ -64,7 +75,7 @@ app.get('/blargshards', (req, res, next) => {
     res.send(`${JSON.stringify(shardData.data, null, 2)}`);
 });
 app.get('/', (req, res, next) => {
-    res.send('<html><body><h1>Supported endpoints:</h1><ul><li>/blargshards</li></ul></body></html>')
+    res.render('./index.html')
 });
 
 let shardData = { data: [] };
