@@ -2,7 +2,7 @@
  * @Author: RagingLink 
  * @Date: 2020-06-22 17:41:47
  * @Last Modified by: RagingLink
- * @Last Modified time: 2020-06-23 19:40:34
+ * @Last Modified time: 2020-06-23 19:44:21
  *
  * This project uses the AGPLv3 license. Please read the license file before using/adapting any of the code.
  */
@@ -109,7 +109,7 @@ server.listen(8081, async () => {
             unsafe: false,
             'no-links': false,
             logo: './res/nicelinklogo.png'
-        }).then(html => {
+        }, html => {
             fs.writeFile('./views/index.hbs', html, 'utf8', (err) => {
                 if (err)
                     console.error(err);
