@@ -2,7 +2,7 @@
  * @Author: RagingLink 
  * @Date: 2020-06-22 17:41:47
  * @Last Modified by: RagingLink
- * @Last Modified time: 2020-06-23 17:40:09
+ * @Last Modified time: 2020-06-23 19:40:34
  *
  * This project uses the AGPLv3 license. Please read the license file before using/adapting any of the code.
  */
@@ -17,10 +17,8 @@ var moment = require('moment');
 var path = require('path');
 const { RateLimiterMongo } = require('rate-limiter-flexible');
 const mongoose = require('mongoose');
-mongoose.set('useNewUrlParser', true);
-mongoose.set('useFindAndModify', false);
-mongoose.set('useCreateIndex', true);
-mongoose.set('useUnifiedTopology', true);
+const fs = require('fs');
+const shins = require('shins');
 
 var server = http.createServer(app);
 app.set('trust proxy', 1)
@@ -30,7 +28,10 @@ app.set('views', path.join(__dirname, 'views'));
 const mongoConn = mongoose.createConnection(`mongodb+srv://brian:w7ZirQhJJazRbWsx@cluster0-lbaa7.gcp.mongodb.net/rate-limiter?retryWrites=true&w=majority`,
     {
         reconnectTries: Number.MAX_VALUE,
-        reconnectInterval: 100
+        reconnectInterval: 100,
+        useNewUrlParser: true,
+        useFindAndModify: false,
+        useCreateIndex: true
     }
 );
 
@@ -67,7 +68,6 @@ if (!wsInterval)
 
 let checkInterval = async (ws) => {
     ws.send(JSON.stringify({ type: 'requestShards' }));
-    console.log('Sent!');
 }
 app.use('*', rateLimit);
 app.get('/blargshards', (req, res, next) => {
@@ -97,6 +97,27 @@ client.on('connect', async (wsClient) => {
 
 client.connect('wss://blargbot.xyz');
 
-server.listen(8081, () => {
+server.listen(8081, async () => {
     console.log('API now listening on port 8081');
+    let mdFile = fs.readFileSync('./views/index.md', 'utf8');
+    try {
+        shins.render(mdFile, {
+            cli: false,
+            minify: true,
+            customCss: false,
+            inline: true,
+            unsafe: false,
+            'no-links': false,
+            logo: './res/nicelinklogo.png'
+        }).then(html => {
+            fs.writeFile('./views/index.hbs', html, 'utf8', (err) => {
+                if (err)
+                    console.error(err);
+                console.log('Created index.hbs!');
+            });
+        });
+    } catch (err) {
+        console.error(err);
+    }
+    
 });
