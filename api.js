@@ -2,7 +2,7 @@
  * @Author: RagingLink 
  * @Date: 2020-06-22 17:41:47
  * @Last Modified by: RagingLink
- * @Last Modified time: 2020-06-23 19:46:53
+ * @Last Modified time: 2020-06-24 13:57:26
  *
  * This project uses the AGPLv3 license. Please read the license file before using/adapting any of the code.
  */
@@ -73,7 +73,7 @@ app.get('/blargshards', (req, res, next) => {
     res.type('json')
     res.send(`${JSON.stringify(shardData.data, null, 2)}`);
 });
-app.get('/', (req, res, next) => {
+app.get('/:path(docs)?', (req, res, next) => {
     res.render('index');
 });
 
