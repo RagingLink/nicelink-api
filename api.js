@@ -2,7 +2,7 @@
  * @Author: RagingLink 
  * @Date: 2020-06-22 17:41:47
  * @Last Modified by: RagingLink
- * @Last Modified time: 2020-06-24 13:57:26
+ * @Last Modified time: 2020-06-28 23:45:48
  *
  * This project uses the AGPLv3 license. Please read the license file before using/adapting any of the code.
  */
@@ -61,9 +61,7 @@ let rateLimit = async (req, res, next) => {
 
 
 
-let checkInterval = async (ws) => {
-    ws.send(JSON.stringify({ type: 'requestShards' }));
-}
+
 app.use('*', rateLimit);
 app.use('/blargbot', require('./routes/blargbot'));
 app.use('/magic-home', require('./routes/magic-home'));
