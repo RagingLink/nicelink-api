@@ -8,9 +8,6 @@
  */
 
 const express = require('express')
-var Websocket = require('websocket');
-var WebsocketClient = Websocket.client;
-let client = new WebsocketClient();
 var http = require('http');
 var app = express();
 var moment = require('moment');
@@ -62,39 +59,17 @@ let rateLimit = async (req, res, next) => {
         });
 };
 
-if (!wsInterval)
-    var wsInterval;
+
 
 let checkInterval = async (ws) => {
     ws.send(JSON.stringify({ type: 'requestShards' }));
 }
 app.use('*', rateLimit);
-app.get('/blargshards', (req, res, next) => {
-    res.type('json')
-    res.send(`${JSON.stringify(shardData.data, null, 2)}`);
-});
+app.use('/blargbot', require('./routes/blargbot'));
+app.use('/magic-home', require('./routes/magic-home'));
 app.get('/:path(docs)?', (req, res, next) => {
     res.render('index');
 });
-
-let shardData = { data: [] };
-
-client.on('connect', async (wsClient) => {
-    wsClient.on('message', event => {
-        if (event.type !== 'utf8')
-            return
-        let date = JSON.parse(event.utf8Data);
-        if (date.code != 'shard')
-            return;
-        shardData.data[date.data.id] = date.data;
-    });
-    if (wsInterval)
-        clearInterval(wsInterval);
-
-    wsInterval = setInterval(checkInterval, 5000, wsClient);
-});
-
-client.connect('wss://blargbot.xyz');
 
 server.listen(8081, async () => {
     console.log('API now listening on port 8081');
