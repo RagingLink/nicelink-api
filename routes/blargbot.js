@@ -12,6 +12,9 @@ router.get('/shards', (res, req, next) => {
 });
 
 client.on('connect', async (wsClient) => {
+    let checkInterval = async (ws) => {
+        ws.send(JSON.stringify({ type: 'requestShards' }));
+    }
     wsClient.on('message', event => {
         if (event.type !== 'utf8')
             return
