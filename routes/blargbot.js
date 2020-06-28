@@ -6,7 +6,7 @@ let client = new WebsocketClient();
 
 let shardData = { data: [] };
 
-router.get('/shards', (res, req, next) => {
+router.get('/shards', (req, res, next) => {
     res.type('json')
     res.send(`${JSON.stringify(shardData.data, null, 2)}`);
 });
