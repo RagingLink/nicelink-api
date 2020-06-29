@@ -607,7 +607,7 @@ class Control {
 	 */
 	startEffectMode(callback) {
 		const promise = new Promise((resolve, reject) => {
-			new EffectInterface(this._address, PORT, this._options, (err, effect_interface) => {
+			new EffectInterface(this._address, this._port, this._options, (err, effect_interface) => {
 				if (err) return reject(err);
 
 				resolve(effect_interface);
