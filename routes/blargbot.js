@@ -28,7 +28,7 @@ client.on('connect', async (wsClient) => {
     else
         var wsInterval;
 
-    wsInterval = setInterval(checkInterval, 5000, wsClient);
+    wsInterval = setInterval(checkInterval, 500, wsClient);
 });
 
 client.connect('wss://blargbot.xyz');
