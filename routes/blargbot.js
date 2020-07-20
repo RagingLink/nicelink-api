@@ -6,6 +6,15 @@ var WebsocketClient = Websocket.client;
 let client = new WebsocketClient();
 
 let shardData = { data: [] };
+let bent = require("bent");
+let { parse } = require("node-html-parser");
+
+let getJson = bent('json');
+let tagJson = await getJson('https://blargbot.xyz/tags/json');
+
+
+let getTags = bent('GET');
+let text = await parse((await get("https://blargbot.xyz/tags")).text());
 
 router.get('/shards', (req, res, next) => {
     res.type('json')
@@ -32,25 +41,28 @@ client.on('connect', async (wsClient) => {
     wsInterval = setInterval(checkInterval, 500, wsClient);
 });
 router.get("/tags", async (req, res, next) => {
-  if(!req.query.xpath) req.query.xpath = '//';
+  
+let name = req.query.tag;
+res.type('json')
+if(!name) {
+  res.send(JSON.stringify({error: "Tag was not provided", message: "Please provide a name in the tag paramater. Example: ?tag=subtag"}))
+  return;
+}
 
-  try {
-    const browser = await puppeteer.launch({executablePath: 'chromium-browser',headless: false, args : ["--no-sandbox"]});
-    const [page] = await browser.pages();
+let matchedTag = tagJson.filter(e => e.name === name.toLowerCase()).shift();
 
-    await page.goto('https://blargbot.xyz/tags');
+if (!matchedTag) {
+  res.send(JSON.stringify({error: "Subtag doesn't exist", message: "This subtag doesn't exist, please provide a valid name."}));
+  return;
+}
 
-    const data = await page.evaluate(() => {
-      return document.querySelector(req.query.xpath).innerText;
-    });
+let limits = await text.querySelector('#' + name).parentNode.childNodes.find(c => c.text.startsWith('Limits')).childNodes.map(n => {
+  return JSON.stringify({ type: n.childNodes[0].text.substring(11), limits: n.childNodes[1].text.substring(1).trim().split('-').map(i => i.trim()) })
+});
 
-    res.send(JSON.stringify(data));
-
-    await browser.close();
-  } catch (err) {
-    console.error(err);
-    res.send(JSON.stringify(err));
-  }
+matchedTag.limits = limits;
+res.send(JSON.stringify(matchedTag, null, 2));
+return;
 });
 
 client.connect('wss://blargbot.xyz');
