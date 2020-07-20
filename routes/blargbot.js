@@ -49,7 +49,7 @@ router.get("/tags", async (req, res, next) => {
     await browser.close();
   } catch (err) {
     console.error(err);
-    res.send(JSON.stringify(error));
+    res.send(JSON.stringify(err));
   }
 });
 
