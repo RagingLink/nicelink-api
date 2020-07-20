@@ -61,9 +61,13 @@ res.send(JSON.stringify(matchedTag, null, 2));
 return;
 }
 //console.log('match!')
-let limits = await text.querySelector('#' + matchedTag.name).parentNode.childNodes.find(c => c.text.startsWith('Limits')).childNodes.map(n => {
+let tagLimits = await text.querySelector('#' + matchedTag.name).parentNode.childNodes.find(c => c.text.startsWith('Limits'));
+let limits;
+if(tagLimits) {
+limits = tagLimits.childNodes.map(n => {
   return { type: n.childNodes[0].text.substring(11), limits: n.childNodes[1].text.substring(1).trim().split('-').map(i => i.trim()) }
 });
+}
 //console.log('Limits')
 matchedTag.limits = limits;
 subtagCache[matchedTag.name] = matchedTag;
