@@ -35,7 +35,7 @@ client.on('connect', async (wsClient) => {
     wsInterval = setInterval(checkInterval, 500, wsClient);
 });
 router.get("/tags", async (req, res, next) => {
-console.log('request!')
+//console.log('request!')
 let name = req.query.tag;
 res.type('json')
 if(!name) {
@@ -43,7 +43,7 @@ if(!name) {
   return;
 }
 
-console.log('name provided');
+//console.log('name provided');
 let getJson = bent('json');
 let tagJson = await getJson('https://blargbot.xyz/tags/json');
 
@@ -51,7 +51,7 @@ let tagJson = await getJson('https://blargbot.xyz/tags/json');
 let getTags = bent('GET');
 let text = await parse(await (await getTags("https://blargbot.xyz/tags")).text())
 let matchedTag = tagJson.filter(e => e.name === name.toLowerCase()).shift();
-console.log('init match')
+//console.log('init match')
 if (!matchedTag) {
   res.send(JSON.stringify({error: "Subtag doesn't exist", message: "This subtag doesn't exist, please provide a valid name."}));
   return;
@@ -60,11 +60,11 @@ if(subtagCache[name]) {
 res.send(JSON.stringify(matchedTag, null, 2));
 return;
 }
-console.log('match!')
+//console.log('match!')
 let limits = await text.querySelector('#' + matchedTag.name).parentNode.childNodes.find(c => c.text.startsWith('Limits')).childNodes.map(n => {
   return { type: n.childNodes[0].text.substring(11), limits: n.childNodes[1].text.substring(1).trim().split('-').map(i => i.trim()) }
 });
-console.log('Limits')
+//console.log('Limits')
 matchedTag.limits = limits;
 subtagCache[matchedTag.name] = matchedTag;
 
