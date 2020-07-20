@@ -8,13 +8,7 @@ let client = new WebsocketClient();
 let shardData = { data: [] };
 let bent = require("bent");
 let { parse } = require("node-html-parser");
-
-let getJson = bent('json');
-let tagJson = await getJson('https://blargbot.xyz/tags/json');
-
-
-let getTags = bent('GET');
-let text = await parse((await get("https://blargbot.xyz/tags")).text());
+let subtagCache = {};
 
 router.get('/shards', (req, res, next) => {
     res.type('json')
@@ -48,7 +42,12 @@ if(!name) {
   res.send(JSON.stringify({error: "Tag was not provided", message: "Please provide a name in the tag paramater. Example: ?tag=subtag"}))
   return;
 }
+let getJson = bent('json');
+let tagJson = await getJson('https://blargbot.xyz/tags/json');
 
+
+let getTags = bent('GET');
+let text = await parse((await getTags("https://blargbot.xyz/tags")).text())
 let matchedTag = tagJson.filter(e => e.name === name.toLowerCase()).shift();
 
 if (!matchedTag) {
