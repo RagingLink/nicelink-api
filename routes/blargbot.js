@@ -35,7 +35,7 @@ router.get("/tags", async (req, res, next) => {
   if(!req.query.xpath) req.query.xpath = '//';
 
   try {
-    const browser = await puppeteer.launch({headless: false, args : ["--no-sandbox"]});
+    const browser = await puppeteer.launch({executablePath: 'chromium-browser',headless: false, args : ["--no-sandbox"]});
     const [page] = await browser.pages();
 
     await page.goto('https://blargbot.xyz/tags');
