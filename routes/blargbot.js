@@ -47,7 +47,7 @@ let tagJson = await getJson('https://blargbot.xyz/tags/json');
 
 
 let getTags = bent('GET');
-let text = await parse((await getTags("https://blargbot.xyz/tags")).text())
+let text = await parse(await (await getTags("https://blargbot.xyz/tags")).text())
 let matchedTag = tagJson.filter(e => e.name === name.toLowerCase()).shift();
 
 if (!matchedTag) {
