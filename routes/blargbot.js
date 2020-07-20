@@ -1,5 +1,6 @@
 const express = require('express');
-const router = express.Router()
+const router = express.Router();
+const puppeteer = require('puppeteer');
 var Websocket = require('websocket');
 var WebsocketClient = Websocket.client;
 let client = new WebsocketClient();
@@ -29,6 +30,27 @@ client.on('connect', async (wsClient) => {
         var wsInterval;
 
     wsInterval = setInterval(checkInterval, 500, wsClient);
+});
+router.get("/tags", async (req, res, next) => {
+  if(!req.query.xpath) req.query.xpath = '//';
+
+  try {
+    const browser = await puppeteer.launch();
+    const [page] = await browser.pages();
+
+    await page.goto('https://blargbot.xyz/tags');
+
+    const data = await page.evaluate(() => {
+      return document.querySelector(req.query.xpath).innerText;
+    });
+
+    res.send(JSON.stringify(data));
+
+    await browser.close();
+  } catch (err) {
+    console.error(err);
+    res.send(JSON.stringify(error));
+  }
 });
 
 client.connect('wss://blargbot.xyz');
