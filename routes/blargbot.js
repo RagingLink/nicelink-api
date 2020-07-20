@@ -42,6 +42,7 @@ if(!name) {
   res.send(JSON.stringify({error: "Tag was not provided", message: "Please provide a name in the tag paramater. Example: ?tag=subtag"}))
   return;
 }
+
 console.log('name provided');
 let getJson = bent('json');
 let tagJson = await getJson('https://blargbot.xyz/tags/json');
@@ -55,12 +56,18 @@ if (!matchedTag) {
   res.send(JSON.stringify({error: "Subtag doesn't exist", message: "This subtag doesn't exist, please provide a valid name."}));
   return;
 }
+if(subtagCache[name]) {
+res.send(JSON.stringify(matchedTag, null, 2));
+return;
+}
 console.log('match!')
 let limits = await text.querySelector('#' + matchedTag.name).parentNode.childNodes.find(c => c.text.startsWith('Limits')).childNodes.map(n => {
   return { type: n.childNodes[0].text.substring(11), limits: n.childNodes[1].text.substring(1).trim().split('-').map(i => i.trim()) }
 });
 console.log('Limits')
 matchedTag.limits = limits;
+subtagCache[matchedTag.name] = matchedTag;
+
 res.send(JSON.stringify(matchedTag, null, 2));
 return;
 });
