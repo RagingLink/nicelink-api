@@ -33,7 +33,7 @@ const mongoConn = mongoose.createConnection(`mongodb+srv://brian:w7ZirQhJJazRbWs
 
 let rateLimiter = new RateLimiterMongo({
     storeClient: mongoConn,
-    points: 5,
+    points: 25,
     duration: 1
 });
 
