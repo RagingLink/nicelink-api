@@ -56,7 +56,7 @@ if (!matchedTag) {
 }
 
 let limits = await text.querySelector('#' + matchedTag.name).parentNode.childNodes.find(c => c.text.startsWith('Limits')).childNodes.map(n => {
-  return JSON.stringify({ type: n.childNodes[0].text.substring(11), limits: n.childNodes[1].text.substring(1).trim().split('-').map(i => i.trim()) })
+  return { type: n.childNodes[0].text.substring(11), limits: n.childNodes[1].text.substring(1).trim().split('-').map(i => i.trim()) }
 });
 
 matchedTag.limits = limits;
