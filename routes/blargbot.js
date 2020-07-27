@@ -44,7 +44,7 @@ router.get("/tags", async (req, res, next) => {
     let update = req.query.update;
 
     if (!name) {
-        res.send(JSON.stringify(tagJson, null, 2))
+        res.send(JSON.stringify(Object.values(tagJson), null, 2))
         return;
     }
 
