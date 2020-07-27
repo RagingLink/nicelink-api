@@ -47,10 +47,6 @@ router.get("/tags", async (req, res, next) => {
         res.send(JSON.stringify({ error: "Tag was not provided", message: "Please provide a name in the tag paramater. Example: ?tag=subtag" }))
         return;
     }
-    
-    
-
-    let querySelector = await text.querySelector('#' + matchedTag.name);
 
     if (update) {
         let getJson = bent('json');
