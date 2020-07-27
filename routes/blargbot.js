@@ -9,6 +9,9 @@ let shardData = { data: [] };
 let bent = require("bent");
 let { parse } = require("node-html-parser");
 let subtagCache = {};
+let tagJson = require('../tags.json');
+const { fstat } = require('fs');
+let path = require('path');
 
 router.get('/shards', (req, res, next) => {
     res.type('json')
@@ -35,45 +38,59 @@ client.on('connect', async (wsClient) => {
     wsInterval = setInterval(checkInterval, 500, wsClient);
 });
 router.get("/tags", async (req, res, next) => {
-//console.log('request!')
-let name = req.query.tag;
-res.type('json')
-if(!name) {
-  res.send(JSON.stringify({error: "Tag was not provided", message: "Please provide a name in the tag paramater. Example: ?tag=subtag"}))
-  return;
-}
+    res.type('json')
+    let name = req.query.tag;
+    let update = req.query.update;
 
-//console.log('name provided');
-let getJson = bent('json');
-let tagJson = await getJson('https://blargbot.xyz/tags/json');
+    if (!name) {
+        res.send(JSON.stringify({ error: "Tag was not provided", message: "Please provide a name in the tag paramater. Example: ?tag=subtag" }))
+        return;
+    }
+    let getJson = bent('json');
+    let tagJson = await getJson('https://blargbot.xyz/tags/json');
+    let getTags = bent('GET');
+    let text = await parse(await (await getTags("https://blargbot.xyz/tags")).text())
+    let matchedTag = tagJson.filter(e => e.name === name.toLowerCase()).shift();
+    //console.log('init match')
+    if (!matchedTag) {
+        res.send(JSON.stringify({ error: "Subtag doesn't exist", message: "This subtag doesn't exist, please provide a valid name." }));
+        return;
+    }
 
+    switch (update) {
+        case true:
+            let querySelector = await text.querySelector('#' + matchedTag.name)
+            let limitsQuery = await querySelector.parentNode.childNodes.find(c => c.text.startsWith('Limits'));
+            let deprecatedQuery = await querySelector.parentNode.childNodes.find(c => c.classNames.includes('tagdeprecated'));
 
-let getTags = bent('GET');
-let text = await parse(await (await getTags("https://blargbot.xyz/tags")).text())
-let matchedTag = tagJson.filter(e => e.name === name.toLowerCase()).shift();
-//console.log('init match')
-if (!matchedTag) {
-  res.send(JSON.stringify({error: "Subtag doesn't exist", message: "This subtag doesn't exist, please provide a valid name."}));
-  return;
-}
-if(subtagCache[name]) {
-res.send(JSON.stringify(matchedTag, null, 2));
-return;
-}
-//console.log('match!')
-let tagLimits = await text.querySelector('#' + matchedTag.name).parentNode.childNodes.find(c => c.text.startsWith('Limits'));
-let limits = []
-if(tagLimits) {
-limits = limits.concat(tagLimits.childNodes.map(n => {
-  return { type: n.childNodes[0].text.substring(11), limits: n.childNodes[1].text.substring(1).trim().split('-').map(i => i.trim()) }
-}));
-}
-//console.log('Limits')
-matchedTag.limits = limits;
-subtagCache[matchedTag.name] = matchedTag;
+            let deprecated = !!deprecatedQuery ? { isDeprecated: true, replacement: deprecatedQuery.text.match(/Please use (\w*) instead/gmi).shift() } : { isDeprecated: false };
+            let limits = !!limitsQuery ? tagLimits.childNodes.map(n => {
+                return { type: n.childNodes[0].text.substring(11), limits: n.childNodes[1].text.substring(1).trim().split('-').map(i => i.trim()) }
+            }) : [];
 
-res.send(JSON.stringify(matchedTag, null, 2));
-return;
+            //console.log('Limits')
+            matchedTag.limits = limits;
+            matchedTag.deprecated = deprecated;
+            subtagCache[matchedTag.name] = matchedTag;
+            tagJson[matchedTag.name] = matchedTag;
+
+            fs.writeFile('../tags.json', JSON.stringify(tagJson), 'utf8', (err, data) => {
+                if (err) {
+                    console.log(err)
+                } else {
+                    res.send(JSON.stringify({ updated: true, message: 'Updated ' + matchedTag.name + ' succesfully!' }))
+                }
+                
+            });
+        default:
+            if (subtagCache[name]) {
+                res.send(JSON.stringify(subtagCache[name], null, 2));
+                return;
+            };
+            
+            res.send(JSON.stringify(tagJson[name], null, 2));
+            return;
+    }
 });
 
 client.connect('wss://blargbot.xyz');
