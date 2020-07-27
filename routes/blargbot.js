@@ -47,20 +47,24 @@ router.get("/tags", async (req, res, next) => {
         res.send(JSON.stringify({ error: "Tag was not provided", message: "Please provide a name in the tag paramater. Example: ?tag=subtag" }))
         return;
     }
-    let getJson = bent('json');
-    let tagJson = await getJson('https://blargbot.xyz/tags/json');
-    let getTags = bent('GET');
-    let text = await parse(await (await getTags("https://blargbot.xyz/tags")).text())
+    
     let matchedTag = tagJson.filter(e => e.name === name.toLowerCase()).shift();
     //console.log('init match')
     if (!matchedTag) {
-        res.send(JSON.stringify({ error: "Subtag doesn't exist", message: "This subtag doesn't exist, please provide a valid name." }));
+        res.send(JSON.stringify({ error: "Subtag doesn't exist", message: "This subtag doesn't exist, please provide a valid name. If you believe this is a bug please try providing the `update=true` parameter to the url" }));
         return;
     }
 
     let querySelector = await text.querySelector('#' + matchedTag.name);
 
     if (update) {
+        let getJson = bent('json');
+        let newTagJson = await getJson('https://blargbot.xyz/tags/json');
+        let getTags = bent('GET');
+        let text = await parse(await (await getTags("https://blargbot.xyz/tags")).text());
+        let matchedTag = newTagJson.filter(e => e.name === name.toLowerCase()).shift();
+
+        let querySelector = await text.querySelector('#' + matchedTag.name);
         let limitsQuery = await querySelector.parentNode.childNodes.find(c => c.text.startsWith('Limits'));
         let deprecatedQuery = await querySelector.parentNode.childNodes.find(c => c.classNames.includes('tagdeprecated'));
 
@@ -84,7 +88,7 @@ router.get("/tags", async (req, res, next) => {
 
         });
     } else {
-
+        
         if (subtagCache[name]) {
             res.send(JSON.stringify(subtagCache[name], null, 2));
             return;
@@ -94,6 +98,7 @@ router.get("/tags", async (req, res, next) => {
             return;
         }
 
+        let querySelector = await text.querySelector('#' + matchedTag.name);
         let limitsQuery = await querySelector.parentNode.childNodes.find(c => c.text.startsWith('Limits'));
         let deprecatedQuery = await querySelector.parentNode.childNodes.find(c => c.classNames.includes('tagdeprecated'));
  
