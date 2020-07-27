@@ -57,9 +57,11 @@ router.get("/tags", async (req, res, next) => {
         return;
     }
 
+    let querySelector = await text.querySelector('#' + matchedTag.name);
+
     switch (update) {
         case true:
-            let querySelector = await text.querySelector('#' + matchedTag.name)
+            
             let limitsQuery = await querySelector.parentNode.childNodes.find(c => c.text.startsWith('Limits'));
             let deprecatedQuery = await querySelector.parentNode.childNodes.find(c => c.classNames.includes('tagdeprecated'));
 
@@ -93,7 +95,7 @@ router.get("/tags", async (req, res, next) => {
                 return;
             }
 
-            let querySelector = await text.querySelector('#' + matchedTag.name)
+           
             let limitsQuery = await querySelector.parentNode.childNodes.find(c => c.text.startsWith('Limits'));
             let deprecatedQuery = await querySelector.parentNode.childNodes.find(c => c.classNames.includes('tagdeprecated'));
 
