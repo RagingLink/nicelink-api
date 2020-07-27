@@ -48,7 +48,7 @@ router.get("/tags", async (req, res, next) => {
         return;
     }
     
-    let matchedTag = tagJson.filter(e => e.name === name.toLowerCase()).shift();
+    let matchedTag = Object.values(tagJson).filter(e => e.name === name.toLowerCase()).shift();
     //console.log('init match')
     if (!matchedTag) {
         res.send(JSON.stringify({ error: "Subtag doesn't exist", message: "This subtag doesn't exist, please provide a valid name. If you believe this is a bug please try providing the `update=true` parameter to the url" }));
