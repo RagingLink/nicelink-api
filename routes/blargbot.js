@@ -9,11 +9,11 @@ let shardData = { data: [] };
 let bent = require("bent");
 let { parse } = require("node-html-parser");
 let subtagCache = {};
-let tagJson = require(__dirname + 'tags.json');
+let tagJson = require(__dirname + '/tags.json');
 const { fstat } = require('fs');
 const fs = require('fs');
 let path = require('path');
-
+ 
 router.get('/shards', (req, res, next) => {
     res.type('json')
     res.send(`${JSON.stringify(shardData.data, null, 2)}`);
