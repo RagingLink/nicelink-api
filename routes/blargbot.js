@@ -87,9 +87,37 @@ router.get("/tags", async (req, res, next) => {
                 res.send(JSON.stringify(subtagCache[name], null, 2));
                 return;
             };
+            if (tagJson[name]) {
+                res.send(JSON.stringify(tagJson[name], null, 2));
+                return;
+            }
+
+            let querySelector = await text.querySelector('#' + matchedTag.name)
+            let limitsQuery = await querySelector.parentNode.childNodes.find(c => c.text.startsWith('Limits'));
+            let deprecatedQuery = await querySelector.parentNode.childNodes.find(c => c.classNames.includes('tagdeprecated'));
+
+            let deprecated = !!deprecatedQuery ? { isDeprecated: true, replacement: deprecatedQuery.text.match(/Please use (\w*) instead/gmi).shift() } : { isDeprecated: false };
+            let limits = !!limitsQuery ? tagLimits.childNodes.map(n => {
+                return { type: n.childNodes[0].text.substring(11), limits: n.childNodes[1].text.substring(1).trim().split('-').map(i => i.trim()) }
+            }) : [];
+
+            //console.log('Limits')
+            matchedTag.limits = limits;
+            matchedTag.deprecated = deprecated;
+            subtagCache[matchedTag.name] = matchedTag;
+            tagJson[matchedTag.name] = matchedTag;
+
+            fs.writeFile('../tags.json', JSON.stringify(tagJson), 'utf8', (err, data) => {
+                if (err) {
+                    console.log(err)
+                    res.send(JSON.stringify({ message: 'An internal server error occurred' }))
+                } else {
+                    res.send(JSON.stringify(matchedTag));
+                }
+
+            });
             
-            res.send(JSON.stringify(tagJson[name], null, 2));
-            return;
+            
     }
 });
 
