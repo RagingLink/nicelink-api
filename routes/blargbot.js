@@ -11,6 +11,7 @@ let { parse } = require("node-html-parser");
 let subtagCache = {};
 let tagJson = require('../tags.json');
 const { fstat } = require('fs');
+const fs = require('fs');
 let path = require('path');
 
 router.get('/shards', (req, res, next) => {
