@@ -9,7 +9,7 @@ let shardData = { data: [] };
 let bent = require("bent");
 let { parse } = require("node-html-parser");
 let subtagCache = {};
-let tagJson = require('../tags.json');
+let tagJson = require(__dirname + '/tags.json');
 const { fstat } = require('fs');
 const fs = require('fs');
 let path = require('path');
@@ -74,7 +74,7 @@ router.get("/tags", async (req, res, next) => {
         subtagCache[matchedTag.name] = matchedTag;
         tagJson[matchedTag.name] = matchedTag;
 
-        fs.writeFile('../tags.json', JSON.stringify(tagJson), 'utf8', (err, data) => {
+        fs.writeFile(__dirname + '/tags.json', JSON.stringify(tagJson), 'utf8', (err, data) => {
             if (err) {
                 console.log(err)
             } else {
