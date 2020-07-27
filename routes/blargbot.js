@@ -82,6 +82,7 @@ router.get("/tags", async (req, res, next) => {
                 }
                 
             });
+            break;
         default:
             if (subtagCache[name]) {
                 res.send(JSON.stringify(subtagCache[name], null, 2));
@@ -116,6 +117,7 @@ router.get("/tags", async (req, res, next) => {
                 }
 
             });
+            break;
             
             
     }
