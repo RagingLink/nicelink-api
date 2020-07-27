@@ -44,7 +44,7 @@ router.get("/tags", async (req, res, next) => {
     let update = req.query.update;
 
     if (!name) {
-        res.send(JSON.stringify({ error: "Tag was not provided", message: "Please provide a name in the tag paramater. Example: ?tag=subtag" }))
+        res.send(JSON.stringify(tagJson, null, 2))
         return;
     }
 
