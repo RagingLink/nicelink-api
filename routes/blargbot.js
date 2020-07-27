@@ -48,12 +48,7 @@ router.get("/tags", async (req, res, next) => {
         return;
     }
     
-    let matchedTag = Object.values(tagJson).filter(e => e.name === name.toLowerCase()).shift();
-    //console.log('init match')
-    if (!matchedTag) {
-        res.send(JSON.stringify({ error: "Subtag doesn't exist", message: "This subtag doesn't exist, please provide a valid name. If you believe this is a bug please try providing the `update=true` parameter to the url" }));
-        return;
-    }
+    
 
     let querySelector = await text.querySelector('#' + matchedTag.name);
 
@@ -64,6 +59,10 @@ router.get("/tags", async (req, res, next) => {
         let text = await parse(await (await getTags("https://blargbot.xyz/tags")).text());
         let matchedTag = newTagJson.filter(e => e.name === name.toLowerCase()).shift();
 
+        if (!matchedTag) {
+            res.send(JSON.stringify({ error: "Subtag doesn't exist", message: "This subtag doesn't exist, please provide a valid name. If you believe this is a bug please try providing the `update=true` parameter to the url" }));
+            return;
+        }
         let querySelector = await text.querySelector('#' + matchedTag.name);
         let limitsQuery = await querySelector.parentNode.childNodes.find(c => c.text.startsWith('Limits'));
         let deprecatedQuery = await querySelector.parentNode.childNodes.find(c => c.classNames.includes('tagdeprecated'));
@@ -88,7 +87,13 @@ router.get("/tags", async (req, res, next) => {
 
         });
     } else {
-        
+        let matchedTag = Object.values(tagJson).filter(e => e.name === name.toLowerCase()).shift();
+        //console.log('init match')
+        if (!matchedTag) {
+            res.send(JSON.stringify({ error: "Subtag doesn't exist", message: "This subtag doesn't exist, please provide a valid name. If you believe this is a bug please try providing the `update=true` parameter to the url" }));
+            return;
+        }
+
         if (subtagCache[name]) {
             res.send(JSON.stringify(subtagCache[name], null, 2));
             return;
