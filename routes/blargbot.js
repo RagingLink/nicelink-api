@@ -64,7 +64,7 @@ router.get("/tags", async (req, res, next) => {
         let deprecatedQuery = await querySelector.parentNode.childNodes.find(c => c.classNames.includes('tagdeprecated'));
 
         let deprecated = !!deprecatedQuery ? { isDeprecated: true, replacement: deprecatedQuery.text.match(/Please use (\w*) instead/gmi).shift() } : { isDeprecated: false };
-        let limits = !!limitsQuery ? tagLimits.childNodes.map(n => {
+        let limits = !!limitsQuery ? limitsQuery.childNodes.map(n => {
             return { type: n.childNodes[0].text.substring(11), limits: n.childNodes[1].text.substring(1).trim().split('-').map(i => i.trim()) }
         }) : [];
 
@@ -97,7 +97,7 @@ router.get("/tags", async (req, res, next) => {
         let deprecatedQuery = await querySelector.parentNode.childNodes.find(c => c.classNames.includes('tagdeprecated'));
 
         let deprecated = !!deprecatedQuery ? { isDeprecated: true, replacement: deprecatedQuery.text.match(/Please use (\w*) instead/gmi).shift() } : { isDeprecated: false };
-        let limits = !!limitsQuery ? tagLimits.childNodes.map(n => {
+        let limits = !!limitsQuery ? limitsQuery.childNodes.map(n => {
             return { type: n.childNodes[0].text.substring(11), limits: n.childNodes[1].text.substring(1).trim().split('-').map(i => i.trim()) }
         }) : [];
 
