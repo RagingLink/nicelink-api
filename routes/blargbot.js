@@ -54,7 +54,19 @@ router.get("/tags", async (req, res, next) => {
         let getTags = bent('GET');
         let text = await parse(await (await getTags("https://blargbot.xyz/tags")).text());
         let matchedTag = newTagJson.filter(e => e.name === name.toLowerCase()).shift();
-
+        if (name === 'chaos') {
+function shuffleArray(array) {
+    for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
+    }
+}
+let arr = Object.keys(tagJson);
+shuffleArray(arr);
+res.send(JSON.stringify(arr.map(i => tagJson[i]), null, 2))
+return
+};
+        
         if (!matchedTag) {
             res.send(JSON.stringify({ error: "Subtag doesn't exist", message: "This subtag doesn't exist, please provide a valid name. If you believe this is a bug please try providing the `update=true` parameter to the url" }));
             return;
