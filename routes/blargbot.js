@@ -59,6 +59,11 @@ router.get("/tags", async (req, res, next) => {
             res.send(JSON.stringify({ error: "Subtag doesn't exist", message: "This subtag doesn't exist, please provide a valid name. If you believe this is a bug please try providing the `update=true` parameter to the url" }));
             return;
         }
+        if(name === 'abs') {
+          let sortedJson = {};
+          Object.keys(tagJson).sort().map(k => sortedJson[k] = tagJson[k]);
+          tagJson = sortedJson
+        }
         let querySelector = await text.querySelector('#' + matchedTag.name);
         let limitsQuery = await querySelector.parentNode.childNodes.find(c => c.text.startsWith('Limits'));
         let deprecatedQuery = await querySelector.parentNode.childNodes.find(c => c.classNames.includes('tagdeprecated'));
