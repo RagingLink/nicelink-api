@@ -18,6 +18,9 @@ router.get('/shards', (req, res, next) => {
     res.type('json')
     res.send(`${JSON.stringify(shardData.data, null, 2)}`);
 });
+router.get('/test', (req, res, next) => {
+  setTimeout(res.send("OK"), 61000);
+})
 
 client.on('connect', async (wsClient) => {
     let checkInterval = async (ws) => {
