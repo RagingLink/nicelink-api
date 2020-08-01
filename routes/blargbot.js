@@ -108,11 +108,11 @@ return
         }
 
         if (subtagCache[name]) {
-            res.send(JSON.stringify(subtagCache[name], null, 2));
+            res.status(200).send(JSON.stringify(subtagCache[name], null, 2));
             return;
         };
         if (tagJson[name]) {
-            res.send(JSON.stringify(tagJson[name], null, 2));
+            res.status(200).send(JSON.stringify(tagJson[name], null, 2));
             return;
         }
 
@@ -134,9 +134,9 @@ return
         fs.writeFile(__dirname + '/tags.json', JSON.stringify(tagJson), 'utf8', (err, data) => {
             if (err) {
                 console.log(err)
-                res.send(JSON.stringify({ message: 'An internal server error occurred' }))
+                res.status(500).send(JSON.stringify({ message: 'An internal server error occurred' }))
             } else {
-                res.send(JSON.stringify(matchedTag));
+                res.status(200).send(JSON.stringify(matchedTag));
             }
 
         });
