@@ -19,7 +19,7 @@ router.get('/shards', (req, res, next) => {
     res.type('json')
     res.send(`${JSON.stringify(shardData.data, null, 2)}`);
     shardData.data.forEach((e) => {
-        console.log(`Updated ${e.id} at ${moment(shardData.date[e.id]).format('DD/MM/YYYY HH:mm:ss')}`)
+        console.log(`Updated ${e.id} at ${moment.unix(shardData.date[e.id]).format('DD/MM/YYYY HH:mm:ss')}`)
     })
 });
 router.get('/test', (req, res, next) => {
@@ -41,7 +41,7 @@ wss.addEventListener('message', (event) => {
     if (data.code != 'shard')
         return;
     shardData.data[data.data.id] = data.data;
-    shardData.date[data.data.id] = Math.floor(new Date())
+    shardData.date[data.data.id] = Math.floor(new Date() / 1000)
 })
 
 
