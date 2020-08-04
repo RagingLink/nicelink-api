@@ -32,14 +32,14 @@ router.get('/shards', (req, res, next) => {
 router.get('/test', (req, res, next) => {
     setTimeout(() => res.send("OK"), 61000);
 })
-let wsInterval;
+//let wsInterval;
 let wss = new rWebSocket('wss://blargbot.xyz', [], { WebSocket });
 wss.addEventListener('open', (ws) => {
-    console.log('Connected to blargbot.xyz')
+    console.log('Connected to wss://blargbot.xyz')
 
-    if (wsInterval)
-        clearInterval(wsInterval);
-    wsInterval = setInterval(() => wss.send(JSON.stringify({ type: 'requestShards' })), 5000);
+    //if (wsInterval)
+    //    clearInterval(wsInterval);
+    //wsInterval = setInterval(() => wss.send(JSON.stringify({ type: 'requestShards' })), 5000);
 
 });
 
