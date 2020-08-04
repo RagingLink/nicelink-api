@@ -22,7 +22,7 @@ router.get('/test', (req, res, next) => {
     setTimeout(() => res.send("OK"), 61000);
 })
 
-let ws = new rWebSocket('wss://blargbot.xyz');
+let ws = new rWebSocket('wss://blargbot.xyz', [], {WebSocket});
 
 ws.on('message', event => {
     if (event.type !== 'utf8')
