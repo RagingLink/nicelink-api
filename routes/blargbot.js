@@ -37,7 +37,7 @@ wss.addEventListener('open', (ws) => {
 });
 
 wss.addEventListener('message', (event) => {
-    console.log(typeof event)
+    console.log(typeof event.data)
     if (event.type !== 'utf8')
         return
     let data = JSON.parse(event.data);
