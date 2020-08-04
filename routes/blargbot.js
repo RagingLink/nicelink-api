@@ -18,7 +18,7 @@ let path = require('path');
 router.get('/shards', (req, res, next) => {
     res.type('json')
     res.send(`${JSON.stringify(shardData.data, null, 2)}`);
-    shardData.forEach((e) => {
+    shardData.data.forEach((e) => {
         console.log(`Updated ${e.id} at ${moment(shardData.date[e.id]).format('DD/MM/YYYY HH:mm:ss')}`)
     })
 });
@@ -35,7 +35,9 @@ wss.addEventListener('open', (ws) => {
     wsInterval = setInterval(() => wss.send(JSON.stringify({ type: 'requestShards' })), 5000);
 
 });
+
 wss.addEventListener('message', (event) => {
+    console.log(event)
         if (event.type !== 'utf8')
             return
         let date = JSON.parse(event.utf8Data);
