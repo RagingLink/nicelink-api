@@ -38,7 +38,6 @@ wss.addEventListener('open', (ws) => {
 
 wss.addEventListener('message', (event) => {
     let data = JSON.parse(event.data);
-    console.log(data);
     if (data.code != 'shard')
         return;
     shardData.data[data.data.id] = data.data;
