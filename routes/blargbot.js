@@ -21,23 +21,24 @@ router.get('/shards', (req, res, next) => {
 router.get('/test', (req, res, next) => {
     setTimeout(() => res.send("OK"), 61000);
 })
-
-let ws = new rWebSocket('wss://blargbot.xyz', [], {WebSocket});
-
-ws.on('message', event => {
-    if (event.type !== 'utf8')
-        return
-    let date = JSON.parse(event.utf8Data);
-    if (date.code != 'shard')
-        return;
-    shardData.data[date.data.id] = date.data;
-});
 let wsInterval;
-ws.on('open', () => {
+let wss = new rWebSocket('wss://blargbot.xyz', [], {WebSocket});
+wss.on('open', (ws) => {
+    ws.on('message', event => {
+        if (event.type !== 'utf8')
+            return
+        let date = JSON.parse(event.utf8Data);
+        if (date.code != 'shard')
+            return;
+        shardData.data[date.data.id] = date.data;
+    });
     if (wsInterval)
         clearInterval(wsInterval);
     let wsInterval = setInterval(() => ws.send(JSON.stringify({ type: 'requestShards' })), 5000);
-})
+});
+
+
+
 
 router.get("/tags", async (req, res, next) => {
     res.type('json')
