@@ -2,7 +2,6 @@ const express = require('express');
 const router = express.Router();
 const puppeteer = require('puppeteer');
 var WebSocket = require('reconnecting-websocket');
-let client = new WebsocketClient();
 
 let shardData = { data: [] };
 let bent = require("bent");
