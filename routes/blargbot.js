@@ -1,7 +1,8 @@
 const express = require('express');
 const router = express.Router();
 const puppeteer = require('puppeteer');
-var WebSocket = require('reconnecting-websocket');
+var WebSocket = require('ws');
+var rWebSocket = require('reconnecting-websocket')
 
 
 let shardData = { data: [] };
@@ -21,7 +22,7 @@ router.get('/test', (req, res, next) => {
     setTimeout(() => res.send("OK"), 61000);
 })
 
-let ws = new WebSocket('wss://blargbot.xyz', [], {WebSocket = require('ws')});
+let ws = new rWebSocket('wss://blargbot.xyz');
 
 ws.on('message', event => {
     if (event.type !== 'utf8')
