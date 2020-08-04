@@ -3,6 +3,7 @@ const router = express.Router();
 const puppeteer = require('puppeteer');
 var WebSocket = require('ws');
 var rWebSocket = require('reconnecting-websocket')
+var moment = require('moment');
 
 
 let shardData = { data: [] };
@@ -17,26 +18,32 @@ let path = require('path');
 router.get('/shards', (req, res, next) => {
     res.type('json')
     res.send(`${JSON.stringify(shardData.data, null, 2)}`);
+    shardData.forEach((e) => {
+        console.log(`Updated ${e.id} at ${moment(shardData.date[e.id]).format('DD/MM/YYYY HH:mm:ss')}`)
+    })
 });
 router.get('/test', (req, res, next) => {
     setTimeout(() => res.send("OK"), 61000);
 })
 let wsInterval;
 let wss = new rWebSocket('wss://blargbot.xyz', [], {WebSocket});
-wss.on('open', (ws) => {
-    ws.on('message', event => {
+wss.addEventListener('open', (ws) => {
+    console.log('Connected to blargbot.xyz')
+
+    if (wsInterval)
+        clearInterval(wsInterval);
+    let wsInterval = setInterval(() => wss.send(JSON.stringify({ type: 'requestShards' })), 5000);
+
+});
+wss.addEventListener('message', (event) => {
         if (event.type !== 'utf8')
             return
         let date = JSON.parse(event.utf8Data);
         if (date.code != 'shard')
             return;
         shardData.data[date.data.id] = date.data;
-    });
-    if (wsInterval)
-        clearInterval(wsInterval);
-    let wsInterval = setInterval(() => ws.send(JSON.stringify({ type: 'requestShards' })), 5000);
-});
-
+    shardData.date[date.data.id] = Math.floor(new Date() / 1000)
+})
 
 
 
