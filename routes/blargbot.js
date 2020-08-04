@@ -20,7 +20,8 @@ router.get('/shards', (req, res, next) => {
 router.get('/test', (req, res, next) => {
     setTimeout(() => res.send("OK"), 61000);
 })
-let ws = new WebSocket('wss://blargbot.xyz');
+
+let ws = new WebSocket('wss://blargbot.xyz', [], {WebSocket = require('ws')});
 
 ws.on('message', event => {
     if (event.type !== 'utf8')
