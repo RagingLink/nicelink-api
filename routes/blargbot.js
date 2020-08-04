@@ -32,7 +32,7 @@ wss.addEventListener('open', (ws) => {
 
     if (wsInterval)
         clearInterval(wsInterval);
-    let wsInterval = setInterval(() => wss.send(JSON.stringify({ type: 'requestShards' })), 5000);
+    wsInterval = setInterval(() => wss.send(JSON.stringify({ type: 'requestShards' })), 5000);
 
 });
 wss.addEventListener('message', (event) => {
