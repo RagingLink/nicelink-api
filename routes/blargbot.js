@@ -21,8 +21,8 @@ router.get('/shards', (req, res, next) => {
     let updateDates = Object.values(shardData.date);
     let oldestUpdate = updateDates.slice(0).sort((a, b) => a > b ? 1 : -1);
     let newestUpdate = updateDates.slice(0).sort((a, b) => a < b ? 1 : -1);
-    console.log(`Oldest cluster update was at ${moment.unix(oldestUpdate.shift()).format('HH:mm DD/MM/YYYY')}\nNewest update was at ${moment.unix(newestUpdate.shift()).format('HH:mm DD/MM/YYYY')}`)
-    
+    console.log(`Oldest cluster update was at ${moment.unix(oldestUpdate.shift()).format('HH:mm:ss DD/MM/YYYY')}\nNewest update was at ${moment.unix(newestUpdate.shift()).format('HH:mm:ss DD/MM/YYYY')}`)
+
 
 });
 router.get('/test', (req, res, next) => {
