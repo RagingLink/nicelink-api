@@ -40,7 +40,7 @@ wss.addEventListener('message', (event) => {
     if (event.type !== 'utf8')
         return
     let data = JSON.parse(event.data);
-    console.log(Object.keys(data));
+    console.log(data);
     if (data.code != 'shard')
         return;
     shardData.data[data.data.id] = data.data;
