@@ -26,7 +26,7 @@ router.get('/test', (req, res, next) => {
     setTimeout(() => res.send("OK"), 61000);
 })
 let wsInterval;
-let wss = new rWebSocket('wss://blargbot.xyz', [], {WebSocket});
+let wss = new rWebSocket('wss://blargbot.xyz', [], { WebSocket });
 wss.addEventListener('open', (ws) => {
     console.log('Connected to blargbot.xyz')
 
@@ -38,12 +38,13 @@ wss.addEventListener('open', (ws) => {
 
 wss.addEventListener('message', (event) => {
     console.log(event)
-        if (event.type !== 'utf8')
-            return
-        let data = JSON.parse(event.data);
-        if (data.code != 'shard')
-            return;
-        shardData.data[data.data.id] = data.data;
+    event = JSON.parse(event);
+    if (event.type !== 'utf8')
+        return
+    let data = JSON.parse(event.data);
+    if (data.code != 'shard')
+        return;
+    shardData.data[data.data.id] = data.data;
     shardData.date[data.data.id] = Math.floor(new Date() / 1000)
 })
 
