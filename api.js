@@ -2,7 +2,7 @@
  * @Author: RagingLink 
  * @Date: 2020-06-22 17:41:47
  * @Last Modified by: RagingLink
- * @Last Modified time: 2020-06-28 23:45:48
+ * @Last Modified time: 2020-08-04 22:43:07
  *
  * This project uses the AGPLv3 license. Please read the license file before using/adapting any of the code.
  */
@@ -64,7 +64,6 @@ let rateLimit = async (req, res, next) => {
 
 app.use('*', rateLimit);
 app.use('/blargbot', require('./routes/blargbot'));
-app.use('/magic-home', require('./routes/magic-home'));
 app.get('/:path(docs)?', (req, res, next) => {
     res.render('index');
 });
