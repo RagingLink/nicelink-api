@@ -40,11 +40,11 @@ wss.addEventListener('message', (event) => {
     console.log(event)
         if (event.type !== 'utf8')
             return
-        let date = JSON.parse(event.utf8Data);
-        if (date.code != 'shard')
+        let data = JSON.parse(event.data);
+        if (data.code != 'shard')
             return;
-        shardData.data[date.data.id] = date.data;
-    shardData.date[date.data.id] = Math.floor(new Date() / 1000)
+        shardData.data[data.data.id] = data.data;
+    shardData.date[data.data.id] = Math.floor(new Date() / 1000)
 })
 
 
