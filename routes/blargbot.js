@@ -41,7 +41,7 @@ wss.addEventListener('message', (event) => {
     if (data.code != 'shard')
         return;
     shardData.data[data.data.id] = data.data;
-    shardData.date[data.data.id] = Math.floor(new Date() / 1000)
+    shardData.date[data.data.id] = Math.floor(new Date())
 })
 
 
