@@ -6,7 +6,7 @@ var rWebSocket = require('reconnecting-websocket')
 var moment = require('moment');
 
 
-let shardData = { data: [] };
+let shardData = { data: [] , date: []};
 let bent = require("bent");
 let { parse } = require("node-html-parser");
 let subtagCache = {};
