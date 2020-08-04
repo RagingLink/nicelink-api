@@ -1,19 +1,22 @@
 const express = require('express');
 const router = express.Router();
-const puppeteer = require('puppeteer');
 var WebSocket = require('ws');
 var rWebSocket = require('reconnecting-websocket')
 var moment = require('moment');
-
+const CatLoggr = require('cat-loggr');
 
 let shardData = { data: [] , date: []};
 let bent = require("bent");
 let { parse } = require("node-html-parser");
 let subtagCache = {};
 let tagJson = require(__dirname + '/tags.json');
-const { fstat } = require('fs');
 const fs = require('fs');
-let path = require('path');
+
+const loggr = new CatLoggr({
+    levels: [
+        { name: 'log', color: CatLoggr._chalk.black.bgGreen }
+    ]
+}).setGlobal();
 
 router.get('/shards', (req, res, next) => {
     res.type('json')
