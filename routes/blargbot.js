@@ -1,8 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const puppeteer = require('puppeteer');
-var Websocket = require('websocket');
-var WebsocketClient = Websocket.client;
+var WebSocket = require('reconnecting-websocket');
 let client = new WebsocketClient();
 
 let shardData = { data: [] };
@@ -13,34 +12,31 @@ let tagJson = require(__dirname + '/tags.json');
 const { fstat } = require('fs');
 const fs = require('fs');
 let path = require('path');
- 
+
 router.get('/shards', (req, res, next) => {
     res.type('json')
     res.send(`${JSON.stringify(shardData.data, null, 2)}`);
 });
 router.get('/test', (req, res, next) => {
-  setTimeout(() => res.send("OK"), 61000);
+    setTimeout(() => res.send("OK"), 61000);
 })
+let ws = new Websocket('wss://blargbot.xyz');
 
-client.on('connect', async (wsClient) => {
-    let checkInterval = async (ws) => {
-        ws.send(JSON.stringify({ type: 'requestShards' }));
-    }
-    wsClient.on('message', event => {
-        if (event.type !== 'utf8')
-            return
-        let date = JSON.parse(event.utf8Data);
-        if (date.code != 'shard')
-            return;
-        shardData.data[date.data.id] = date.data;
-    });
+ws.on('message', event => {
+    if (event.type !== 'utf8')
+        return
+    let date = JSON.parse(event.utf8Data);
+    if (date.code != 'shard')
+        return;
+    shardData.data[date.data.id] = date.data;
+});
+let wsInterval;
+ws.on('open', () => {
     if (wsInterval)
         clearInterval(wsInterval);
-    else
-        var wsInterval;
+    let wsInterval = setInterval(() => ws.send(JSON.stringify({ type: 'requestShards' })), 5000);
+})
 
-    wsInterval = setInterval(checkInterval, 500, wsClient);
-});
 router.get("/tags", async (req, res, next) => {
     res.type('json')
     let name = req.query.tag;
@@ -58,33 +54,33 @@ router.get("/tags", async (req, res, next) => {
         let text = await parse(await (await getTags("https://blargbot.xyz/tags")).text());
         let matchedTag = newTagJson.filter(e => e.name === name.toLowerCase()).shift();
         if (name === 'chaos') {
-function shuffleArray(array) {
-    for (let i = array.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [array[i], array[j]] = [array[j], array[i]];
-    }
-}
-let arr = Object.keys(tagJson);
-shuffleArray(arr);
-res.send(JSON.stringify(arr.map(i => tagJson[i]), null, 2))
-return
-};
-        
+            function shuffleArray(array) {
+                for (let i = array.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [array[i], array[j]] = [array[j], array[i]];
+                }
+            }
+            let arr = Object.keys(tagJson);
+            shuffleArray(arr);
+            res.send(JSON.stringify(arr.map(i => tagJson[i]), null, 2))
+            return
+        };
+
         if (!matchedTag) {
             res.send(JSON.stringify({ error: "Subtag doesn't exist", message: "This subtag doesn't exist, please provide a valid name. If you believe this is a bug please try providing the `update=true` parameter to the url" }));
             return;
         }
-        if(name === 'abs') {
-          let sortedJson = {};
-          Object.keys(tagJson).sort().map(k => sortedJson[k] = tagJson[k]);
-          tagJson = sortedJson
+        if (name === 'abs') {
+            let sortedJson = {};
+            Object.keys(tagJson).sort().map(k => sortedJson[k] = tagJson[k]);
+            tagJson = sortedJson
         }
         let querySelector = await text.querySelector('#' + matchedTag.name);
         let limitsQuery = await querySelector.parentNode.childNodes.find(c => c.text.startsWith('Limits'));
         let deprecatedQuery = await querySelector.parentNode.childNodes.find(c => c.classNames.includes('tagdeprecated'));
 
         let deprecated = !!deprecatedQuery ? { isDeprecated: true, replacement: !!/Please use (\w*) instead/gmi.exec(deprecatedQuery.text) ? /Please use (\w*) instead/gmi.exec(deprecatedQuery.text).pop() : null } : { isDeprecated: false };
-         let limits = !!limitsQuery ? limitsQuery.childNodes.map(n => {
+        let limits = !!limitsQuery ? limitsQuery.childNodes.map(n => {
             return { type: n.childNodes[0].text.substring(11), limits: n.childNodes[1].text.substring(1).trim().split('-').map(i => i.trim()) }
         }) : [];
 
@@ -122,7 +118,7 @@ return
         let querySelector = await text.querySelector('#' + matchedTag.name);
         let limitsQuery = await querySelector.parentNode.childNodes.find(c => c.text.startsWith('Limits'));
         let deprecatedQuery = await querySelector.parentNode.childNodes.find(c => c.classNames.includes('tagdeprecated'));
- 
+
         let deprecated = !!deprecatedQuery ? { isDeprecated: true, replacement: !!/Please use (\w*) instead/gmi.exec(deprecatedQuery.text) ? /Please use (\w*) instead/gmi.exec(deprecatedQuery.text).pop() : null } : { isDeprecated: false };
         let limits = !!limitsQuery ? limitsQuery.childNodes.map(n => {
             return { type: n.childNodes[0].text.substring(11), limits: n.childNodes[1].text.substring(1).trim().split('-').map(i => i.trim()) }
@@ -148,6 +144,6 @@ return
     }
 });
 
-client.connect('wss://blargbot.xyz');
+
 
 module.exports = router;
