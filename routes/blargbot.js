@@ -22,7 +22,7 @@ wss.addEventListener('message', (event) => {
     shardData.data[data.data.id] = data.data;
     shardData.date[data.data.id] = Math.floor(new Date() / 1000)
 });
-
+console.log('NICE!');
 router.get('/shards', (req, res, next) => {
     res.type('json')
     res.send(`${JSON.stringify(shardData.data, null, 2)}`);
