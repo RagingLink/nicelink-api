@@ -5,18 +5,12 @@ var rWebSocket = require('reconnecting-websocket')
 var moment = require('moment');
 const CatLoggr = require('cat-loggr');
 
-let shardData = { data: [] , date: []};
+let shardData = { data: [], date: [] };
 let bent = require("bent");
 let { parse } = require("node-html-parser");
 let subtagCache = {};
 let tagJson = require(__dirname + '/tags.json');
 const fs = require('fs');
-
-const loggr = new CatLoggr({
-    levels: [
-        { name: 'log', color: CatLoggr._chalk.black.bgGreen }
-    ]
-}).setGlobal();
 
 router.get('/shards', (req, res, next) => {
     res.type('json')
@@ -24,10 +18,8 @@ router.get('/shards', (req, res, next) => {
     let updateDates = Object.values(shardData.date);
     let oldestUpdate = updateDates.slice(0).sort((a, b) => a > b ? 1 : -1);
     let newestUpdate = updateDates.slice(0).sort((a, b) => a < b ? 1 : -1);
-    console.log(`Oldest cluster update was at ${moment.unix(oldestUpdate.shift()).format('HH:mm:ss DD/MM/YYYY')}`)
-    console.log(`Newest update was at ${ moment.unix(newestUpdate.shift()).format('HH:mm:ss DD/MM/YYYY') }`)
-
-
+    console.info(`Oldest cluster update was at ${moment.unix(oldestUpdate.shift()).format('HH:mm:ss DD/MM/YYYY')}`)
+    console.info(`Newest update was at ${moment.unix(newestUpdate.shift()).format('HH:mm:ss DD/MM/YYYY')}`)
 });
 router.get('/test', (req, res, next) => {
     setTimeout(() => res.send("OK"), 61000);
@@ -35,12 +27,7 @@ router.get('/test', (req, res, next) => {
 //let wsInterval;
 let wss = new rWebSocket('wss://blargbot.xyz', [], { WebSocket });
 wss.addEventListener('open', (ws) => {
-    console.log('Connected to wss://blargbot.xyz')
-
-    //if (wsInterval)
-    //    clearInterval(wsInterval);
-    //wsInterval = setInterval(() => wss.send(JSON.stringify({ type: 'requestShards' })), 5000);
-
+    console.info('Connected to wss://blargbot.xyz')
 });
 
 wss.addEventListener('message', (event) => {
@@ -49,8 +36,6 @@ wss.addEventListener('message', (event) => {
         return;
     shardData.data[data.data.id] = data.data;
     shardData.date[data.data.id] = Math.floor(new Date() / 1000)
-
-   
 })
 
 
@@ -102,7 +87,6 @@ router.get("/tags", async (req, res, next) => {
             return { type: n.childNodes[0].text.substring(11), limits: n.childNodes[1].text.substring(1).trim().split('-').map(i => i.trim()) }
         }) : [];
 
-        //console.log('Limits')
         matchedTag.limits = limits;
         matchedTag.deprecated = deprecated;
         subtagCache[matchedTag.name] = matchedTag;
@@ -110,7 +94,7 @@ router.get("/tags", async (req, res, next) => {
 
         fs.writeFile(__dirname + '/tags.json', JSON.stringify(tagJson), 'utf8', (err, data) => {
             if (err) {
-                console.log(err)
+                console.error(err)
             } else {
                 res.send(JSON.stringify({ updated: true, message: 'Updated ' + matchedTag.name + ' succesfully!' }))
             }
@@ -118,7 +102,6 @@ router.get("/tags", async (req, res, next) => {
         });
     } else {
         let matchedTag = Object.values(tagJson).filter(e => e.name === name.toLowerCase()).shift();
-        //console.log('init match')
         if (!matchedTag) {
             res.send(JSON.stringify({ error: "Subtag doesn't exist", message: "This subtag doesn't exist, please provide a valid name. If you believe this is a bug please try providing the `update=true` parameter to the url" }));
             return;
@@ -142,7 +125,6 @@ router.get("/tags", async (req, res, next) => {
             return { type: n.childNodes[0].text.substring(11), limits: n.childNodes[1].text.substring(1).trim().split('-').map(i => i.trim()) }
         }) : [];
 
-        //console.log('Limits')
         matchedTag.limits = limits;
         matchedTag.deprecated = deprecated;
         subtagCache[matchedTag.name] = matchedTag;
@@ -150,15 +132,12 @@ router.get("/tags", async (req, res, next) => {
 
         fs.writeFile(__dirname + '/tags.json', JSON.stringify(tagJson), 'utf8', (err, data) => {
             if (err) {
-                console.log(err)
+                console.error(err)
                 res.status(500).send(JSON.stringify({ message: 'An internal server error occurred' }))
             } else {
                 res.status(200).send(JSON.stringify(matchedTag));
             }
-
         });
-
-
     }
 });
 
