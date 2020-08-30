@@ -2,7 +2,7 @@
  * @Author: RagingLink 
  * @Date: 2020-06-22 17:41:47
  * @Last Modified by: RagingLink
- * @Last Modified time: 2020-08-30 13:49:05
+ * @Last Modified time: 2020-08-30 13:49:54
  *
  * This project uses the AGPLv3 license. Please read the license file before using/adapting any of the code.
  */
@@ -26,7 +26,7 @@ app.set('views', path.join(__dirname, 'views'));
 const loggr = new CatLoggr({
     levels: [
         { name: 'error', color: CatLoggr._chalk.black.bgRed },
-        { name: 'info', color: CatLoggr._chalk.black.bgGreen }
+        { name: 'info', color: CatLoggr._chalk.black.bgGreen, aliases: ['log'] }
     ]
 }).setGlobal();
 const mongoConn = mongoose.createConnection(`mongodb+srv://brian:w7ZirQhJJazRbWsx@cluster0-lbaa7.gcp.mongodb.net/rate-limiter?retryWrites=true&w=majority`,
