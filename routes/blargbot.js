@@ -3,7 +3,6 @@ const router = express.Router();
 var WebSocket = require('ws');
 var rWebSocket = require('reconnecting-websocket')
 var moment = require('moment');
-const CatLoggr = require('cat-loggr');
 
 let shardData = { data: [], date: [] };
 let bent = require("bent");
@@ -11,6 +10,18 @@ let { parse } = require("node-html-parser");
 let subtagCache = {};
 let tagJson = require(__dirname + '/tags.json');
 const fs = require('fs');
+let wss = new rWebSocket('wss://blargbot.xyz', [], { WebSocket });
+wss.addEventListener('open', (ws) => {
+    console.info('Connected to wss://blargbot.xyz')
+});
+
+wss.addEventListener('message', (event) => {
+    let data = JSON.parse(event.data);
+    if (data.code != 'shard')
+        return;
+    shardData.data[data.data.id] = data.data;
+    shardData.date[data.data.id] = Math.floor(new Date() / 1000)
+});
 
 router.get('/shards', (req, res, next) => {
     res.type('json')
@@ -25,18 +36,7 @@ router.get('/test', (req, res, next) => {
     setTimeout(() => res.send("OK"), 61000);
 })
 //let wsInterval;
-let wss = new rWebSocket('wss://blargbot.xyz', [], { WebSocket });
-wss.addEventListener('open', (ws) => {
-    console.info('Connected to wss://blargbot.xyz')
-});
 
-wss.addEventListener('message', (event) => {
-    let data = JSON.parse(event.data);
-    if (data.code != 'shard')
-        return;
-    shardData.data[data.data.id] = data.data;
-    shardData.date[data.data.id] = Math.floor(new Date() / 1000)
-})
 
 
 
