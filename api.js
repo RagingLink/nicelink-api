@@ -17,12 +17,18 @@ const mongoose = require('mongoose');
 const fs = require('fs');
 const shins = require('shins');
 const CatLoggr = require('cat-loggr');
+const bodyparser = require("body-parser");
 
 var server = http.createServer(app);
 app.set('trust proxy', 1)
 app.set('view engine', 'hbs');
 app.set('views', path.join(__dirname, 'views'));
 
+// parse application/x-www-form-urlencoded
+app.use(bodyParser.urlencoded({ extended: false }));
+
+// parse application/json
+app.use(bodyParser.json());
 const loggr = new CatLoggr({
     levels: [
         { name: 'error', color: CatLoggr._chalk.black.bgRed },

@@ -22,16 +22,24 @@ wss.addEventListener('message', (event) => {
     shardData.data[data.data.id] = data.data;
     shardData.date[data.data.id] = Math.floor(new Date() / 1000)
 });
-console.log('NICE!');
+
 router.get('/shards', (req, res, next) => {
-    res.type('json')
-    res.send(`${JSON.stringify(shardData.data, null, 2)}`);
+    res.type('json');
+    let onlyDownShards = !!req.query.down;
+    let outputData = onlyDownShards ? Object.values(shardData.data).map(cluster => {
+      return cluster.shards.map(shard => {
+        return shard.status != 'ready' ? shard :false;
+      }).filter(i => i);
+    }).filter(c => c.shards.length != 0) : shardData.data;
+    
+    res.send(`${JSON.stringify(outputData, null, 2)}`);
     let updateDates = Object.values(shardData.date);
     let oldestUpdate = updateDates.slice(0).sort((a, b) => a > b ? 1 : -1);
     let newestUpdate = updateDates.slice(0).sort((a, b) => a < b ? 1 : -1);
     console.info(`Oldest cluster update was at ${moment.unix(oldestUpdate.shift()).format('HH:mm:ss DD/MM/YYYY')}`)
     console.info(`Newest update was at ${moment.unix(newestUpdate.shift()).format('HH:mm:ss DD/MM/YYYY')}`)
 });
+
 router.get('/test', (req, res, next) => {
     setTimeout(() => res.send("OK"), 61000);
 })
