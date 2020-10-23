@@ -27,7 +27,7 @@ router.get('/shards', (req, res, next) => {
     res.type('json');
     console.log('Before\n'+JSON.stringify(shardData.data,null,2));
     let onlyDownShards = !!req.query.down;
-    let outputData = onlyDownShards ? Object.values(shardData.data).map(cluster => {
+    let outputData = onlyDownShards ? Object.values(Object.assign({}, shardData.data)).map(cluster => {
       cluster.shards = cluster.shards.map(shard => {
         return shard.status != 'ready' ? shard :false;
       }).filter(i => i);
