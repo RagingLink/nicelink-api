@@ -25,6 +25,7 @@ wss.addEventListener('message', (event) => {
 
 router.get('/shards', (req, res, next) => {
     res.type('json');
+    console.log('Before\n'+JSON.stringify(shardData.data,null,2));
     let onlyDownShards = !!req.query.down;
     let outputData = onlyDownShards ? Object.values(shardData.data).map(cluster => {
       cluster.shards = cluster.shards.map(shard => {
@@ -34,6 +35,7 @@ router.get('/shards', (req, res, next) => {
     }).filter(c => c.shards.length != 0) : shardData.data;
     
     res.send(`${JSON.stringify(outputData, null, 2)}`);
+    console.log('After\n'+JSON.stringify(shardData.data, null, 2));
     let updateDates = Object.values(shardData.date);
     let oldestUpdate = updateDates.slice(0).sort((a, b) => a > b ? 1 : -1);
     let newestUpdate = updateDates.slice(0).sort((a, b) => a < b ? 1 : -1);
