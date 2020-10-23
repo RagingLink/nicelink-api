@@ -22,18 +22,15 @@ wss.addEventListener('message', (event) => {
     shardData.data[data.data.id] = data.data;
     shardData.date[data.data.id] = Math.floor(new Date() / 1000)
 });
-//<<<<<<< HEAD
-//console.log('NICE!');
-//=======
 
-//>>>>>>> e70ea241aa23c4ca96548f6524661654c9892c26
 router.get('/shards', (req, res, next) => {
     res.type('json');
     let onlyDownShards = !!req.query.down;
     let outputData = onlyDownShards ? Object.values(shardData.data).map(cluster => {
-      return cluster.shards.map(shard => {
+      cluster.shards = cluster.shards.map(shard => {
         return shard.status != 'ready' ? shard :false;
       }).filter(i => i);
+      return cluster;
     }).filter(c => c.shards.length != 0) : shardData.data;
     
     res.send(`${JSON.stringify(outputData, null, 2)}`);
