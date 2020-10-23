@@ -22,11 +22,11 @@ wss.addEventListener('message', (event) => {
     shardData.data[data.data.id] = data.data;
     shardData.date[data.data.id] = Math.floor(new Date() / 1000)
 });
-<<<<<<< HEAD
+//<<<<<<< HEAD
 //console.log('NICE!');
-=======
+//=======
 
->>>>>>> e70ea241aa23c4ca96548f6524661654c9892c26
+//>>>>>>> e70ea241aa23c4ca96548f6524661654c9892c26
 router.get('/shards', (req, res, next) => {
     res.type('json');
     let onlyDownShards = !!req.query.down;

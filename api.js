@@ -25,10 +25,10 @@ app.set('view engine', 'hbs');
 app.set('views', path.join(__dirname, 'views'));
 
 // parse application/x-www-form-urlencoded
-app.use(bodyParser.urlencoded({ extended: false }));
+app.use(bodyparser.urlencoded({ extended: false }));
 
 // parse application/json
-app.use(bodyParser.json());
+app.use(bodyparser.json());
 const loggr = new CatLoggr({
     levels: [
         { name: 'error', color: CatLoggr._chalk.black.bgRed },
