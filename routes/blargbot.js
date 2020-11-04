@@ -80,14 +80,14 @@ router.get("/tags", async (req, res, next) => {
     );
     return;
   }
-
+  
   if (subtagCache[name]) {
     res.status(200).send(JSON.stringify(subtagCache[name], null, 2));
-    return;
+    if(!update) return;
   }
   if (tagJson[name]) {
     res.status(200).send(JSON.stringify(tagJson[name], null, 2));
-    return;
+    if(!update) return;
   }
 
   let querySelector = await text.querySelector("#" + matchedTag.name);
