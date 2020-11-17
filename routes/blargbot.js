@@ -78,17 +78,10 @@ router.get("/tags", async (req, res, next) => {
           "This subtag doesn't exist, please provide a valid name. If you believe this is a bug please try providing the `update=true` parameter to the url",
       })
     );
-    return;
+    if(!update) return;
   }
   
-  if (subtagCache[name]) {
-    res.status(200).send(JSON.stringify(subtagCache[name], null, 2));
-    if(!update) return;
-  }
-  if (tagJson[name]) {
-    res.status(200).send(JSON.stringify(tagJson[name], null, 2));
-    if(!update) return;
-  }
+  
 
   let querySelector = await text.querySelector("#" + matchedTag.name);
   let limitsQuery = await querySelector.parentNode.childNodes.find((c) =>
