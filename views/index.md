@@ -14,6 +14,8 @@ code_clipboard: true
 
 ##Shards
 
+> Example request
+> 
 ```shell
 curl "https://api.nicelink.xyz/blargbot/shards" 
 ```
@@ -50,7 +52,7 @@ Parameter | Default | Description
 down | false | If set to true, the response will only returns clusters with disconnected shards.
 
 ##Tags
-
+> Example request
 ```shell
 curl "https://api.nicelink.xyz/blargbot/tags?tag=zws" 
 ```
