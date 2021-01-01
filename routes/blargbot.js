@@ -52,6 +52,7 @@ router.get("/test", (req, res, next) => {
 //let wsInterval;
 
 router.get("/tags", async (req, res, next) => {
+  let sent;
   res.type("json");
   let name = req.query.tag;
   let update = req.query.update;
@@ -83,9 +84,11 @@ router.get("/tags", async (req, res, next) => {
   
   if (subtagCache[name]) {
     res.status(200).send(JSON.stringify(subtagCache[name], null, 2));
+    sent = true;
   }
   if (tagJson[name]) {
     res.status(200).send(JSON.stringify(tagJson[name], null, 2));
+    sent = true;
   }
   
   
@@ -128,6 +131,7 @@ router.get("/tags", async (req, res, next) => {
     JSON.stringify(tagJson),
     "utf8",
     (err, data) => {
+      if(sent) return
       if (err) {
         console.error(err);
         res
