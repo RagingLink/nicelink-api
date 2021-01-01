@@ -23,11 +23,21 @@ curl "https://api.nicelink.xyz/blargbot/shards"
 
 ```json
 [
-  {
-    "id" : 0,
-    "shards" : [
-      { 
-        "id" : 0
+  {"id": 0,
+    "time": 1609543687452,
+    "readyTime": 1608948564348,
+    "guilds": 5106,
+    "rss": 2211749888,
+    "cpu": 60.79999999987194,
+    "shardCount": 4,
+    "shards": [
+      {
+        "id": 0,
+        "status": "ready",
+        "latency": 68,
+        "guilds": 1256,
+        "cluster": 0,
+        "time": 1609543687453
       },
       {
         ...
