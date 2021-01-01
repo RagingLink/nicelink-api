@@ -1,7 +1,7 @@
 ---
 title: Nice link!
 language_tabs:
-  - shell
+  - shell : cURL
 includes: []
 search: true
 highlight_theme: darkula
@@ -52,9 +52,33 @@ down | false | If set to true, the response will only returns clusters with disc
 ##Tags
 
 ```shell
-curl "https://api.nicelink.xyz/blargbot/tags" 
+curl "https://api.nicelink.xyz/blargbot/tags?tag=zws" 
 ```
 
+> The above command returns JSON structured like this:
+
+```json
+{
+  "name": "zws",
+  "category": 1,
+  "description": "Will be replaced by a single zero width space (unicode 200B)",
+  "staffOnly": false,
+  "arguments": [
+    null
+  ],
+  "returns": [],
+  "errors": [],
+  "usage": {
+    "code": "{zws}",
+    "input": null,
+    "out": "​"
+  },
+  "limits": [],
+  "deprecated": {
+    "isDeprecated": false
+  }
+}
+```
 This endpoint retrieves the JSON objects of tags
 
 ### HTTP Request
