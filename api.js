@@ -75,7 +75,7 @@ let rateLimit = async (req, res, next) => {
 
 
 
-app.use('*', rateLimit);
+//app.use('*', rateLimit);
 app.use('/blargbot', require('./routes/blargbot'));
 app.get('/:path(docs)?', (req, res, next) => {
     res.render('index');
