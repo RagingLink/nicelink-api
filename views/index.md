@@ -15,7 +15,7 @@ code_clipboard: true
 ##Shards
 
 > Example request
-> 
+
 ```shell
 curl "https://api.nicelink.xyz/blargbot/shards" 
 ```
@@ -53,6 +53,7 @@ down | false | If set to true, the response will only returns clusters with disc
 
 ##Tags
 > Example request
+
 ```shell
 curl "https://api.nicelink.xyz/blargbot/tags?tag=zws" 
 ```
