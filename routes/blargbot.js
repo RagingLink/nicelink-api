@@ -67,7 +67,7 @@ router.get("/tags", async (req, res, next) => {
   let text = await parse(
     await (await getTags("https://blargbot.xyz/tags")).text()
   );
-  let matchedTag = Object.values(tagJson)
+  let matchedTag = Object.values(newTagJson)
     .filter((e) => e.name === name.toLowerCase())
     .shift();
   if (!matchedTag) {
@@ -83,11 +83,9 @@ router.get("/tags", async (req, res, next) => {
   
   if (subtagCache[name]) {
     res.status(200).send(JSON.stringify(subtagCache[name], null, 2));
-    if(!update) return;
   }
   if (tagJson[name]) {
     res.status(200).send(JSON.stringify(tagJson[name], null, 2));
-    if(!update) return;
   }
 
   let querySelector = await text.querySelector("#" + matchedTag.name);
