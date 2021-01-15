@@ -4,6 +4,7 @@ var WebSocket = require("ws");
 var rWebSocket = require("reconnecting-websocket");
 var moment = require("moment");
 const { parse } = require("path");
+const bigInteger = require('big-integer');
 
 let shardData = { data: [], date: [], meta: {} };
 
@@ -113,6 +114,25 @@ router.get("/shards", (req, res) => {
       );
     }
   }
+
+  if(req.query.guild) {
+    let id;
+    try {
+      let id = bigInteger(req.query.guild);        
+    } catch(e) {
+      return res.status(400).send(JSON.stringify({
+        error: 'Invalid guild',
+        message: `${req.query.guild} is an invalid integer, please try again`
+      }))  
+    }
+    let shard = id.shiftRight(22).mod(parseInt(shardData.meta.shards));
+    let cluster = Math.floor(shard / shardData.meta.shardsPerCluster);
+    return res.send(JSON.stringify({
+      shard: shardData.data[cluster].shards[shard % shardData.meta.shardsPerCluster],
+      cluster : shardData.data[cluster], 
+      meta : shardData.meta
+    }))
+  }
   res.send(JSON.stringify(Object.values(shardData.data), null, 2));
   // let updateDates = Object.values(shardData.date);
   // let oldestUpdate = updateDates.slice(0).sort((a, b) => (a > b ? 1 : -1));
@@ -123,12 +143,11 @@ router.get("/shards", (req, res) => {
 
 router.get("/shards/meta", (req, res) => {
   res.type("json");
-  //TRY
-  try {
+  res.send(JSON.stringify(shardData.meta, null, 2));
+   //TRY
+   try {
     updateMeta();
   } catch (e) {}
-
-  res.send(JSON.stringify(shardData.meta, null, 2));
 });
 router.get("/test", (req, res) => {
   setTimeout(() => res.send("OK"), 61000);
