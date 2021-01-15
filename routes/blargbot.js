@@ -20,13 +20,13 @@ wss.addEventListener("message", (event) => {
 });
 
 setInterval(() => {
-  shardData.meta['shards'] = Object.values(shardData.data).reduce((a, c) => {
+  shardData.meta["shards"] = Object.values(shardData.data).reduce((a, c) => {
     return c.shards.length + a;
   }, 0);
-  shardData.meta['clusters'] = Object.values(shardData.data).length;
-  shardData.meta['shardsPerCluster'] = shardData.data[0].shards.length;
-  shardData.meta['lastMetaUpdate'] = Date.now();
-}, 1000 * 60 * 60)
+  shardData.meta["clusters"] = Object.values(shardData.data).length;
+  shardData.meta["shardsPerCluster"] = shardData.data[0].shards.length;
+  shardData.meta["lastMetaUpdate"] = Date.now();
+}, 1000 * 60 * 60);
 
 router.get("/shards", (req, res) => {
   res.type("json");
@@ -105,7 +105,7 @@ router.get("/shards", (req, res) => {
 
 router.get("/shards/meta", (req, res) => {
   res.send(JSON.stringify(shardData.meta, null, 2));
-})
+});
 router.get("/test", (req, res) => {
   setTimeout(() => res.send("OK"), 61000);
 });
