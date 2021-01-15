@@ -10,6 +10,7 @@ let shardData = { data: [], date: [], meta: {} };
 let wss = new rWebSocket("wss://blargbot.xyz", [], { WebSocket });
 wss.addEventListener("open", (ws) => {
   console.info("Connected to wss://blargbot.xyz");
+  setTimeout(updateMeta, 1000 * 30);
 });
 
 wss.addEventListener("message", (event) => {
@@ -19,14 +20,15 @@ wss.addEventListener("message", (event) => {
   shardData.date[data.data.id] = Math.floor(new Date() / 1000);
 });
 
-setInterval(() => {
+let updateMeta = () => {
   shardData.meta["shards"] = Object.values(shardData.data).reduce((a, c) => {
     return c.shards.length + a;
   }, 0);
   shardData.meta["clusters"] = Object.values(shardData.data).length;
   shardData.meta["shardsPerCluster"] = shardData.data[0].shards.length;
   shardData.meta["lastMetaUpdate"] = Date.now();
-}, 1000 * 60 * 60);
+}
+setInterval(updateMeta, 1000 * 60 * 30);
 
 router.get("/shards", (req, res) => {
   res.type("json");
