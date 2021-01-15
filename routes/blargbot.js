@@ -118,7 +118,7 @@ router.get("/shards", (req, res) => {
   if(req.query.guild) {
     let id;
     try {
-      let id = bigInteger(req.query.guild);        
+      id = bigInteger(req.query.guild);        
     } catch(e) {
       return res.status(400).send(JSON.stringify({
         error: 'Invalid guild',
