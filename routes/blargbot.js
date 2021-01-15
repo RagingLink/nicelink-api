@@ -122,7 +122,11 @@ router.get("/shards", (req, res) => {
 
 router.get("/shards/meta", (req, res) => {
   res.type("json");
-  updateMeta();
+  //TRY
+  try {
+    updateMeta();
+  } catch (e) {}
+
   res.send(JSON.stringify(shardData.meta, null, 2));
 });
 router.get("/test", (req, res) => {
