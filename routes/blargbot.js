@@ -131,7 +131,7 @@ router.get("/shards", (req, res) => {
       shard: shardData.data[cluster].shards[shard % shardData.meta.shardsPerCluster],
       cluster : shardData.data[cluster], 
       meta : shardData.meta
-    }))
+    }, null, 2))
   }
   res.send(JSON.stringify(Object.values(shardData.data), null, 2));
   // let updateDates = Object.values(shardData.date);
