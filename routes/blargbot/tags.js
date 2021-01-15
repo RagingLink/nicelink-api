@@ -1,10 +1,10 @@
-const express = require('express');
+const express = require("express");
 const router = express.Router();
 
 let bent = require("bent");
 let { parse } = require("node-html-parser");
 let subtagCache = {};
-let tagJson = require(__dirname + "/tags.json");
+let tagJson = require(__dirname + "../tags.json");
 const fs = require("fs");
 
 router.get("/tags", async (req, res, next) => {
@@ -37,7 +37,7 @@ router.get("/tags", async (req, res, next) => {
     );
     return;
   }
-  
+
   if (subtagCache[name]) {
     res.status(200).send(JSON.stringify(subtagCache[name], null, 2));
     sent = true;
@@ -46,8 +46,6 @@ router.get("/tags", async (req, res, next) => {
     res.status(200).send(JSON.stringify(tagJson[name], null, 2));
     sent = true;
   }
-  
-  
 
   let querySelector = await text.querySelector("#" + matchedTag.name);
   let limitsQuery = await querySelector.parentNode.childNodes.find((c) =>
@@ -72,7 +70,8 @@ router.get("/tags", async (req, res, next) => {
           limits: n.childNodes[1].text
             .trim()
             .split("-")
-            .map((i) => i.trim()).filter(i => i),
+            .map((i) => i.trim())
+            .filter((i) => i),
         };
       })
     : [];
@@ -83,11 +82,11 @@ router.get("/tags", async (req, res, next) => {
   tagJson[matchedTag.name] = matchedTag;
 
   fs.writeFile(
-    __dirname + "/tags.json",
+    __dirname + "..//tags.json",
     JSON.stringify(tagJson),
     "utf8",
     (err, data) => {
-      if(sent) return
+      if (sent) return;
       if (err) {
         console.error(err);
         res
