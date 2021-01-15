@@ -25,8 +25,9 @@ let updateMeta = () => {
     return c.shards.length + a;
   }, 0);
   shardData.meta["clusters"] = Object.values(shardData.data).length;
-  shardData.meta["shardsPerCluster"] = shardData.data[0].shards.length;
   shardData.meta["lastMetaUpdate"] = Date.now();
+  shardData.meta["shardsPerCluster"] = shardData.data[0].shards.length;
+
 };
 setInterval(updateMeta, 1000 * 60 * 30);
 
