@@ -27,12 +27,12 @@ let updateMeta = () => {
   shardData.meta["clusters"] = Object.values(shardData.data).length;
   shardData.meta["shardsPerCluster"] = shardData.data[0].shards.length;
   shardData.meta["lastMetaUpdate"] = Date.now();
-}
+};
 setInterval(updateMeta, 1000 * 60 * 30);
 
 router.get("/shards", (req, res) => {
   res.type("json");
-  if (req.query.down && !!req.query.down) {
+  if (req.query.down && !!req.query) {
     let output = Object.values(JSON.parse(JSON.stringify(shardData.data)))
       .map((cluster) => {
         cluster.shards = cluster.shards
@@ -46,56 +46,71 @@ router.get("/shards", (req, res) => {
     return res.send(JSON.stringify(output, null, 2));
   }
 
-  if (req.query.cluster && !isNaN(parseInt(req.query.cluster))) {
-    let cluster = parseInt(req.query.cluster);
-    if (!shardData.data[cluster]) {
-      return res.status(400).send(
+  if (req.query.cluster) {
+    if (!isNaN(parseInt(req.query.cluster))) {
+      let cluster = parseInt(req.query.cluster);
+      if (!shardData.data[cluster]) {
+        return res.status(400).send(
+          JSON.stringify(
+            {
+              error: "Invalid cluster",
+              message: `Cluster ${cluster} doesn't exist, please try again`,
+            },
+            null,
+            2
+          )
+        );
+      }
+      return res.send(JSON.stringify(shardData.data[cluster], null, 2));
+    } else {
+      res.status(400).send(
         JSON.stringify(
           {
-            error: "Invalid cluster",
-            message: `Cluster ${cluster} doesn't exist, please try again`,
+            error: "Invalid number",
+            message: `${req.query.cluster} is not a valid number, please try again.`,
           },
           null,
           2
         )
       );
     }
-    return res.send(JSON.stringify(shardData.data[cluster], null, 2));
-  } else {
-    res.status(400).send(
-      JSON.stringify(
-        {
-          error: "Invalid number",
-          message: `${req.query.cluster} is not a valid number, please try again.`,
-        },
-        null,
-        2
-      )
-    );
   }
 
-  if (req.query.shard && !isNaN(parseInt(req.query.shard))) {
-    let shard = parseInt(req.query.shard);
-    let maxShards = Object.values(shardData.data).reduce((a, c) => {
-      return c.shards.length + a;
-    }, 0);
-    if (shard >= maxShards) {
-      return res.status(400).send(
+  if (req.query.shard) {
+    if (!isNaN(parseInt(req.query.shard))) {
+      let shard = parseInt(req.query.shard);
+      let maxShards = Object.values(shardData.data).reduce((a, c) => {
+        return c.shards.length + a;
+      }, 0);
+      if (shard >= maxShards) {
+        return res.status(400).send(
+          JSON.stringify(
+            {
+              error: "Invalid shard",
+              message: `Shard ${shard} doesn't exist, please try again`,
+            },
+            null,
+            2
+          )
+        );
+      }
+      let perCluster = shardData.data[0].shards.length;
+      let shardJSON = shardData.data[
+        Math.floor(shard / perCluster)
+      ].shards.find((i) => i.id == shard);
+      return res.send(JSON.stringify(shardJSON, null, 2));
+    } else {
+      res.status(400).send(
         JSON.stringify(
           {
-            error: "Invalid shard",
-            message: `Shard ${shard} doesn't exist, please try again`,
+            error: "Invalid number",
+            message: `${req.query.shard} is not a valid number, please try again.`,
           },
           null,
           2
         )
       );
     }
-    let perCluster = shardData.data[0].shards.length;
-    let shardJSON = shardData.data[Math.floor(shard / perCluster)].shards.find(
-      (i) => i.id == shard
-    );
-    return res.send(JSON.stringify(shardJSON, null, 2));
   }
   res.send(JSON.stringify(Object.values(shardData.data), null, 2));
   // let updateDates = Object.values(shardData.date);
