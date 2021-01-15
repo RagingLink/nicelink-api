@@ -100,3 +100,5 @@ router.get("/tags", async (req, res, next) => {
     }
   );
 });
+
+module.exports = router;
