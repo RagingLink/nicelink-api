@@ -32,7 +32,7 @@ setInterval(updateMeta, 1000 * 60 * 30);
 
 router.get("/shards", (req, res) => {
   res.type("json");
-  if (!!req.query.down) {
+  if (req.query.down && !!req.query.down) {
     let output = Object.values(JSON.parse(JSON.stringify(shardData.data)))
       .map((cluster) => {
         cluster.shards = cluster.shards
@@ -46,7 +46,7 @@ router.get("/shards", (req, res) => {
     return res.send(JSON.stringify(output, null, 2));
   }
 
-  if (!isNaN(parseInt(req.query.cluster))) {
+  if (req.query.cluster && !isNaN(parseInt(req.query.cluster))) {
     let cluster = parseInt(req.query.cluster);
     if (!shardData.data[cluster]) {
       return res.status(400).send(
@@ -74,7 +74,7 @@ router.get("/shards", (req, res) => {
     );
   }
 
-  if (!isNaN(parseInt(req.query.shard))) {
+  if (req.query.shard && !isNaN(parseInt(req.query.shard))) {
     let shard = parseInt(req.query.shard);
     let maxShards = Object.values(shardData.data).reduce((a, c) => {
       return c.shards.length + a;
