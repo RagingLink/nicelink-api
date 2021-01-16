@@ -7,7 +7,7 @@ let subtagCache = {};
 let tagJson = require(__dirname + "/../tags.json");
 const fs = require("fs");
 
-router.get("/tags", async (req, res, next) => {
+router.get("/", async (req, res, next) => {
   let sent;
   res.type("json");
   let name = req.query.tag;
