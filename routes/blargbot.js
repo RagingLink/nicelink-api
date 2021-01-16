@@ -153,6 +153,6 @@ router.get("/test", (req, res) => {
   setTimeout(() => res.send("OK"), 61000);
 });
 //let wsInterval;
-router.use("/tags", require("./blargbot/tags.js"));
+router.use("/tags", require("./blargbot/tags"));
 
 module.exports = router;
