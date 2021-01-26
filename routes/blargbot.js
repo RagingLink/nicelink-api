@@ -5,6 +5,8 @@ var rWebSocket = require("reconnecting-websocket");
 var moment = require("moment");
 const { parse } = require("path");
 const bigInteger = require('big-integer');
+const bent = require('bent');
+const getString = bent('string');
 
 let shardData = { data: [], date: [], meta: {} };
 
@@ -21,14 +23,21 @@ wss.addEventListener("message", (event) => {
   shardData.date[data.data.id] = Math.floor(new Date() / 1000);
 });
 
-let updateMeta = () => {
+let updateMeta = async () => {
   shardData.meta["shards"] = Object.values(shardData.data).reduce((a, c) => {
     return c.shards.length + a;
   }, 0);
   shardData.meta["clusters"] = Object.values(shardData.data).length;
   shardData.meta["lastMetaUpdate"] = Date.now();
   shardData.meta["shardsPerCluster"] = shardData.data[0].shards.length;
-
+  shardData.meta["guilds"] = Object.values(shardData.data).reduce((a, c) => {
+    return c.guilds + a;
+  }, 0);
+  try {
+    let metrics = await getString("https://blargbot.xyz/metrics");
+    let users = metrics.match(/bot_user_gauge (\d+)/);
+    shardData.meta["users"] = users ? (isNaN(parseInt(users[1])) ? parseInt(users[1]) : null) : null;
+  } catch(e) {};
 };
 setInterval(updateMeta, 1000 * 60 * 30);
 
@@ -141,12 +150,12 @@ router.get("/shards", (req, res) => {
   //  console.info(`Newest update was at ${moment.unix(newestUpdate.shift()).format('HH:mm:ss DD/MM/YYYY')}`)
 });
 
-router.get("/shards/meta", (req, res) => {
+router.get("/shards/meta", async (req, res) => {
   res.type("json");
   res.send(JSON.stringify(shardData.meta, null, 2));
    //TRY
    try {
-    updateMeta();
+    await updateMeta();
   } catch (e) {}
 });
 router.get("/test", (req, res) => {
