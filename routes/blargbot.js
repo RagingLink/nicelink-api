@@ -35,7 +35,6 @@ let updateMeta = async () => {
   }, 0);
   try {
     let metrics = await getString("https://blargbot.xyz/metrics");
-    console.log(metrics);
     let users = metrics.match(/bot_user_gauge (\d+)/);
     shardData.meta["users"] = users
       ? !isNaN(parseInt(users[1]))
