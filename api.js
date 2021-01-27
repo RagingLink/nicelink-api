@@ -2,7 +2,7 @@
  * @Author: RagingLink
  * @Date: 2020-06-22 17:41:47
  * @Last Modified by: RagingLink
- * @Last Modified time: 2021-01-27 19:55:43
+ * @Last Modified time: 2021-01-27 20:01:28
  *
  * This project uses the AGPLv3 license. Please read the license file before using/adapting any of the code.
  */
@@ -104,7 +104,7 @@ let rateLimit = async (req, res, next) => {
 
 //app.use('*', rateLimit);
 app.use("/blargbot", require("./routes/blargbot"));
-app.get("/(docs)?", (req, res, next) => {
+app.get("/:path(docs)?", (req, res, next) => {
   res.render("index");
 });
 app.get("/docs/:page", async (req, res, next) => {
