@@ -2,7 +2,7 @@
  * @Author: RagingLink
  * @Date: 2020-06-22 17:41:47
  * @Last Modified by: RagingLink
- * @Last Modified time: 2021-01-15 22:24:08
+ * @Last Modified time: 2021-01-27 19:55:43
  *
  * This project uses the AGPLv3 license. Please read the license file before using/adapting any of the code.
  */
@@ -23,7 +23,32 @@ var server = http.createServer(app);
 app.set("trust proxy", 1);
 app.set("view engine", "hbs");
 app.set("views", path.join(__dirname, "views"));
-
+let docsViews = ["index", "blargbot"];
+let renderDocs = (view) => {
+  let mdFile = fs.readFileSync("./views/" + view + ".md", "utf8");
+  try {
+    shins.render(
+      mdFile,
+      {
+        cli: false,
+        minify: true,
+        customCss: false,
+        inline: true,
+        unsafe: false,
+        "no-links": false,
+        logo: "./res/nicelinklogo.png",
+      },
+      (err, html) => {
+        fs.writeFile("./views/" + view + ".hbs", html, "utf8", (err) => {
+          if (err) console.error(err);
+          console.log("Created " + view + ".hbs!");
+        });
+      }
+    );
+  } catch (err) {
+    console.error(err);
+  }
+};
 // parse application/x-www-form-urlencoded
 app.use(bodyparser.urlencoded({ extended: false }));
 
@@ -79,33 +104,17 @@ let rateLimit = async (req, res, next) => {
 
 //app.use('*', rateLimit);
 app.use("/blargbot", require("./routes/blargbot"));
-app.get("/:path(docs)?", (req, res, next) => {
+app.get("/(docs)?", (req, res, next) => {
   res.render("index");
 });
-
+app.get("/docs/:page", async (req, res, next) => {
+  let dirs = await fs.readdirSync("./views");
+  dirs = dirs.filter((f) => f.endsWith(".hbs")).map((f) => f.split(".")[0]);
+  if (!dirs.includes(req.params.page))
+    return res.send("This docs page doesn't exist");
+  res.render(req.params.page);
+});
 server.listen(8081, async () => {
   console.log("API now listening on port 8081");
-  let mdFile = fs.readFileSync("./views/index.md", "utf8");
-  try {
-    shins.render(
-      mdFile,
-      {
-        cli: false,
-        minify: true,
-        customCss: false,
-        inline: true,
-        unsafe: false,
-        "no-links": false,
-        logo: "./res/nicelinklogo.png",
-      },
-      (err, html) => {
-        fs.writeFile("./views/index.hbs", html, "utf8", (err) => {
-          if (err) console.error(err);
-          console.log("Created index.hbs!");
-        });
-      }
-    );
-  } catch (err) {
-    console.error(err);
-  }
+  docsViews.forEach(renderDocs);
 });
