@@ -4,9 +4,9 @@ var WebSocket = require("ws");
 var rWebSocket = require("reconnecting-websocket");
 var moment = require("moment");
 const { parse } = require("path");
-const bigInteger = require('big-integer');
-const bent = require('bent');
-const getString = bent('string');
+const bigInteger = require("big-integer");
+const bent = require("bent");
+const getString = bent("string");
 
 let shardData = { data: [], date: [], meta: {} };
 
@@ -37,13 +37,18 @@ let updateMeta = async () => {
     let metrics = await getString("https://blargbot.xyz/metrics");
     console.log(metrics);
     let users = metrics.match(/bot_user_gauge (\d+)/);
-    shardData.meta["users"] = users ? (!isNaN(parseInt(users[1])) ? parseInt(users[1]) : null) : null;
-  } catch(e) {};
+    shardData.meta["users"] = users
+      ? !isNaN(parseInt(users[1]))
+        ? parseInt(users[1])
+        : null
+      : null;
+  } catch (e) {}
 };
 setInterval(updateMeta, 1000 * 60 * 30);
 
 router.get("/shards", (req, res) => {
   res.type("json");
+  
   if (req.query.down && !!req.query) {
     let output = Object.values(JSON.parse(JSON.stringify(shardData.data)))
       .map((cluster) => {
@@ -57,7 +62,34 @@ router.get("/shards", (req, res) => {
       .filter((c) => c.shards.length != 0);
     return res.send(JSON.stringify(output, null, 2));
   }
-
+  if (req.query.guild) {
+    let id;
+    try {
+      id = bigInteger(req.query.guild);
+    } catch (e) {
+      return res.status(400).send(
+        JSON.stringify({
+          error: "Invalid guild",
+          message: `${req.query.guild} is an invalid integer, please try again`,
+        })
+      );
+    }
+    let shard = id.shiftRight(22).mod(parseInt(shardData.meta.shards));
+    let cluster = Math.floor(shard / shardData.meta.shardsPerCluster);
+    return res.send(
+      JSON.stringify(
+        {
+          shard:
+            shardData.data[cluster].shards[
+              shard % shardData.meta.shardsPerCluster
+            ],
+          cluster: shardData.data[cluster],
+        },
+        null,
+        2
+      )
+    );
+  }
   if (req.query.cluster) {
     if (!isNaN(parseInt(req.query.cluster))) {
       let cluster = parseInt(req.query.cluster);
@@ -125,24 +157,6 @@ router.get("/shards", (req, res) => {
     }
   }
 
-  if(req.query.guild) {
-    let id;
-    try {
-      id = bigInteger(req.query.guild);        
-    } catch(e) {
-      return res.status(400).send(JSON.stringify({
-        error: 'Invalid guild',
-        message: `${req.query.guild} is an invalid integer, please try again`
-      }))  
-    }
-    let shard = id.shiftRight(22).mod(parseInt(shardData.meta.shards));
-    let cluster = Math.floor(shard / shardData.meta.shardsPerCluster);
-    return res.send(JSON.stringify({
-      shard: shardData.data[cluster].shards[shard % shardData.meta.shardsPerCluster],
-      cluster : shardData.data[cluster], 
-      meta : shardData.meta
-    }, null, 2))
-  }
   res.send(JSON.stringify(Object.values(shardData.data), null, 2));
   // let updateDates = Object.values(shardData.date);
   // let oldestUpdate = updateDates.slice(0).sort((a, b) => (a > b ? 1 : -1));
@@ -154,8 +168,8 @@ router.get("/shards", (req, res) => {
 router.get("/shards/meta", async (req, res) => {
   res.type("json");
   res.send(JSON.stringify(shardData.meta, null, 2));
-   //TRY
-   try {
+  //TRY
+  try {
     await updateMeta();
   } catch (e) {}
 });

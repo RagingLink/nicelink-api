@@ -19,7 +19,7 @@ code_clipboard: true
 ```shell
 curl "https://api.nicelink.xyz/blargbot/shards" 
 ```
-> The above command returns JSON structured like this: 
+> The above command returns JSON structured like: 
 
 ```json
 [
@@ -59,9 +59,39 @@ This endpoint retrieves the data of the shards
 
 Parameter | Default | Description
 ----------| ------- | ----------- 
-down | false | If set to true, the response will only returns clusters with disconnected shards.
+down | `false` | If set to true, the response will only returns clusters with disconnected shards.
+guild | `null` | If provided will return an object with the `shard` and `cluster` the `guild` is in.
+cluster | `null` | If provided will return a cluster object.
+shard | `null` | If provided will return a shard object.
 
-##Tags
+<aside class="notice">
+    Using multiple parameters in one request will priorize the higher parameter and ignore the rest.
+</aside>
+
+##Metadata
+>Example request
+
+```shell
+curl "https://api.nicelink.xyz/blargbot/shards/meta" 
+```
+> The above command returns a JSON structured like:
+
+```json
+{
+  "shards": 32,
+  "clusters": 8,
+  "lastMetaUpdate": 1611771482968,
+  "shardsPerCluster": 4,
+  "guilds": 30816,
+  "users": 2839471
+}
+```
+This endpoint returns metadata of the shards and clusters, alongside guild and user count.
+###HTTP Request
+`GET https://api.nicelink.xyz/blargbot/shards/meta`
+
+
+#Tags
 > Example request
 
 ```shell
