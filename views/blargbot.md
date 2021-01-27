@@ -10,9 +10,9 @@ code_clipboard: true
 ---
 
 <!-- Generator: Widdershins v4.0.1 -->
-#Blargbot
+#Shards
 
-##Shards
+##Retrieve shard info
 
 > Example request
 
@@ -68,7 +68,7 @@ shard | `null` | If provided will return a shard object.
     Using multiple parameters in one request will priorize the higher parameter and ignore the rest.
 </aside>
 
-##Metadata
+##Retrieve metadata
 >Example request
 
 ```shell
