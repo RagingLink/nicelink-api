@@ -69,7 +69,7 @@ router.get("/shards", (req, res) => {
       return res.status(400).send(
         JSON.stringify({
           error: "Invalid guild",
-          message: `${req.query.guild} is an invalid integer, please try again`,
+          message: `${req.query.guild} is an invalid number, please try again`,
         })
       );
     }
@@ -110,7 +110,7 @@ router.get("/shards", (req, res) => {
         JSON.stringify(
           {
             error: "Invalid number",
-            message: `${req.query.cluster} is not a valid number, please try again.`,
+            message: `${req.query.cluster} is an invalid number, please try again.`,
           },
           null,
           2
@@ -147,7 +147,7 @@ router.get("/shards", (req, res) => {
         JSON.stringify(
           {
             error: "Invalid number",
-            message: `${req.query.shard} is not a valid number, please try again.`,
+            message: `${req.query.shard} is an invalid number, please try again.`,
           },
           null,
           2

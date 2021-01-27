@@ -132,3 +132,13 @@ This endpoint retrieves the JSON objects of tags
 Parameter | Default | Description
 ----------| ------- | ----------- 
 tag | none | If provided, will return the tag object of `tag`. Otherwise returns all tags
+
+#Errors
+
+>Example error
+```json
+{"error": "Invalid guild",
+  "message" : "Error is an invalid integer, please try again"
+}
+```
+All request will have an identical JSON structure with `error` and `message` as properties.
