@@ -2,6 +2,7 @@
 title: Nice link!
 language_tabs:
   - shell : cURL
+  - csharp : BBtag
 includes: []
 search: true
 highlight_theme: darkula
@@ -121,6 +122,7 @@ curl "https://api.nicelink.xyz/blargbot/tags?tag=zws"
     "isDeprecated": false
   }
 }
+##Retrieve tag info
 ```
 This endpoint retrieves the JSON objects of tags
 
