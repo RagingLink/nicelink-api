@@ -2,7 +2,7 @@
  * @Author: RagingLink
  * @Date: 2020-06-22 17:41:47
  * @Last Modified by: RagingLink
- * @Last Modified time: 2021-01-30 22:49:42
+ * @Last Modified time: 2021-01-30 22:50:19
  *
  * This project uses the AGPLv3 license. Please read the license file before using/adapting any of the code.
  */
@@ -36,8 +36,8 @@ let renderDocs = (view) => {
         inline: true,
         unsafe: false,
         "no-links": false,
-        logo: __dirname+"res/nicelinklogo.png",
-        root: __dirname+"shins_root"
+        logo: __dirname+"/res/nicelinklogo.png",
+        root: __dirname+"/shins_root"
         //layout: path.resolve("layouts","layout.ejs")
       },
       (err, html) => {
