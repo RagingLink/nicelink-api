@@ -143,4 +143,5 @@ tag | none | If provided, will return the tag object of `tag`. Otherwise returns
   "message" : "Error is an invalid integer, please try again"
 }
 ```
+##Error format
 All request will have an identical JSON structure with `error` and `message` as properties.
