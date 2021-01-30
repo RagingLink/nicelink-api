@@ -13,7 +13,6 @@ code_clipboard: true
 <!-- Generator: Widdershins v4.0.1 -->
 #Shards
 
-##Retrieve shard info
 
 > Example request
 
@@ -50,6 +49,7 @@ curl "https://api.nicelink.xyz/blargbot/shards"
   }
 ]
 ```
+##Retrieve shard info
 
 This endpoint retrieves the data of the shards
 ### HTTP Request
@@ -69,7 +69,6 @@ shard | `null` | If provided will return a shard object.
     Using multiple parameters in one request will priorize the higher parameter and ignore the others.
 </aside>
 
-##Retrieve metadata
 
 >Example request
 
@@ -88,6 +87,7 @@ curl "https://api.nicelink.xyz/blargbot/shards/meta"
   "users": 2839471
 }
 ```
+##Retrieve metadata
 
 This endpoint returns metadata of the shards and clusters, alongside guild and user count.
 ###HTTP Request
@@ -95,7 +95,7 @@ This endpoint returns metadata of the shards and clusters, alongside guild and u
 
 
 #Tags
-##Retrieve tag info
+
 
 > Example request
 
@@ -127,6 +127,7 @@ curl "https://api.nicelink.xyz/blargbot/tags?tag=zws"
   }
 }
 ```
+##Retrieve tag info
 
 This endpoint retrieves the JSON objects of tags
 
@@ -141,7 +142,6 @@ tag | none | If provided, will return the tag object of `tag`. Otherwise returns
 
 #Errors
 
-##Error format
 
 >Example error
 ```json
@@ -149,5 +149,6 @@ tag | none | If provided, will return the tag object of `tag`. Otherwise returns
   "message" : "Error is an invalid integer, please try again"
 }
 ```
+##Error format
 
 All request will have an identical JSON structure with `error` and `message` as properties.
