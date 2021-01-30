@@ -459,6 +459,8 @@ html, body {
   pre>code {
     background-color: transparent;
     padding: 0;
+    border-radius: 25px;
+    border-color: #000;
   }
 
   aside {
@@ -539,8 +541,6 @@ html, body {
     padding-top: 2em;
     padding-bottom: 2em;
     padding: 2em $main-padding;
-    border-radius: 4px;
-    border-color: #000;
   }
 
   blockquote {
