@@ -12,6 +12,8 @@ code_clipboard: true
 
 <!-- Generator: Widdershins v4.0.1 -->
 #Shards
+##Retrieve shard info
+
 > Example request
 ```shell
 curl "https://api.nicelink.xyz/blargbot/shards" 
@@ -45,7 +47,6 @@ curl "https://api.nicelink.xyz/blargbot/shards"
   }
 ]
 ```
-##Retrieve shard info
 This endpoint retrieves the data of the shards
 ### HTTP Request
 `GET https://api.nicelink.xyz/blargbot/shards`
