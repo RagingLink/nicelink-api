@@ -2,7 +2,7 @@
  * @Author: RagingLink
  * @Date: 2020-06-22 17:41:47
  * @Last Modified by: RagingLink
- * @Last Modified time: 2021-01-27 20:31:57
+ * @Last Modified time: 2021-01-30 22:03:08
  *
  * This project uses the AGPLv3 license. Please read the license file before using/adapting any of the code.
  */
@@ -55,6 +55,8 @@ app.use(bodyparser.urlencoded({ extended: false }));
 
 // parse application/json
 app.use(bodyparser.json());
+app.use('/images', express.static('images'))
+
 const loggr = new CatLoggr({
   levels: [
     { name: "error", color: CatLoggr._chalk.black.bgRed },
