@@ -65,7 +65,7 @@ cluster | `null` | If provided will return a cluster object.
 shard | `null` | If provided will return a shard object.
 
 <aside class="notice">
-    Using multiple parameters in one request will priorize the higher parameter and ignore the rest.
+    Using multiple parameters in one request will priorize the higher parameter and ignore the others.
 </aside>
 
 ##Retrieve metadata
