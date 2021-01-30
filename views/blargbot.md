@@ -69,7 +69,6 @@ shard | `null` | If provided will return a shard object.
     Using multiple parameters in one request will priorize the higher parameter and ignore the others.
 </aside>
 
-##Retrieve metadata
 >Example request
 
 ```shell
@@ -87,6 +86,8 @@ curl "https://api.nicelink.xyz/blargbot/shards/meta"
   "users": 2839471
 }
 ```
+##Retrieve metadata
+
 This endpoint returns metadata of the shards and clusters, alongside guild and user count.
 ###HTTP Request
 `GET https://api.nicelink.xyz/blargbot/shards/meta`
@@ -122,8 +123,9 @@ curl "https://api.nicelink.xyz/blargbot/tags?tag=zws"
     "isDeprecated": false
   }
 }
-##Retrieve tag info
 ```
+##Retrieve tag info
+
 This endpoint retrieves the JSON objects of tags
 
 ### HTTP Request
@@ -137,6 +139,7 @@ tag | none | If provided, will return the tag object of `tag`. Otherwise returns
 
 #Errors
 
+
 >Example error
 ```json
 {"error": "Invalid guild",
@@ -144,4 +147,5 @@ tag | none | If provided, will return the tag object of `tag`. Otherwise returns
 }
 ```
 ##Error format
+
 All request will have an identical JSON structure with `error` and `message` as properties.
