@@ -6,7 +6,9 @@
 const fs = require('fs');
 const path = require('path');
 const sass = require('node-sass');
+// @ts-ignore
 const assetFunctions = require('node-sass-asset-functions');
+// @ts-ignore
 const options = require('tiny-opts-parser')(process.argv);
 
 const outputStyle = options._.length > 2 ? options._[2] : 'nested';

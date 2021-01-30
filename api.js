@@ -2,7 +2,7 @@
  * @Author: RagingLink
  * @Date: 2020-06-22 17:41:47
  * @Last Modified by: RagingLink
- * @Last Modified time: 2021-01-30 22:50:19
+ * @Last Modified time: 2021-01-30 23:46:41
  *
  * This project uses the AGPLv3 license. Please read the license file before using/adapting any of the code.
  */
@@ -18,15 +18,59 @@ const fs = require("fs");
 const shins = require("shins");
 const CatLoggr = require("cat-loggr");
 const bodyparser = require("body-parser");
+const path = require('path');
+const sass = require('node-sass');
+const assetFunctions = require('node-sass-asset-functions');
+
+let buildSass = async (options = {}) => {
+  return new Promise(async (resolve, reject) => {
+    options.root = options.root || __dirname+'/shins_root';
+    function sassRender(infile,outfile) {
+      return new Promise((res, rej) => {
+        sass.render({
+          file: infile,
+          outputStyle : options.outputStyle ||  'nested',
+          functions: assetFunctions({
+            http_fonts_path: '../../source/fonts'
+          })
+        }, function(err, result) {
+          if (err) {
+            console.error(err)
+            rej(err)
+          }
+          else {
+            fs.writeFile(outfile,result.css.toString(),'utf8',function(err){
+                      if (err) {
+                        console.warn(err.message);
+                        rej(err)
+                      }
+                      res();
+                  });
+              }
+        });
+      })
+      
+    }
+    try {
+      await sassRender(path.join(options.root,'source/stylesheets/screen.css.scss'),path.join(options.root,'pub/css/screen.css'));
+      await sassRender(path.join(options.root,'source/stylesheets/print.css.scss'),path.join(options.root,'pub/css/print.css'));
+    } catch(e) {
+      console.error(e);
+    }
+    resolve();
+  })
+}
 
 var server = http.createServer(app);
 app.set("trust proxy", 1);
 app.set("view engine", "hbs");
 app.set("views", path.join(__dirname, "views"));
 let docsViews = ["index", "blargbot"];
-let renderDocs = (view) => {
+
+let renderDocs = async (view) => {
   let mdFile = fs.readFileSync("./views/" + view + ".md", "utf8");
   try {
+    await buildSass();
     shins.render(
       mdFile,
       {
