@@ -2,7 +2,7 @@
  * @Author: RagingLink
  * @Date: 2020-06-22 17:41:47
  * @Last Modified by: RagingLink
- * @Last Modified time: 2021-01-30 22:48:07
+ * @Last Modified time: 2021-01-30 22:49:42
  *
  * This project uses the AGPLv3 license. Please read the license file before using/adapting any of the code.
  */
@@ -41,8 +41,10 @@ let renderDocs = (view) => {
         //layout: path.resolve("layouts","layout.ejs")
       },
       (err, html) => {
+        if (err) return console.error(err)
+        
         fs.writeFile("./views/" + view + ".hbs", html, "utf8", (err) => {
-          if (err) console.error(err);
+          if (err) return console.error(err);
           console.log("Created " + view + ".hbs!");
         });
       }
