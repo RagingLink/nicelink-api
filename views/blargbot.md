@@ -18,6 +18,9 @@ code_clipboard: true
 ```shell
 curl "https://api.nicelink.xyz/blargbot/shards" 
 ```
+```csharp
+{request;https://api.nicelink.xyz/blargbot/shards}
+```
 > The above command returns JSON structured like: 
 ```json
 [
@@ -68,6 +71,9 @@ shard | `null` | If provided will return a shard object.
 ```shell
 curl "https://api.nicelink.xyz/blargbot/shards/meta" 
 ```
+```csharp
+{request;https://api.nicelink.xyz/blargbot/shards/meta}
+```
 > The above command returns a JSON structured like:
 ```json
 {
@@ -87,6 +93,9 @@ This endpoint returns metadata of the shards and clusters, alongside guild and u
 > Example request
 ```shell
 curl "https://api.nicelink.xyz/blargbot/tags?tag=zws" 
+```
+```csharp
+{request;https://api.nicelink.xyz/blargbot/tags?tag=zws}
 ```
 > The above command returns JSON structured like this:
 ```json
