@@ -2,7 +2,7 @@
  * @Author: RagingLink
  * @Date: 2020-06-22 17:41:47
  * @Last Modified by: RagingLink
- * @Last Modified time: 2021-01-30 23:46:41
+ * @Last Modified time: 2021-01-30 23:47:26
  *
  * This project uses the AGPLv3 license. Please read the license file before using/adapting any of the code.
  */
@@ -11,7 +11,6 @@ const express = require("express");
 var http = require("http");
 var app = express();
 var moment = require("moment");
-var path = require("path");
 const { RateLimiterMongo } = require("rate-limiter-flexible");
 const mongoose = require("mongoose");
 const fs = require("fs");
