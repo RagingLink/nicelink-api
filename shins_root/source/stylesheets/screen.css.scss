@@ -320,6 +320,14 @@ html, body {
   position: relative;
   z-index: 30;
 
+  a {
+    color:#2484FF;
+  }
+  
+  a:visited{
+    color: #cb4bc8;
+  }
+
   &:after {
     content: '';
     display: block;
@@ -459,8 +467,6 @@ html, body {
   pre>code {
     background-color: transparent;
     padding: 0;
-    border-radius: 25px;
-    border-color: #000;
   }
 
   aside {
