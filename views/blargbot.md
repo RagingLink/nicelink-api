@@ -79,10 +79,12 @@ curl "https://api.nicelink.xyz/blargbot/shards/meta"
 {
   "shards": 32,
   "clusters": 8,
-  "lastMetaUpdate": 1611771482968,
+  "lastMetaUpdate": 1612185873066,
   "shardsPerCluster": 4,
-  "guilds": 30816,
-  "users": 2839471
+  "guilds": 30982,
+  "memory": 9169899520,
+  "averageCPU": 38.03889557715007,
+  "users": 2911697
 }
 ```
 This endpoint returns metadata of the shards and clusters, alongside guild and user count.
