@@ -18,12 +18,23 @@ wss.addEventListener("open", (ws) => {
   setTimeout(updateMeta, 1000 * 20);
 });
 
+let clusterTimeouts = {};
+
 //Shard data blargbot sends in cluster chunks
 wss.addEventListener("message", (event) => {
   let data = JSON.parse(event.data);
   if (data.code != "shard") return;
-  shardData.data[data.data.id] = data.data;
-  shardData.date[data.data.id] = Math.floor(Date.now() / 1000);
+  let cluster = data.data;
+  shardData.data[cluster.id] = cluster;
+  
+  /*Clear data of cluster after 15 minutes have passed, if a cluster is unresponsive it will still send messages
+    this is mostly for removing clusters that are unused*/
+  if(clusterTimeouts[cluster.id]) clearTimeout(clusterTimeouts[cluster.id]);
+
+  clusterTimeouts[cluster.id] = setTimeout(() => {
+    delete shardData.data[cluster.id];
+    console.info('Deleted cluster '+cluster.id+ ' from the shardData object')
+  }, 15 * 1000 * 60)
 });
 
 //Metadata update function for /shards/meta
