@@ -25,7 +25,9 @@ var updateStats = async () => {
       "nodejs_heap_space_size_total_bytes",
       "nodejs_heap_space_size_used_bytes",
       "nodejs_heap_space_size_available_bytes",
+      "bot_command_latency_ms",
       "bot_subtag_latency_ms" //This one should be included in some way, though I'm not sure how rn
+  
     ]
     let metrics = await getString("https://blargbot.xyz/metrics");
     var metricsArray = prom2json(metrics);
