@@ -52,7 +52,7 @@ let updateMeta = async () => {
     return c.rss + a;
   }, 0);
   shardData.meta["averageCPU"] = Object.values(shardData.data).reduce((a, c) => {
-    return c.cpu + a
+    return c.userCpu + a
   }, 0) / Object.keys(shardData.data).length;
   try {
     let metrics = await getString("https://blargbot.xyz/metrics");
