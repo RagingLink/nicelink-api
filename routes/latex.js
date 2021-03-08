@@ -28,7 +28,9 @@ router.get('/', (req, res, next) => {
     .replace('#BLOCK', block)
     .replace('#CONTENT', content);
   try {
-    res.write(gm(latex(document), 'latex.pdf').setFormat('png').stream())
+    let stream = gm(latex(document), 'latex.pdf').setFormat('png').stream()
+    stream.on('open', () => res.setHeader('Content-Type', 'image/png'));
+    stream.pipe(res);
   } catch(e) {
     console.error('Error rendering latex:\n' + e);
   }
