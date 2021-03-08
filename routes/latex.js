@@ -4,7 +4,6 @@ const fs = require('fs');
 const replacements = require('./tex.json');
 const gm = require('gm');
 const concat = require('concat-stream');
-const { input } = require('node-pdftocairo');
 function streamToBuffer(stream) {
   return new Promise((resolve, reject) => {
     let concatStream = concat(resolve)
