@@ -1,0 +1,13 @@
+\documentclass[margin=1pt]{#DOCUMENTCLASS}
+  \usepackage{color}
+  \usepackage{xcolor}
+  \usepackage{pagecolor}
+  
+  \definecolor{background_colour}{HTML}{#BACKGROUNDCOLOUR}
+  \pagecolor{background_colour}
+  \definecolor{my_colour}{HTML}{#COLOUR}
+  
+  \begin{document}
+  \color{my_colour}
+  #CONTENT
+  \end{document}

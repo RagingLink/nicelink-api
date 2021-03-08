@@ -4,6 +4,9 @@ const fs = require('fs');
 const replacements = require('./tex.json');
 const gm = require('gm');
 const concat = require('concat-stream');
+const { input } = require('node-pdftocairo');
+const advancedTemplate = fs.readFileSync(__dirname + '/template.tex', 'utf8');
+const standardTemplate = fs.readFileSync(__dirname + '/basictemplate.tex', 'utf8');
 function streamToBuffer(stream) {
   return new Promise((resolve, reject) => {
     let concatStream = concat(resolve)
@@ -18,18 +21,20 @@ router.get('/', async(req, res, next) => {
   if (!data.content) {
     return res.status(200).send('No content')
   }
-  let backgroundColor = data.backgroundColour || 'FFFFFF'
-  let textColor = data.colour || '000000';
-  let block = data.block ? data.block :  'gathered';
+  let backgroundColor = data.backgroundColour || '000000'
+  let textColor = data.colour || 'FFFFFF';
+  let block = data.block || 'flushleft';
+  let documentClass = data.documentClass || 'standalone'
   let content = data.content;
+  let template = data.advanced ? advancedTemplate : standardTemplate;
   for(var key in replacements) {
     let regex = new RegExp(key, 'g');
     if(regex.test(content)) {
       content = content.replace(regex, replacements[key]);
     }
   }
-  let template = fs.readFileSync(__dirname + '/template.tex', 'utf8');
   let document = template.replace(/#BACKGROUNDCOLOUR/g, backgroundColor)
+    .replace(/#DOCUMENTCLASS/g, documentClass)
     .replace(/#COLOUR/g, textColor)
     .replace(/#BLOCK/g, block)
     .replace(/#CONTENT/g, content);
