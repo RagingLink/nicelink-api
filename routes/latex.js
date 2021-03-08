@@ -4,7 +4,6 @@ const fs = require('fs');
 const replacements = require('./tex.json');
 const gm = require('gm');
 const concat = require('concat-stream');
-const { input } = require('node-pdftocairo');
 const advancedTemplate = fs.readFileSync(__dirname + '/template.tex', 'utf8');
 const standardTemplate = fs.readFileSync(__dirname + '/basictemplate.tex', 'utf8');
 function streamToBuffer(stream) {
