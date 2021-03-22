@@ -19,7 +19,7 @@
     "mongoose": "^5.9.19",
     "node-html-parser": "^1.2.20",
     "puppeteer": "^5.2.0",
-    "rate-limiter-flexible": "^2.1.7",
+    "rate-limiter-flexible": "^2.2.1",
     "reconnecting-websocket": "^4.4.0",
     "shins": "^2.6.0",
     "websocket": "^1.0.31",
