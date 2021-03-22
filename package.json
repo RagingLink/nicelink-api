@@ -14,7 +14,7 @@
     "express": "^4.17.1",
     "hbs": "^4.1.1",
     "https": "^1.0.0",
-    "moment": "^2.27.0",
+    "moment": "^2.29.1",
     "mongodb": "^3.5.9",
     "mongoose": "^5.9.19",
     "node-html-parser": "^1.2.20",
