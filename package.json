@@ -22,7 +22,7 @@
     "rate-limiter-flexible": "^2.1.7",
     "reconnecting-websocket": "^4.4.0",
     "shins": "^2.6.0",
-    "websocket": "^1.0.31",
+    "websocket": "^1.0.33",
     "ws": "^7.3.1"
   },
   "repository": {
