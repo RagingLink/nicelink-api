@@ -17,7 +17,7 @@
     "moment": "^2.29.1",
     "mongodb": "^3.6.5",
     "mongoose": "^5.12.2",
-    "node-html-parser": "^1.2.20",
+    "node-html-parser": "^3.1.1",
     "puppeteer": "^5.2.0",
     "rate-limiter-flexible": "^2.2.1",
     "reconnecting-websocket": "^4.4.0",
