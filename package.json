@@ -16,7 +16,7 @@
     "https": "^1.0.0",
     "moment": "^2.29.1",
     "mongodb": "^3.6.5",
-    "mongoose": "^5.12.2",
+    "mongoose": "^5.12.3",
     "puppeteer": "^8.0.0",
     "node-html-parser": "^3.1.2",
     "rate-limiter-flexible": "^2.2.1",
