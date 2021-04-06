@@ -12,4 +12,6 @@ router.post('/', (req, res, next) => {
     scope = Object.assign(scope, req.body);
 
     return res.send(JSON.stringify({output: evaluate(expression, scope), scope}));
-})
+});
+
+module.exports = router;
