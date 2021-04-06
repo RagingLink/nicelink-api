@@ -1,8 +1,8 @@
 /**
  * @Author: RagingLink
  * @Date: 2020-06-22 17:41:47
- * @Last Modified by: RagingLink
- * @Last Modified time: 2021-03-08 13:56:50
+ * @Last Modified by: mikey.zhaopeng
+ * @Last Modified time: 2021-04-06 11:35:22
  *
  * This project uses the AGPLv3 license. Please read the license file before using/adapting any of the code.
  */
@@ -48,7 +48,7 @@ let buildSass = async (options = {}) => {
               }
         });
       })
-      
+
     }
     try {
       await sassRender(path.join(options.root,'source/stylesheets/screen.css.scss'),path.join(options.root,'pub/css/screen.css'));
@@ -85,7 +85,7 @@ let renderDocs = async (view) => {
       },
       (err, html) => {
         if (err) return console.error(err)
-        
+
         fs.writeFile("./views/" + view + ".hbs", html, "utf8", (err) => {
           if (err) return console.error(err);
           console.log("Created " + view + ".hbs!");
@@ -153,6 +153,7 @@ let rateLimit = async (req, res, next) => {
 
 //app.use('*', rateLimit);
 app.use("/blargbot", require("./routes/blargbot"));
+app.use('/math', require('./routes/math'));
 app.get("/:path(docs)?", (req, res, next) => {
   res.render("index");
 });
