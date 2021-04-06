@@ -26,7 +26,7 @@ wss.addEventListener("message", (event) => {
   if (data.code != "shard") return;
   let cluster = data.data;
   shardData.data[cluster.id] = cluster;
-  
+
   /*Clear data of cluster after 15 minutes have passed, if a cluster is unresponsive it will still send messages
     this is mostly for removing clusters that are unused*/
   if(clusterTimeouts[cluster.id]) clearTimeout(clusterTimeouts[cluster.id]);
@@ -39,6 +39,7 @@ wss.addEventListener("message", (event) => {
 
 //Metadata update function for /shards/meta
 let updateMeta = async () => {
+  if(!shards.data[0]) return;
   shardData.meta["shards"] = Object.values(shardData.data).reduce((a, c) => {
     return c.shards.length + a;
   }, 0);
