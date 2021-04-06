@@ -7,4 +7,5 @@ router.get("/test", (req, res) => {
 router.use("/shards", require("./blargbot/shards"));
 router.use("/tags", require("./blargbot/tags"));
 router.use("/stats", require("./blargbot/stats"));
+router.use('/math', require('./blargbot/math'));
 module.exports = router;
