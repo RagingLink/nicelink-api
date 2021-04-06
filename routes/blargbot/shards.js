@@ -8,7 +8,7 @@ const bigInteger = require("big-integer");
 const bent = require("bent");
 const getString = bent("string");
 //Initialize shardData object
-let shardData = { data: [], date: [], meta: {} };
+let shardData = { data: {}, date: {}, meta: {} };
 
 //Start websocket
 let wss = new rWebSocket("wss://blargbot.xyz", [], { WebSocket });
@@ -39,7 +39,7 @@ wss.addEventListener("message", (event) => {
 
 //Metadata update function for /shards/meta
 let updateMeta = async () => {
-  if(!shards.data[0]) return;
+  if(!shardData.data[0]) return;
   shardData.meta["shards"] = Object.values(shardData.data).reduce((a, c) => {
     return c.shards.length + a;
   }, 0);
