@@ -17,7 +17,7 @@ router.get('/', (req, res) => {
   if(timeCodes.length === 1) {
     return res.send(timeCodes[0]);
   };
-
+  
   let matches = timezones.filter((item) => {
     if(item.value.toLowerCase().includes(query)) return true;
     if(item.abbr.toLowerCase().includes(query)) return true;
