@@ -7,8 +7,20 @@ var simpleTimezones = timezones.reduce((acc, item) => {
   return acc;
 }, []);
 router.get('/', (req, res) => {
-  res.type('json').send(JSON.stringify(timezones, null, 2));
+  if(!(req.query && req.query.q)) {
+    return res.type('json').send(JSON.stringify(timezones, null, 2));
+  };
+  let query = req.query.q.toLowerCase();
+  let matches = timezones.filter((item) => {
+    if(item.value.toLowerCase().includes(query)) return true;
+    if(item.abbr.toLowerCase().includes(query)) return true;
+    if(item.offset == query) return true;
+    if(item.text.toLowerCase().includes(query)) return true;
+    if(item.utc.join(',').toLowerCase().includes(query)) return true;
+  });
+  return res.type('json').send(JSON.stringify(matches, null, 2));
 });
+
 
 router.get('/simple', (req, res) => {
   res.type('json').send(JSON.stringify(simpleTimezones, null, 2));
