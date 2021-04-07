@@ -11,8 +11,9 @@ router.get('/', (req, res) => {
 });
 
 router.get('/simple', (req, res) => {
+  res.type('json').send(JSON.stringify(simpleTimezones, null, 2));
+});
 
-})
 router.get('/update', (req, res) => {
   timezones = require('./timezones.json');
   simpleTimezones = timezones.reduce((acc, item) => {
