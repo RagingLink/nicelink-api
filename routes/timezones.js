@@ -3,7 +3,8 @@ const router = express.Router();
 
 var timezones = require('./timezones.json');
 var simpleTimezones = timezones.reduce((acc, item) => {
-  return acc.push(...item.utc);
+  acc.push(...item.utc);
+  return acc;
 }, []);
 router.get('/', (req, res) => {
   res.send(JSON.stringify(timezones));
