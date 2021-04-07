@@ -5,7 +5,7 @@ var timezones = require('./timezones.json');
 var simpleTimezones = timezones.reduce((acc, item) => {
   acc.push(...item.utc);
   return acc;
-}, []);
+}, []).filter((item,index, self) => self.indexOf(item) === index);
 router.get('/', (req, res) => {
   if(!(req.query && req.query.q)) {
     return res.type('json').send(JSON.stringify(timezones, null, 2));
@@ -37,7 +37,7 @@ router.get('/update', (req, res) => {
   timezones = require('./timezones.json');
   simpleTimezones = timezones.reduce((acc, item) => {
     return acc.push(...item.utc);
-  }, []);
+  }, []).filter((item,index, self) => self.indexOf(item) === index);
   res.send('OK');
 });
 
