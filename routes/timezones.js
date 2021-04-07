@@ -12,12 +12,12 @@ router.get('/', (req, res) => {
   };
   let query = req.query.q.toLowerCase();
   let timeCodes = simpleTimezones.filter((item) => {
-    return item.includes(query);
+    return item.toLowerCase().includes(query);
   });
   if(timeCodes.length === 1) {
     return res.send(timeCodes[0]);
   };
-  
+
   let matches = timezones.filter((item) => {
     if(item.value.toLowerCase().includes(query)) return true;
     if(item.abbr.toLowerCase().includes(query)) return true;
