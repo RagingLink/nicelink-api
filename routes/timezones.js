@@ -7,7 +7,7 @@ var simpleTimezones = timezones.reduce((acc, item) => {
   return acc;
 }, []);
 router.get('/', (req, res) => {
-  res.send(JSON.stringify(timezones));
+  res.type('json').send(JSON.stringify(timezones));
 });
 
 router.get('/simple', (req, res) => {
