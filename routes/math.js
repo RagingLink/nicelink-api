@@ -12,11 +12,12 @@ router.post('/', (req, res, next) => {
     });
     expression = req.body.expression;
     delete req.body.expression;
-    scope = req.body.scope || {}
+    scope = req.body.scope || {};
     delete req.body.scope;
     scope = Object.assign(scope, req.body);
     let output = evaluate(expression, scope);
-    if (output.mathjs && output.mathjs === 'Complex') {
+    console.info(JSON.stringify(output));
+    if (typeof output === 'object' && output.re !== undefined && output.im !== undefined ) {
         output = output.re + ' + ' + output.im+'i';
     };
     return res.send(JSON.stringify({
