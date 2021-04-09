@@ -1,7 +1,8 @@
 const express = require('express');
 const router = express.Router();
 const {
-    evaluate
+    evaluate,
+    simplify
 } = require('mathjs')
 router.post('/', (req, res, next) => {
     var scope = {},
@@ -18,7 +19,7 @@ router.post('/', (req, res, next) => {
     let output = evaluate(expression, scope);
     console.info(JSON.stringify(output));
     if (typeof output === 'object' && output.re !== undefined && output.im !== undefined ) {
-        output = output.re + ' + ' + output.im+'i';
+        output = simplify(output.re + ' + ' + output.im+'*i');
     };
     return res.send(JSON.stringify({
         output,
