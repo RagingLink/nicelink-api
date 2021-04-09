@@ -19,7 +19,7 @@ router.post('/', (req, res, next) => {
     let output = evaluate(expression, scope);
     console.info(JSON.stringify(output));
     if (typeof output === 'object' && output.re !== undefined && output.im !== undefined ) {
-        output = simplify(output.re + ' + ' + output.im+'*i');
+        output = simplify(output.re + ' + ' + output.im+'*i').toString();
     };
     return res.send(JSON.stringify({
         output,
