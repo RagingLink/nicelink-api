@@ -2,7 +2,7 @@
  * @Author: RagingLink
  * @Date: 2020-06-22 17:41:47
  * @Last Modified by: mikey.zhaopeng
- * @Last Modified time: 2021-04-06 11:35:22
+ * @Last Modified time: 2021-04-09 19:33:59
  *
  * This project uses the AGPLv3 license. Please read the license file before using/adapting any of the code.
  */
@@ -166,6 +166,6 @@ app.get("/docs/:page", async (req, res, next) => {
   res.render(req.params.page);
 });
 server.listen(8081, async () => {
-  console.log("API now listening on port 8081");
+    console.log("API now listening on port 8081");
   docsViews.forEach(renderDocs);
 });
