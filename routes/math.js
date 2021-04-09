@@ -17,7 +17,7 @@ router.post('/', (req, res, next) => {
     scope = Object.assign(scope, req.body);
     let output = evaluate(expression, scope);
     if (output.mathjs && output.mathjs === 'Complex') {
-        output = output.re + output.im;
+        output = output.re + ' + ' + output.im+'i';
     };
     return res.send(JSON.stringify({
         output,
