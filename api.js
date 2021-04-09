@@ -2,7 +2,7 @@
  * @Author: RagingLink
  * @Date: 2020-06-22 17:41:47
  * @Last Modified by: mikey.zhaopeng
- * @Last Modified time: 2021-04-09 19:33:59
+ * @Last Modified time: 2021-04-09 19:46:37
  *
  * This project uses the AGPLv3 license. Please read the license file before using/adapting any of the code.
  */
@@ -154,6 +154,7 @@ let rateLimit = async (req, res, next) => {
 //app.use('*', rateLimit);
 app.use("/blargbot", require("./routes/blargbot"));
 app.use('/math', require('./routes/math'));
+app.use('/timezones', require('./routes/timezones'));
 app.get("/:path(docs)?", (req, res, next) => {
   res.render("index");
 });
