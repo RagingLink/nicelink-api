@@ -1557,10 +1557,10 @@ markdown-it@^10.0.0:
     mdurl "^1.0.1"
     uc.micro "^1.0.5"
 
-mathjs@^9.3.0:
-  version "9.3.0"
-  resolved "https://registry.yarnpkg.com/mathjs/-/mathjs-9.3.0.tgz#59cc43b536b22616197e56da303604b430daa6ac"
-  integrity sha512-0kYW+TXgB8lCqUj5wHR2hqAO2twSbPRelSFgRJXiwAx4nM6FrIb43Jd6XhW7sVbwYB+9HCNiyg5Kn8VYeB7ilg==
+mathjs@^9.3.1:
+  version "9.3.1"
+  resolved "https://registry.yarnpkg.com/mathjs/-/mathjs-9.3.1.tgz#118c64974c961824f193456bd26bce6e2ee2519a"
+  integrity sha512-XZCNK+/8tK9Ow+rmPvhDF4OGHWducfSSkB404yjKjpVGDwc6By+E2/kkK6mGMJ/nVOKYg28Zrw0aDAbsw2d0hQ==
   dependencies:
     complex.js "^2.0.11"
     decimal.js "^10.2.1"
@@ -1975,6 +1975,11 @@ opn@^5.2.0:
   integrity sha512-PqHpggC9bLV0VeWcdKhkpxY+3JTzetLSqTCWL/z/tFIbI6G8JCjondXklT1JinczLz2Xib62sSp0T/gKT4KksA==
   dependencies:
     is-wsl "^1.1.0"
+
+optional-require@^1.0.2:
+  version "1.0.2"
+  resolved "https://registry.yarnpkg.com/optional-require/-/optional-require-1.0.2.tgz#c6c2d05170f8578397e68521bb01d30ef8b80925"
+  integrity sha512-HZubVd6IfHsbnpdNF/ICaSAzBUEW1TievpkjY3tB4Jnk8L7+pJ3conPzUt3Mn/6OZx9uzTDOHYPGA8/AxYHBOg==
 
 os-homedir@^1.0.0:
   version "1.0.2"
