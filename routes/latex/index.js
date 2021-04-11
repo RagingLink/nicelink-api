@@ -57,7 +57,6 @@ router.post("/", async (req, res, next) => {
       gm(latexPNG)
         .density(4096, 4096)
         .quality(100)
-        .setFormat("png")
         .resize(512)
         .write("cached/" + timestamp + ".png", (err) => {
           if (!err) return resolve();
