@@ -18,8 +18,8 @@ function streamToBuffer(stream) {
 };
 
 router.get('/:id', (req, res) => {
-  if(fs.existsSync('./cached/'+req.params.id+'.png')) {
-    return res.sendFile('./cached/'+req.params.id+'.png');
+  if(fs.existsSync(__dirname+ '/cached/'+req.params.id+'.png')) {
+    return res.sendFile(__dirname+'/cached/'+req.params.id+'.png');
   };
   return res.send(JSON.stringify({error: 'File doesn\'t exist.'}));
 });
