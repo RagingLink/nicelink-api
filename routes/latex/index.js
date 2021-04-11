@@ -75,7 +75,7 @@ router.post("/", async (req, res, next) => {
     );
   } catch (e) {
     console.error("Error rendering latex:\n" + e);
-    res.send(JSON.stringify({error: 'Error rendering latex', message: e}));
+    res.send(JSON.stringify({error: 'Error rendering latex', message: e.toString()}));
   }
 });
 
