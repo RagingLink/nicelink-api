@@ -15,7 +15,8 @@ function streamToBuffer(stream) {
     stream.on("error", reject);
     stream.pipe(concatStream);
   });
-}
+};
+
 router.get('/:id', (req, res) => {
   if(fs.existsSync('./cached/'+req.params.id)) {
     return res.sendFile('./cached/'+req.params.id);
@@ -24,7 +25,7 @@ router.get('/:id', (req, res) => {
 });
 
 router.post("/", async (req, res, next) => {
-  let data = req.query;
+  let data = req.body;
   console.info(JSON.stringify(req.query));
   if (!data.content) {
     return res.status(200).send("No content");
