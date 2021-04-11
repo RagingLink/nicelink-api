@@ -19,6 +19,7 @@ function streamToBuffer(stream) {
 
 router.get('/:id', (req, res) => {
   console.info(req.params.id);
+  console.info("REQUEST!");
   if(fs.existsSync(__dirname+ '/cached/'+req.params.id+'.png')) {
     return res.sendFile(__dirname+'/cached/'+req.params.id+'.png');
   };
