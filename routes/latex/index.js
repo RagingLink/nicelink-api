@@ -68,7 +68,7 @@ router.post("/", async (req, res, next) => {
     res.send(
       JSON.stringify({
         root: "https://api.nicelink.xyz/latex",
-        path: "/" + timestamp + ".png",
+        path: "/" + timestamp,
         id: timestamp
       })
     );
