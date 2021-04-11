@@ -1,3 +1,4 @@
 modules/Timezones.js
 modules/timezones.json
 shards.bbtag
+routes/latex/cached/*
