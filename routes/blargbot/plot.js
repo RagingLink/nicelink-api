@@ -101,24 +101,24 @@ router.post('/', (req, res) => {
     let legendEntryTemplate = `\\addlegentry{$#FUNCTION$}`;
     if (!globalObj.x) {
         if (output.length === 1 && output[0].x) {
-            if (!output[0].x.split(':').length !== 2) {
+            if (!output[0].x.join(' ').split(':').length !== 2) {
                 globalObj.xmin = '-10';
                 globalObj.xmax = '10';
             } else {
-                globalObj.xmin = output[0].x.split(':')[0];
-                globalObj.xmax = output[0].x.split(':')[1];
+                globalObj.xmin = output[0].x.join(' ').split(':')[0];
+                globalObj.xmax = output[0].x.join(' ').split(':')[1];
             }
         } else {
             globalObj.xmin = '-10';
             globalObj.xmax = '10';
         };
     } else {
-        if (!globalObj.x.split(':').length !== 2) {
+        if (!globalObj.x.join(' ').split(':').length !== 2) {
             globalObj.xmin = '-10';
             globalObj.xmax = '10';
         } else {
-            globalObj.xmin = globalObj.x.split(':')[0];
-            globalObj.xmax = globalObj.x.split(':')[1];
+            globalObj.xmin = globalObj.x.join(' ').split(':')[0];
+            globalObj.xmax = globalObj.x.join(' ').split(':')[1];
         }
     };
     if (globalObj.y) {
@@ -130,26 +130,26 @@ router.post('/', (req, res) => {
             globalObj.xmax = globalObj.x.split(':')[1];
         }
     } else if (output.length === 1 && output[0].y) {
-        if (!globalObj.x.split(':').length !== 2) {
+        if (!globalObj.x.join(' ').split(':').length !== 2) {
             globalObj.ymin = '-10';
             globalObj.ymax = '10';
         } else {
-            globalObj.xmin = globalObj.x.split(':')[0];
-            globalObj.xmax = globalObj.x.split(':')[1];
+            globalObj.xmin = globalObj.x.join(' ').split(':')[0];
+            globalObj.xmax = globalObj.x.join(' ').split(':')[1];
         }
     };
     if(!globalObj.n) {
-        globalObj.n = '1000';
+        globalObj.n = ['1000'];
     };
     let functions = [];
     output.forEach((func, i) => {
-        let domain = func.x || globalObj.xmin + ':' + globalObj.xmax;
+        let domain = func.x.join(' ') || globalObj.xmin + ':' + globalObj.xmax;
         functions.push(functionTemplate
                 .replace('#COLOR', colours[i])
                 .replace('#DOMAIN', domain)
-                .replace('#SAMPLES', func.n || globalObj.n)
-                .replace('#LEGENDTRY', globalObj.L ? '' : (func.L ? '' : legendEntryTemplate.replace('#FUNCTION', func._)))
-                .replace('#FUNCTION', func._)
+                .replace('#SAMPLES', func.n ? func.n.join(' ') : globalObj.n.join(' '))
+                .replace('#LEGENDTRY', globalObj.L ? '' : (func.L ? '' : legendEntryTemplate.replace('#FUNCTION', func._.join(' '))))
+                .replace('#FUNCTION', func._.join(' '))
             );
     })
     let axis = axisTemplate
