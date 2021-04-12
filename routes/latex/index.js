@@ -64,7 +64,7 @@ router.post("/", async (req, res, next) => {
     let timestamp = Date.now();
     let latexPDF = latex(document);
     let latexPNG = await streamToBuffer(latexPDF);
-    fs.write(__dirname + '/cached/' + timestamp + '.pdf', latexPNG, (err) => {
+    fs.writeFile(__dirname + '/cached/' + timestamp + '.pdf', latexPNG, (err) => {
       if(err) console.error(err);
     });
     let gmWrite1 = await new Promise((resolve, reject) => {
