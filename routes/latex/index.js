@@ -57,10 +57,10 @@ router.post("/", async (req, res, next) => {
     let latexPNG = await streamToBuffer(latexPDF);
     let gmWrite = await new Promise((resolve, reject) => {
       gm(latexPNG)
-        .density(16384, 16384)
+        .density(8192, 8192)
         .quality(100)
         .setFormat('png')
-        .resize(16384)
+        .resize(4096)
         .write(__dirname + "/cached/" + timestamp + ".png", (err) => {
           if (!err) return resolve();
           console.error(err);
