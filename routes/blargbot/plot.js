@@ -85,8 +85,8 @@ router.post('/', async (req, res) => {
     });
     let axisTemplate = `\\begin{tikzpicture}
     \\begin{axis}[
-        x line = middle,
-        axis y = middle,
+        axis x line = middle,
+        axis y line = middle,
         xlabel={$x$},
         ylabel={$y$},
         xmin=#XMIN,
