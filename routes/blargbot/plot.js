@@ -91,16 +91,14 @@ router.post('/', async (req, res) => {
         ylabel={$y$},
         xmin=#XMIN,
         xmax=#XMAX,
-        ymin=#YMIN,
-        ymax=#YMAX,
-        legend style={fill=black,draw=white}
+        legend style={fill=black,draw=white}#RANGE
     ]
     #FUNCTIONS
     \\end{axis}
     \\end{tikzpicture}`
-    let functionTemplate = `\\addplot[nomarks,color=#COLOR,domain=#DOMAIN] expression[samples=#SAMPLES]{#FUNCTION}
+    let functionTemplate = `\\addplot[nomarks,color=#COLOR,domain=#DOMAIN] expression[samples=#SAMPLES]{#FUNCTION};
         #LEGENDTRY`
-    let legendEntryTemplate = `\\addlegentry{$#FUNCTION$}`;
+    let legendEntryTemplate = `\\addlegendentry{$#FUNCTION$}`;
     if (!globalObj.x) {
         if (output.length === 1 && output[0].x) {
             if (output[0].x.join(' ').split(':').length !== 2) {
@@ -159,8 +157,7 @@ router.post('/', async (req, res) => {
     let axis = axisTemplate
         .replace('#XMIN', globalObj.xmin)
         .replace('#XMAX', globalObj.xmax)
-        .replace(globalObj.ymin && globalObj.ymax ? '#YMIN' : 'ymin=#YMIN,', globalObj.ymin && globalObj.ymax ? globalObj.ymin : '')
-        .replace(globalObj.ymin && globalObj.ymax ? '#YMAX' : 'ymax=#YMAX,', globalObj.ymin && globalObj.ymax ? globalObj.ymax : '')
+        .replace('#RANGE', globalObj.ymin && globalObj.ymax ? '\n' + 'ymin='+globalObj.ymin + ',\n' + 'ymax=' + globalObj.ymax : '')
         .replace('#FUNCTIONS', functions.join('\n'));
 
     return res.type('json').send(JSON.stringify(await postPlot('latex', {content: axis})))
