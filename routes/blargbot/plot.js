@@ -132,7 +132,7 @@ router.post('/', async (req, res) => {
             globalObj.ymax = globalObj.y.join(' ').split(':')[1];
         }
     } else if (output.length === 1 && output[0].y) {
-        if (!output[0].y.join(' ').split(':').length !== 2) {
+        if (output[0].y.join(' ').split(':').length !== 2) {
             globalObj.ymin = '-10';
             globalObj.ymax = '10';
         } else {
