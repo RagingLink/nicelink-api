@@ -101,7 +101,7 @@ router.post('/', (req, res) => {
     let legendEntryTemplate = `\\addlegentry{$#FUNCTION$}`;
     if (!globalObj.x) {
         if (output.length === 1 && output[0].x) {
-            if (!output[0].x.join(' ').split(':').length !== 2) {
+            if (output[0].x.join(' ').split(':').length !== 2) {
                 globalObj.xmin = '-10';
                 globalObj.xmax = '10';
             } else {
