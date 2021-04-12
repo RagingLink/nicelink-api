@@ -96,7 +96,7 @@ router.post('/', async (req, res) => {
     #FUNCTIONS
     \\end{axis}
     \\end{tikzpicture}`
-    let functionTemplate = `\\addplot[nomarks,color=#COLOR,domain=#DOMAIN] expression[samples=#SAMPLES]{#FUNCTION};
+    let functionTemplate = `\\addplot[no marks,color=#COLOR,domain=#DOMAIN] expression[samples=#SAMPLES]{#FUNCTION};
         #LEGENDTRY`
     let legendEntryTemplate = `\\addlegendentry{$#FUNCTION$}`;
     if (!globalObj.x) {
