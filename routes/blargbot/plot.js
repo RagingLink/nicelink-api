@@ -115,7 +115,7 @@ router.post('/', async (req, res) => {
             globalObj.xmax = '10';
         };
     } else {
-        if (!globalObj.x.join(' ').split(':').length !== 2) {
+        if (globalObj.x.join(' ').split(':').length !== 2) {
             globalObj.xmin = '-10';
             globalObj.xmax = '10';
         } else {
