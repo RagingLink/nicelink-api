@@ -163,7 +163,7 @@ router.post('/', async (req, res) => {
         .replace(globalObj.ymin && globalObj.ymax ? '#YMAX' : 'ymax=#YMAX,', globalObj.ymin && globalObj.ymax ? globalObj.ymax : '')
         .replace('#FUNCTIONS', functions.join('\n'));
 
-    return res.type('json').send(JSON.stringify(await postPlot('latex'), {content: axis}))
+    return res.type('json').send(JSON.stringify(await postPlot('latex', {content: axis})))
 
 });
 
