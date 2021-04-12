@@ -62,7 +62,7 @@ router.post("/", async (req, res, next) => {
     let timestamp = Date.now();
     let latexPDF = latex(document);
     let latexPNG = await streamToBuffer(latexPDF);
-    let gmWrite = await new Promise((resolve, reject) => {
+    let gmWrite1 = await new Promise((resolve, reject) => {
       gm(latexPNG)
         .density(4096, 4096)
         .quality(100)
@@ -73,7 +73,7 @@ router.post("/", async (req, res, next) => {
           console.error(err);
         });
     });
-    let gmWrite = await new Promise((resolve, reject) => {
+    let gmWrite2 = await new Promise((resolve, reject) => {
       gm(latexPNG)
         .density(4096, 4096)
         .quality(100)
