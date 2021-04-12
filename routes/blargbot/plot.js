@@ -10,7 +10,9 @@ const flags = {
     L: 'legend',
     n: 'samples'
 };
-router.post('/functions', (req))
+router.post('/functions', (req, res) => {
+
+});
 router.post('/', async (req, res) => {
     if (!req.body || !req.body.input) {
         return res.type('json').send(JSON.stringify({
