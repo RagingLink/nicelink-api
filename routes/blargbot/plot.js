@@ -10,7 +10,7 @@ const flags = {
     L: 'legend',
     n: 'samples'
 };
-
+router.post('/functions', (req))
 router.post('/', async (req, res) => {
     if (!req.body || !req.body.input) {
         return res.type('json').send(JSON.stringify({
@@ -157,7 +157,7 @@ router.post('/', async (req, res) => {
     let axis = axisTemplate
         .replace('#XMIN', globalObj.xmin)
         .replace('#XMAX', globalObj.xmax)
-        .replace('#RANGE', globalObj.ymin && globalObj.ymax ? '\n' + 'ymin='+globalObj.ymin + ',\n' + 'ymax=' + globalObj.ymax : '')
+        .replace('#RANGE', globalObj.ymin && globalObj.ymax ? ',\n' + 'ymin='+globalObj.ymin + ',\n' + 'ymax=' + globalObj.ymax : '')
         .replace('#FUNCTIONS', functions.join('\n'));
 
     return res.type('json').send(JSON.stringify(await postPlot('latex', {content: axis})))
