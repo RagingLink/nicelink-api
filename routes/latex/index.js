@@ -3,6 +3,8 @@ const latex = require("node-latex");
 const fs = require("fs");
 const replacements = require("./tex.json");
 const gm = require("gm");
+const Inkscape = require('inkscape'),
+  svgToPdf = new Inkscape(['--export-pdf','--export-width=1024']);
 const concat = require("concat-stream");
 const advancedTemplate = fs.readFileSync(__dirname + "/template.tex", "utf8");
 const standardTemplate = fs.readFileSync(
@@ -62,6 +64,9 @@ router.post("/", async (req, res, next) => {
     let timestamp = Date.now();
     let latexPDF = latex(document);
     let latexPNG = await streamToBuffer(latexPDF);
+    fs.write(__dirname + '/cached/' + timestamp + '.pdf', latexPNG, (err) => {
+      if(err) console.error(err);
+    });
     let gmWrite1 = await new Promise((resolve, reject) => {
       gm(latexPNG)
         .density(4096, 4096)
@@ -73,15 +78,7 @@ router.post("/", async (req, res, next) => {
           console.error(err);
         });
     });
-    let gmWrite2 = await new Promise((resolve, reject) => {
-      gm(latexPNG)
-        .density(4096, 4096)
-        .quality(100)
-        .write(__dirname + "/cached/" + timestamp + ".pdf", (err) => {
-          if (!err) return resolve();
-          console.error(err);
-        });
-    });
+
     res.send(
       JSON.stringify({
         root: "https://api.nicelink.xyz/latex",
