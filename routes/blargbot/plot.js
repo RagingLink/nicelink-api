@@ -1,5 +1,7 @@
 const express = require('express');
 const router = express.Router();
+const bent = require('bent');
+const postPlot = bent('https://api.nicelink.xyz/', 'POST',  'json');
 
 const colours = ["red", "purple", "orange", "yellow", "green", "lime", "cyan", "teal", "violet", "magenta", "pink", "white"];
 const flags = {
@@ -9,7 +11,7 @@ const flags = {
     n: 'samples'
 };
 
-router.post('/', (req, res) => {
+router.post('/', async (req, res) => {
     if (!req.body || !req.body.input) {
         return res.type('json').send(JSON.stringify({
             error: 'Empty request!'
@@ -160,8 +162,8 @@ router.post('/', (req, res) => {
         .replace(globalObj.ymin && globalObj.ymax ? '#YMIN' : 'ymin=#YMIN,', globalObj.ymin && globalObj.ymax ? globalObj.ymin : '')
         .replace(globalObj.ymin && globalObj.ymax ? '#YMAX' : 'ymax=#YMAX,', globalObj.ymin && globalObj.ymax ? globalObj.ymax : '')
         .replace('#FUNCTIONS', functions.join('\n'));
-    return res.send(axis);
 
+    return res.type('json').send(JSON.stringify(await postPlot('latex'), {content: axis}))
 
 });
 

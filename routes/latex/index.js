@@ -30,7 +30,7 @@ router.post("/", async (req, res, next) => {
   let data = req.body;
   console.info(JSON.stringify(req.query));
   if (!data.content) {
-    return res.status(200).send("No content");
+    return res.type('json').status(200).send(JSON.stringify({error:"No content"}));
   }
   let backgroundColor = data.backgroundColour || "000000";
   let textColor = data.colour || "FFFFFF";
