@@ -122,7 +122,7 @@ router.post('/', (req, res) => {
         }
     };
     if (globalObj.y) {
-        if (!globalObj.y.join(' ').split(':').length !== 2) {
+        if (globalObj.y.join(' ').split(':').length !== 2) {
             globalObj.ymin = '-10';
             globalObj.ymax = '10';
         } else {
