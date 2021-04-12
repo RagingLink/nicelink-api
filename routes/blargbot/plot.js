@@ -55,9 +55,9 @@ router.post('/', (req, res) => {
                             } else {
                                 lineObj[currentFlag] = [];
                             };
+                            pushValue = false;
                         };
                     };
-                    pushValue = false;
                 }
             } else if (word.startsWith('\\-')) {
                 word = word.substring(1);
