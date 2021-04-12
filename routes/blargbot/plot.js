@@ -145,7 +145,7 @@ router.post('/', (req, res) => {
     console.info(JSON.stringify(globalObj, null, 2));
     let functions = [];
     output.forEach((func, i) => {
-        let domain = func.x.join(' ') || globalObj.xmin + ':' + globalObj.xmax;
+        let domain = func.x ? func.x.join(' ') : globalObj.xmin + ':' + globalObj.xmax;
         functions.push(functionTemplate
                 .replace('#COLOR', colours[i])
                 .replace('#DOMAIN', domain)
