@@ -155,8 +155,8 @@ router.post('/', (req, res) => {
     let axis = axisTemplate
         .replace('#XMIN', globalObj.xmin)
         .replace('#XMAX', globalObj.xmax)
-        .replace(globalObj.ymin && globalObj.ymax ? '#YMIN' : 'ymin=#YMIN', globalObj.ymin && globalObj.ymax ? globalObj.ymin : '')
-        .replace(globalObj.ymin && globalObj.ymax ? '#YMAX' : 'ymax=#YMAX', globalObj.ymin && globalObj.ymax ? globalObj.ymax : '')
+        .replace(globalObj.ymin && globalObj.ymax ? '#YMIN' : 'ymin=#YMIN,', globalObj.ymin && globalObj.ymax ? globalObj.ymin : '')
+        .replace(globalObj.ymin && globalObj.ymax ? '#YMAX' : 'ymax=#YMAX,', globalObj.ymin && globalObj.ymax ? globalObj.ymax : '')
         .replace('#FUNCTIONS', functions.join('\n'));
     return res.send(axis);
 
