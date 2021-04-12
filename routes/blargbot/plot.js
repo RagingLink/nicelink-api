@@ -89,7 +89,7 @@ router.post('/', (req, res) => {
         ylabel={$y$},
         xmin=#XMIN,
         xmax=#XMAX,
-        ymin=#YMAX,
+        ymin=#YMIN,
         ymax=#YMAX,
         legend style={fill=black,draw=white}
     ]
