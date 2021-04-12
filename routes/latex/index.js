@@ -60,7 +60,7 @@ router.post("/", async (req, res, next) => {
         .density(4096, 4096)
         .quality(100)
         .setFormat('png')
-        .resize(512)
+        .resize(1024)
         .write(__dirname + "/cached/" + timestamp + ".png", (err) => {
           if (!err) return resolve();
           console.error(err);
