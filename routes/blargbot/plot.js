@@ -141,6 +141,8 @@ router.post('/', (req, res) => {
     if(!globalObj.n) {
         globalObj.n = ['1000'];
     };
+    console.info(JSON.stringify(output, null, 2));
+    console.info(JSON.stringify(globalObj, null, 2));
     let functions = [];
     output.forEach((func, i) => {
         let domain = func.x.join(' ') || globalObj.xmin + ':' + globalObj.xmax;
