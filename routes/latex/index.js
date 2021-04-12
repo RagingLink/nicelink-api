@@ -66,6 +66,16 @@ router.post("/", async (req, res, next) => {
           console.error(err);
         });
     });
+    let gmWrite = await new Promise((resolve, reject) => {
+      gm(latexPNG)
+        .density(4096, 4096)
+        .quality(100)
+        .setFormat('svg')
+        .write(__dirname + "/cached/" + timestamp + ".svg", (err) => {
+          if (!err) return resolve();
+          console.error(err);
+        });
+    });
     res.send(
       JSON.stringify({
         root: "https://api.nicelink.xyz/latex",
