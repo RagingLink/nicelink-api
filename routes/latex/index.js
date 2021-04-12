@@ -20,8 +20,8 @@ function streamToBuffer(stream) {
 router.get('/:id', (req, res) => {
   console.info(req.params.id);
   console.info("REQUEST!");
-  if(req.params.id.endsWith('.svg')) {
-
+  if(req.params.id.endsWith('.pdf')) {
+    return res.sendFile(__dirname+'/cached/'+req.params.id);
   } else {
     if(req.params.id.endsWith('.png')) {
       req.params.id = req.params.id.replace('.png', '');
