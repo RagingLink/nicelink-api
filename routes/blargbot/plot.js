@@ -122,12 +122,12 @@ router.post('/', (req, res) => {
         }
     };
     if (globalObj.y) {
-        if (!globalObj.x.split(':').length !== 2) {
+        if (!globalObj.y.join(' ').split(':').length !== 2) {
             globalObj.ymin = '-10';
             globalObj.ymax = '10';
         } else {
-            globalObj.ymin = globalObj.y.split(':')[0];
-            globalObj.ymax = globalObj.y.split(':')[1];
+            globalObj.ymin = globalObj.y.join(' ').split(':')[0];
+            globalObj.ymax = globalObj.y.join(' ').split(':')[1];
         }
     } else if (output.length === 1 && output[0].y) {
         if (!output[0].y.join(' ').split(':').length !== 2) {
