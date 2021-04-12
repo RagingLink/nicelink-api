@@ -57,7 +57,7 @@ router.post("/", async (req, res, next) => {
     let latexPNG = await streamToBuffer(latexPDF);
     let gmWrite = await new Promise((resolve, reject) => {
       gm(latexPNG)
-        .density(8192, 8192)
+        .density(4096, 4096)
         .quality(100)
         .setFormat('png')
         .resize(4096)
