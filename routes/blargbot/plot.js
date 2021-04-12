@@ -126,16 +126,16 @@ router.post('/', (req, res) => {
             globalObj.ymin = '-10';
             globalObj.ymax = '10';
         } else {
-            globalObj.xmin = globalObj.x.split(':')[0];
-            globalObj.xmax = globalObj.x.split(':')[1];
+            globalObj.ymin = globalObj.y.split(':')[0];
+            globalObj.ymax = globalObj.y.split(':')[1];
         }
     } else if (output.length === 1 && output[0].y) {
-        if (!globalObj.x.join(' ').split(':').length !== 2) {
+        if (!output[0].y.join(' ').split(':').length !== 2) {
             globalObj.ymin = '-10';
             globalObj.ymax = '10';
         } else {
-            globalObj.xmin = globalObj.x.join(' ').split(':')[0];
-            globalObj.xmax = globalObj.x.join(' ').split(':')[1];
+            globalObj.ymin = output[0].y.join(' ').split(':')[0];
+            globalObj.ymax = output[0].y.join(' ').split(':')[1];
         }
     };
     if(!globalObj.n) {
