@@ -77,8 +77,7 @@ router.post("/", async (req, res, next) => {
       gm(latexPNG)
         .density(4096, 4096)
         .quality(100)
-        .setFormat('svg')
-        .write(__dirname + "/cached/" + timestamp + ".svg", (err) => {
+        .write(__dirname + "/cached/" + timestamp + ".pdf", (err) => {
           if (!err) return resolve();
           console.error(err);
         });
