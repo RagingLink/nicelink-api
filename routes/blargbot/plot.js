@@ -279,6 +279,8 @@ router.get('/simple', async(req, res) => {
     functionPlot({
       target: "#root",
       grid: true,
+      height: height,
+      width: width,
       xDomain : [-10, 10],
       yDomain : computeYScale(width, height, [-10,10]),
       data: #FUNCTIONS
