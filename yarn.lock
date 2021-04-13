@@ -165,6 +165,11 @@ async-foreach@^0.1.3:
   resolved "https://registry.yarnpkg.com/async-foreach/-/async-foreach-0.1.3.tgz#36121f845c0578172de419a97dbeb1d16ec34542"
   integrity sha1-NhIfhFwFeBct5Bmpfb6x0W7DRUI=
 
+async@^3.0.0:
+  version "3.2.0"
+  resolved "https://registry.yarnpkg.com/async/-/async-3.2.0.tgz#b3a2685c5ebb641d3de02d161002c60fc9f85720"
+  integrity sha512-TR2mEZFVOj2pLStYxLht7TyfuRzaydfpxr3k9RpHIzMgw7A64dzsdqCxH1WJyQdoe8T10nDXd9wnEigmiuHIZw==
+
 asynckit@^0.4.0:
   version "0.4.0"
   resolved "https://registry.yarnpkg.com/asynckit/-/asynckit-0.4.0.tgz#c79ed97f7f34cb8f2ba1bc9790bcc366474b4b79"
@@ -1079,6 +1084,11 @@ getpass@^0.1.1:
   dependencies:
     assert-plus "^1.0.0"
 
+gettemporaryfilepath@^1.0.0:
+  version "1.0.1"
+  resolved "https://registry.yarnpkg.com/gettemporaryfilepath/-/gettemporaryfilepath-1.0.1.tgz#53ace15f931fb3def8abed740c0a092762910391"
+  integrity sha512-MVCSgF1blIZuIV3KYhMKOwU1OSxPF1s+ZcyqWMSGR5Fzl6fN7EjIXDFGu9PmWAAwyGjMjmkS2ruqPaj13J3SXA==
+
 glob-parent@~5.1.0:
   version "5.1.2"
   resolved "https://registry.yarnpkg.com/glob-parent/-/glob-parent-5.1.2.tgz#869832c58034fe68a4093c17dc15e8340d8401c4"
@@ -1304,6 +1314,15 @@ inherits@2.0.3:
   version "2.0.3"
   resolved "https://registry.yarnpkg.com/inherits/-/inherits-2.0.3.tgz#633c2c83e3da42a502f52466022480f4208261de"
   integrity sha1-Yzwsg+PaQqUC9SRmAiSA9CCCYd4=
+
+inkscape@^3.1.1:
+  version "3.1.1"
+  resolved "https://registry.yarnpkg.com/inkscape/-/inkscape-3.1.1.tgz#0e5fa32b6a7c7cc811f4e63bfedf3e7af61e6730"
+  integrity sha512-2aaw4yTirwF2m6J3Tm8zxnRLQI0MKssw4pv4S2QNCy9TvVFy1Y5PW+bcMR41zpfc/kT9GZPp2c0Y7/nOx+zT+A==
+  dependencies:
+    async "^3.0.0"
+    gettemporaryfilepath "^1.0.0"
+    semver "^7.3.2"
 
 ipaddr.js@1.9.1:
   version "1.9.1"
@@ -1975,6 +1994,11 @@ opn@^5.2.0:
   integrity sha512-PqHpggC9bLV0VeWcdKhkpxY+3JTzetLSqTCWL/z/tFIbI6G8JCjondXklT1JinczLz2Xib62sSp0T/gKT4KksA==
   dependencies:
     is-wsl "^1.1.0"
+
+optional-require@^1.0.2:
+  version "1.0.3"
+  resolved "https://registry.yarnpkg.com/optional-require/-/optional-require-1.0.3.tgz#275b8e9df1dc6a17ad155369c2422a440f89cb07"
+  integrity sha512-RV2Zp2MY2aeYK5G+B/Sps8lW5NHAzE5QClbFP15j+PWmP+T9PxlJXBOOLoSAdgwFvS4t0aMR4vpedMkbHfh0nA==
 
 os-homedir@^1.0.0:
   version "1.0.2"
