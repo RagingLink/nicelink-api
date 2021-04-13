@@ -100,7 +100,7 @@ router.post("/functions", (req, res) => {
     output.push(lineObj);
   });
 
-  res.type('json').send(JSON.stringify(output.map(i => i._.trim())));
+  res.type('json').send(JSON.stringify(output.map(i => i._.join(' ').trim())));
 });
 router.post("/", async (req, res) => {
   if (!req.body || !req.body.input) {
