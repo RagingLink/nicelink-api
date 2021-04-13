@@ -271,11 +271,16 @@ router.get('/simple', async(req, res) => {
     || document.body.clientHeight;
     let ratio = contentsBounds.width / width;
     
-    
+    function computeYScale (width, height, xScale) {
+        var xDiff = xScale[1] - xScale[0]
+        var yDiff = height * xDiff / width
+        return [-yDiff / 2, yDiff / 2]
+      }
     functionPlot({
       target: "#root",
-      yAxis: { domain: [-10, 10] },
       grid: true,
+      xDomain : [-10, 10],
+      yDomain : computeYScale(width, height, [-10,10]),
       data: #FUNCTIONS
     });
     
