@@ -141,6 +141,9 @@ router.post('/', async (req, res) => {
             globalObj.ymin = output[0].y.join(' ').split(':')[0];
             globalObj.ymax = output[0].y.join(' ').split(':')[1];
         }
+    } else {
+        globalObj.ymin = '-10';
+        globalObj.ymax = '10';
     };
     if (!globalObj.n) {
         globalObj.n = ['1000'];
