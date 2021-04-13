@@ -192,8 +192,8 @@ router.get('/simple', async(req, res) => {
     functions.forEach(f => {
       if(f.split(';').length > 1) {
         objFunctions.push({
-          x: f.split(';')[0].replace('x', 't').replace(/(deg()(t)())/g, 't'),
-          y: f.split(';')[1].replace('x', 't').replace(/(deg()(t)())/g, 't'),
+          x: f.split(';')[0].replace('x', 't').replace(/(deg()(t)())/g, 't').trim(),
+          y: f.split(';')[1].replace('x', 't').replace(/(deg()(t)())/g, 't').trim(),
           fnType: 'parametric',
           graphType: 'polyline' 
         });
@@ -274,8 +274,6 @@ router.get('/simple', async(req, res) => {
     
     functionPlot({
       target: "#root",
-      width,
-      height,
       yAxis: { domain: [-10, 10] },
       grid: true,
       data: #FUNCTIONS
@@ -288,5 +286,5 @@ router.get('/simple', async(req, res) => {
   
     res.send(htmlTemplate.replace('#FUNCTIONS', JSON.stringify(objFunctions)))
   });
-  
+
 module.exports = router;
