@@ -19,21 +19,7 @@ function streamToBuffer(stream) {
   });
 };
 
-router.get('/:id', (req, res) => {
-  console.info(req.params.id);
-  console.info("REQUEST!");
-  if(req.params.id.endsWith('.pdf')) {
-    return res.sendFile(__dirname+'/cached/'+req.params.id);
-  } else {
-    if(req.params.id.endsWith('.png')) {
-      req.params.id = req.params.id.replace('.png', '');
-    };
-  };
-  if(fs.existsSync(__dirname+ '/cached/'+req.params.id+'.png')) {
-    return res.sendFile(__dirname+'/cached/'+req.params.id+'.png');
-  };
-  return res.send(JSON.stringify({error: 'File doesn\'t exist.'}));
-});
+
 
 router.post("/", async (req, res, next) => {
   let data = req.body;
@@ -92,111 +78,19 @@ router.post("/", async (req, res, next) => {
   }
 });
 
-router.get('/simple', async(req, res) => {
-  if(req.query && !req.query.functions) return res.send('No functions!');
-  let functions;
-  try {
-    functions = JSON.parse(req.query.functions);
-  } catch(e) {};
-  if(!functions) return res.send('Functions is not an array');
-  let objFunctions = [];
-  functions.forEach(f => {
-    if(f.split(';').length > 1) {
-      objFunctions.push({
-        x: f.split(';')[0].replace('x', 't').replace(/(deg()(t)())/g, 't'),
-        y: f.split(';')[1].replace('x', 't').replace(/(deg()(t)())/g, 't'),
-        fnType: 'parametric',
-        graphType: 'polyline' 
-      });
-    } else {
-      objFunctions.push({
-        fn: f.replace(/(deg()(x)())/g, 'x')
-      })
-    }
-  });
-
-  let htmlTemplate = `<!DOCTYPE html>
-  <html lang="en">
-  
-  <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-    <meta name="theme-color" content="#000000">
-    
-    <title>Plot!</title>
-    <script src="https://unpkg.com/function-plot/dist/function-plot.js"></script>
-    <style>
-      body,html {
-     margin: 0;
-     overflow: hidden;
-     color: white;
-     height: 100%;
-     width: 100%
-  }
-   text {
-     color: white;
-  }
-   .function-plot {
-     background-color: black;
-  }
-   .function-plot .x.axis .tick line {
-     color: white;
-     stroke: white;
-  }
-   .function-plot .x.axis .tick text {
-     color: white;
-  }
-   .function-plot .x.axis path.domain {
-     color: white;
-  }
-   .function-plot .y.axis .tick line {
-     color: white;
-     stroke: white;
-  }
-   .function-plot .y.axis .tick text {
-     color: white;
-  }
-   .function-plot .y.axis path.domain {
-     color: white;
-  }
-    path.origin {
-      stroke: white;
-    }
-   
-    </style>
-  </head>
-  
-  <body>
-    <noscript>
-      You need to enable JavaScript to run this app.
-    </noscript>
-    <div id="root"></div>
-      <script>
-        let contentsBounds = document.body.getBoundingClientRect();
-        var width = window.innerWidth
-  || document.documentElement.clientWidth
-  || document.body.clientWidth;
-  
-  var height = window.innerHeight
-  || document.documentElement.clientHeight
-  || document.body.clientHeight;
-  let ratio = contentsBounds.width / width;
-  
-  
-  functionPlot({
-    target: "#root",
-    width,
-    height,
-    yAxis: { domain: [-10, 10] },
-    grid: true,
-    data: #FUNCTIONS
-  });
-  
-        </script>
-  </body>
-  
-  </html>`;
-
-  res.send(htmlTemplate.replace('#FUNCTIONS', JSON.stringify(objFunctions)))
+router.get('/:id', (req, res) => {
+  console.info(req.params.id);
+  console.info("REQUEST!");
+  if(req.params.id.endsWith('.pdf')) {
+    return res.sendFile(__dirname+'/cached/'+req.params.id);
+  } else {
+    if(req.params.id.endsWith('.png')) {
+      req.params.id = req.params.id.replace('.png', '');
+    };
+  };
+  if(fs.existsSync(__dirname+ '/cached/'+req.params.id+'.png')) {
+    return res.sendFile(__dirname+'/cached/'+req.params.id+'.png');
+  };
+  return res.send(JSON.stringify({error: 'File doesn\'t exist.'}));
 });
 module.exports = router;
