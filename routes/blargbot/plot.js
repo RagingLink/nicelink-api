@@ -328,7 +328,7 @@ router.get("/simple", async (req, res) => {
       });
     } else {
       objFunctions.push({
-        fn: f.replace(/(deg()(x)())/g, "x"),
+        fn: f.replace(/(deg\()(.*)(\))/, '$2'),
       });
     }
   });
