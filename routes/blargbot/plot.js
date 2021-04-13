@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const bent = require('bent');
-const postPlot = bent('https://api.nicelink.xyz/', 'POST',  'json');
+const postPlot = bent('https://api.nicelink.xyz/', 'POST', 'json');
 
 const colours = ["red", "purple", "orange", "yellow", "green", "lime", "cyan", "teal", "violet", "magenta", "pink", "white"];
 const flags = {
@@ -99,7 +99,8 @@ router.post('/', async (req, res) => {
     \\end{axis}
     \\end{tikzpicture}`
     let functionTemplate = `\\addplot[no marks,color=#COLOR,domain=#DOMAIN] expression[samples=#SAMPLES]{#FUNCTION};
-        #LEGENDTRY`
+        #LEGENDTRY`;
+    let parametricTemplate = `\\addplot[no marks,color=#COLOR,domain=#DOMAIN]({#FUNCTION1},{#FUNCTION2});`
     let legendEntryTemplate = `\\addlegendentry{$#FUNCTION$}`;
     if (!globalObj.x) {
         if (output.length === 1 && output[0].x) {
@@ -140,7 +141,7 @@ router.post('/', async (req, res) => {
             globalObj.ymax = output[0].y.join(' ').split(':')[1];
         }
     };
-    if(!globalObj.n) {
+    if (!globalObj.n) {
         globalObj.n = ['1000'];
     };
     console.info(JSON.stringify(output, null, 2));
@@ -148,21 +149,34 @@ router.post('/', async (req, res) => {
     let functions = [];
     output.forEach((func, i) => {
         let domain = func.x ? func.x.join(' ') : globalObj.xmin + ':' + globalObj.xmax;
-        functions.push(functionTemplate
+        if (func._.join(' ').split(';').length > 1) {
+            functions.push(parametricTemplate
+                .replace('#COLOR', colours[i])
+                .replace('#DOMAIN', domain)
+                .replace('#SAMPLES', func.n ? func.n.join(' ') : globalObj.n.join(' '))
+                //.replace('#LEGENDTRY', globalObj.L ? '' : (func.L ? '' : legendEntryTemplate.replace('#FUNCTION', func._.join(' '))))
+                .replace('#FUNCTION1', func._.join(' ').split(';')[0])
+                .replace('#FUNCTION2', func._.join(' ').split(';')[1])
+            )
+        } else {
+            functions.push(functionTemplate
                 .replace('#COLOR', colours[i])
                 .replace('#DOMAIN', domain)
                 .replace('#SAMPLES', func.n ? func.n.join(' ') : globalObj.n.join(' '))
                 .replace('#LEGENDTRY', globalObj.L ? '' : (func.L ? '' : legendEntryTemplate.replace('#FUNCTION', func._.join(' '))))
                 .replace('#FUNCTION', func._.join(' '))
             );
-    })
+        }
+    });
     let axis = axisTemplate
         .replace('#XMIN', globalObj.xmin)
         .replace('#XMAX', globalObj.xmax)
-        .replace('#RANGE', globalObj.ymin && globalObj.ymax ? ',\n' + 'ymin='+globalObj.ymin + ',\n' + 'ymax=' + globalObj.ymax : '')
+        .replace('#RANGE', globalObj.ymin && globalObj.ymax ? ',\n' + 'ymin=' + globalObj.ymin + ',\n' + 'ymax=' + globalObj.ymax : '')
         .replace('#FUNCTIONS', functions.join('\n'));
 
-    return res.type('json').send(JSON.stringify(await postPlot('latex', {content: axis})))
+    return res.type('json').send(JSON.stringify(await postPlot('latex', {
+        content: axis
+    })))
 
 });
 
