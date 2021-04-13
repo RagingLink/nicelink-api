@@ -91,6 +91,7 @@ router.post('/', async (req, res) => {
         axis y line = middle,
         xlabel={$x$},
         ylabel={$y$},
+        axis equal image,
         xmin=#XMIN,
         xmax=#XMAX,
         legend style={fill=black,draw=white}#RANGE
