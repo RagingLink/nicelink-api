@@ -310,7 +310,7 @@ router.get('/fast', function (req, res) {
     if (!req.query || !req.query.functions) {
         return res.send('No functions provided.');
     };
-    let filename = `./cached/${Date.now()}-${uniqueID++}.png`;
+    let filename = `${Date.now()}-${uniqueID++}.png`;
     let functions;
     try {
         functions = JSON.parse(req.query.functions);
@@ -322,15 +322,15 @@ router.get('/fast', function (req, res) {
     nightmare.goto('https://api.nicelink.xyz/blargbot/plot/simple?functions=' + encodeURI(JSON.stringify(functions)))
         .viewport(1024, 1024)
         .wait('svg.function-plot')
-        .screenshot(filename).then(() => {
-            res.sendFile(filename);
-            // ! ADD auto removal after X days...
-            /*fs.unlink(filename, (err) => {
-                if (err) {
-                  console.error(err)
-                  return
-                }*/
-        })
+        .screenshot(__dirname + '/cached/' + filename)
+    res.sendFile(__dirname + '/cached/' + filename);
+    // ! ADD auto removal after X days...
+    /*fs.unlink(filename, (err) => {
+
+        if (err) {
+          console.error(err)
+          return
+        }*/
 })
 router.get("/simple", async (req, res) => {
     if (req.query && !req.query.functions) return res.send("No functions!");
