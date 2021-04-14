@@ -6,11 +6,11 @@ const Nightmare = require('nightmare')
 const nightmare = Nightmare();
 const fs = require('fs');
 const Puppeteer = require('puppeteer');
-let puppet, page;
+var puppet, page;
 (async () => {
     puppet = await Puppeteer.launch();
 
-})
+})();
 var uniqueID = 0;
 const colours = [
     "red",
