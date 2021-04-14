@@ -22,7 +22,7 @@
     "mongodb": "^3.6.6",
     "mongoose": "^5.12.3",
     "nightmare": "^3.0.2",
-    "node-html-parser": "^3.1.2",
+    "node-html-parser": "^3.1.4",
     "node-sass": "^5.0.0",
     "node-sass-asset-functions": "^0.1.0",
     "parse-prometheus-text-format": "^1.1.1",
