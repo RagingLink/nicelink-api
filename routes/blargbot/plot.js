@@ -323,7 +323,7 @@ router.get('/fast', function (req, res) {
         .viewport(1024, 1024)
         .wait('svg.function-plot')
         .screenshot(__dirname + '/cached/' + filename)
-    res.sendFile(__dirname + '/cached/' + filename);
+        .then(() => res.sendFile(__dirname + '/cached/' + filename));
     // ! ADD auto removal after X days...
     /*fs.unlink(filename, (err) => {
 
