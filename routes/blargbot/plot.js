@@ -5,7 +5,12 @@ const postPlot = bent("https://api.nicelink.xyz/", "POST", "json");
 const Nightmare = require('nightmare')
 const nightmare = Nightmare();
 const fs = require('fs');
+const Puppeteer = require('puppeteer');
+let puppet, page;
+(async () => {
+    puppet = await Puppeteer.launch();
 
+})
 var uniqueID = 0;
 const colours = [
     "red",
@@ -306,7 +311,7 @@ router.post("/", async (req, res) => {
     );
 });
 
-router.get('/fast', function (req, res) {
+router.get('/fast', async function (req, res) {
     if (!req.query || !req.query.functions) {
         return res.send('No functions provided.');
     };
@@ -318,12 +323,12 @@ router.get('/fast', function (req, res) {
     if (!functions) {
         return res.send('Invalid function array');
     };
-
-    nightmare.goto('https://api.nicelink.xyz/blargbot/plot/simple?functions=' + encodeURI(JSON.stringify(functions)))
-        .viewport(1024, 1024)
-        .wait('svg.function-plot')
-        .screenshot(__dirname + '/cached/' + filename)
-        .then(() => res.sendFile(__dirname + '/cached/' + filename));
+    page = await puppet.newPage();
+    await page.setViewport({width: 1024, height: 1024 })
+    await page.goto('https://api.nicelink.xyz/blargbot/plot/simple?functions=' + encodeURI(JSON.stringify(functions)))
+    await page.waitForSelector('svg.function-plot');
+    await page.screenshot({path:__dirname + '/cached/' + filename});
+    res.sendFile(__dirname + '/cached/' + filename);
     // ! ADD auto removal after X days...
     /*fs.unlink(filename, (err) => {
 
