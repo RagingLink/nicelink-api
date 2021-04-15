@@ -323,12 +323,16 @@ router.get('/fast', async function (req, res) {
     if (!functions) {
         return res.send('Invalid function array');
     };
+    if(!puppet) {
+        puppet = await Puppeteer.launch()
+    };
     page = await puppet.newPage();
     await page.setViewport({width: 1024, height: 1024 })
     await page.goto('https://api.nicelink.xyz/blargbot/plot/simple?functions=' + encodeURI(JSON.stringify(functions)))
     await page.waitForSelector('svg.function-plot');
     await page.screenshot({path:__dirname + '/cached/' + filename});
     res.sendFile(__dirname + '/cached/' + filename);
+    await page.close();
     // ! ADD auto removal after X days...
     /*fs.unlink(filename, (err) => {
 
