@@ -91,7 +91,7 @@ router.get("/", (req, res) => {
     try {
       id = bigInteger(req.query.guild);
     } catch (e) {
-      return res.status(400).send(
+      return res.status(200).send(
         JSON.stringify({
           error: "Invalid guild",
           message: `${req.query.guild} is an invalid number, please try again`,
@@ -119,7 +119,7 @@ router.get("/", (req, res) => {
     if (!isNaN(parseInt(req.query.cluster))) {
       let cluster = parseInt(req.query.cluster);
       if (!shardData.data[cluster]) {
-        return res.status(400).send(
+        return res.status(200).send(
           JSON.stringify(
             {
               error: "Invalid cluster",
@@ -132,7 +132,7 @@ router.get("/", (req, res) => {
       }
       return res.send(JSON.stringify(shardData.data[cluster], null, 2));
     } else {
-      res.status(400).send(
+      res.status(200).send(
         JSON.stringify(
           {
             error: "Invalid number",
@@ -152,7 +152,7 @@ router.get("/", (req, res) => {
         return c.shards.length + a;
       }, 0);
       if (shard >= maxShards) {
-        return res.status(400).send(
+        return res.status(200).send(
           JSON.stringify(
             {
               error: "Invalid shard",
@@ -169,7 +169,7 @@ router.get("/", (req, res) => {
       ].shards.find((i) => i.id == shard);
       return res.send(JSON.stringify(shardJSON, null, 2));
     } else {
-      res.status(400).send(
+      res.status(200).send(
         JSON.stringify(
           {
             error: "Invalid number",
