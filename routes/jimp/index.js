@@ -3,8 +3,8 @@ const express = require('express');
 const router = express.Router();
 const Jimp = require('jimp');
 
-const circleMask = (async () => await Jimp.read('./circle-mask.png'))();
-const transparentBG = (async () => await Jimp.read('./transparent.png'))();
+const circleMask = (async () => await Jimp.read(__dirname+'/circle-mask.png'))();
+const transparentBG = (async () => await Jimp.read(__dirname +'/transparent.png'))();
 
 async function processJimp(body = {}) {
     return new Promise(async (resolve, reject) => {
