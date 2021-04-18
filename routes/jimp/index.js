@@ -48,7 +48,7 @@ async function processChild(body) {
 
 }
 
-router.get('/', (req, res) => {
+router.get('/', async (req, res) => {
     let image = await processJimp(req.query);
     image.write(__dirname+'/cached/test.png', () => res.sendFile(__dirname + '/cached/test.png'));
 })
