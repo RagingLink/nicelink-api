@@ -7,7 +7,7 @@ const circleMask = (async () => await Jimp.read('./circle-mask.png'))();
 const transparentBG = (async () => await Jimp.read('./transparent.png'))();
 
 async function processJimp(body = {}) {
-    return new Promise((resolve, reject) => {
+    return new Promise(async (resolve, reject) => {
         let background;
         if(!body.background) {
             background = transparentBG.clone();
