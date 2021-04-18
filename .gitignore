@@ -2,3 +2,9 @@ modules/Timezones.js
 modules/timezones.json
 shards.bbtag
 routes/latex/cached/*
+node_modules/
+routes/blargbot/cached/
+routes/tags.json
+views/blargbot.hbs
+shins_root/pub/css/screen.css
+views/index.hbs
