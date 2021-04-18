@@ -2,7 +2,7 @@
  * @Author: RagingLink
  * @Date: 2020-06-22 17:41:47
  * @Last Modified by: mikey.zhaopeng
- * @Last Modified time: 2021-04-09 19:46:37
+ * @Last Modified time: 2021-04-19 01:05:57
  *
  * This project uses the AGPLv3 license. Please read the license file before using/adapting any of the code.
  */
@@ -64,7 +64,7 @@ var server = http.createServer(app);
 app.set("trust proxy", 1);
 app.set("view engine", "hbs");
 app.set("views", path.join(__dirname, "views"));
-let docsViews = ["index", "blargbot"];
+let docsViews = ["index", "blargbot", 'jimp'];
 
 let renderDocs = async (view) => {
   let mdFile = fs.readFileSync("./views/" + view + ".md", "utf8");
@@ -155,6 +155,7 @@ let rateLimit = async (req, res, next) => {
 app.use("/blargbot", require("./routes/blargbot"));
 app.use('/math', require('./routes/math'));
 app.use('/timezones', require('./routes/timezones'));
+app.use('jimp', require('./routes/jimp'));
 app.get("/:path(docs)?", (req, res, next) => {
   res.render("index");
 });

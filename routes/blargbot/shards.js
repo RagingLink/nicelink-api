@@ -132,7 +132,7 @@ router.get("/", (req, res) => {
       }
       return res.send(JSON.stringify(shardData.data[cluster], null, 2));
     } else {
-      res.status(200).send(
+      return res.status(200).send(
         JSON.stringify(
           {
             error: "Invalid number",
@@ -169,7 +169,7 @@ router.get("/", (req, res) => {
       ].shards.find((i) => i.id == shard);
       return res.send(JSON.stringify(shardJSON, null, 2));
     } else {
-      res.status(200).send(
+      return res.status(200).send(
         JSON.stringify(
           {
             error: "Invalid number",
@@ -182,7 +182,7 @@ router.get("/", (req, res) => {
     }
   }
   //Return array of cluster objects
-  res.send(JSON.stringify(Object.values(shardData.data), null, 2));
+  return res.send(JSON.stringify(Object.values(shardData.data), null, 2));
   // let updateDates = Object.values(shardData.date);
   // let oldestUpdate = updateDates.slice(0).sort((a, b) => (a > b ? 1 : -1));
   // let newestUpdate = updateDates.slice(0).sort((a, b) => (a < b ? 1 : -1));
