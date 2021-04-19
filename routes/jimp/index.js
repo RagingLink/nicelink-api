@@ -107,7 +107,7 @@ async function processJimp(
       if (isNaN(body.rotate)) {
         errorObject.errors.push("Property 'rotate' is not a number");
       } else {
-        background.rotate(body.rotate);
+        background.rotate(-body.rotate);
       };
     };
     if (body.shape) {
