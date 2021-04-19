@@ -173,7 +173,7 @@ async function processJimp(
                     let y = Math.round((smallest - background.bitmap.height) / 2);
                     background.crop(x, y, smallest, smallest);
                     background.background(0x000000);
-                    background.mask(circleMask.clone().resize(smallest, smallest), x, y);
+                    background.mask(circleMask.clone().resize(smallest, smallest), 0, 0);
                     break;
                 }
             };
