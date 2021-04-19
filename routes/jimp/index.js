@@ -133,7 +133,7 @@ router.get("/", async (req, res) => {
     console.info(JSON.stringify(image[1], null, 2));
   } catch (e) {
     console.info(e);
-    res.type("json").send(JSON.stringify(e));
+    res.type("json").send(JSON.stringify(e, null, 2));
   };
 });
 module.exports = router;
