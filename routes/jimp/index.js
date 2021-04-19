@@ -6,10 +6,12 @@ const Jimp = require('jimp');
 var circleMask;
 Jimp.read(__dirname+'/circle-mask.png', image => {
     circleMask = image;
+    console.info('Read circle-mask!')
 });
 var transparentBG;
 Jimp.read(__dirname +'/transparent.png', image => {
     transparentBG = image;
+    console.info('Read transparentbg!')
 });
 
 async function processJimp(body = {}) {
