@@ -42,15 +42,15 @@ async function processJimp(
     );
     return new Promise(async (resolve, reject) => {
         let background;
-        if (!body.background) {
+        if (!body.background && !body.bg) {
             background = transparentBG.clone();
         } else {
             try {
                 background = await Jimp.read({
-                    url: body.background,
+                    url: body.background || body.bg,
                     headers: {},
                 });
-                delete body.background;
+                delete body.background && delete body.bg;
             } catch (e) {
                 console.error(e);
                 errorObject.errors.push('Invalid background image');
@@ -62,19 +62,23 @@ async function processJimp(
             !isNaN(parseInt(body.width || body.w)) ||
             !isNaN(parseInt(body.height || body.h))
         ) {
-            let width = !isNaN(parseInt(body.w || body.width)) ?
-                parseInt(body.w || body.width) :
+            let width = !isNaN(parseInt(body.width || body.w)) ?
+                parseInt(body.width || body.w) :
                 Jimp.AUTO;
-            let height = !isNaN(parseInt(body.h || body.height)) ?
-                parseInt(body.h || body.height) :
+            let height = !isNaN(parseInt(body.height || body.h)) ?
+                parseInt(body.height || body.h) :
                 Jimp.AUTO;
             background.resize(width, height);
         }
         // ? Place images before changing other properties on the parent
-        if (body.images) {
+        if (body.images || body.children) {
             try {
                 body.images = JSON.parse(body.images);
-            } catch (e) {}
+            } catch (e) {
+                try {
+                    body.images = JSON.parse(body.children)
+                } catch(e) {};
+            };
             if (!body.images) {
                 errorObject.errors.push("Invalid property 'images'");
             } else if (!Array.isArray(body.images)) {
@@ -86,8 +90,8 @@ async function processJimp(
                         let processedImage = await processJimp(imageObj);
                         let image = processedImage[0];
                         errorObject.childrenObjects.push(processedImage[1]);
-                        if (imageObj.align) {
-                            switch(imageObj.align.toLowerCase()) {
+                        if (imageObj.alignment || image.align) {
+                            switch((imageObj.alignment || imageObj.align).toLowerCase()) {
                                 case 'center': {
                                     let baseX = Math.round((background.bitmap.width - image.bitmap.width) / 2);
                                     let baseY = Math.round((background.bitmap.height - image.bitmap.height) / 2);
@@ -116,8 +120,8 @@ async function processJimp(
             };
         };
 
-        if (body.opacity) {
-            body.opacity = parseInt(body.opacity);
+        if (body.opacity || body.o) {
+            body.opacity = parseInt(body.opacity || body.o);
             if (isNaN(body.opacity)) {
                 errorObject.errors.push("Property 'opacity' is not a number");
             } else {
@@ -125,16 +129,16 @@ async function processJimp(
             };
         };
 
-        if (body.rotate) {
-            body.rotate = parseInt(body.rotate);
+        if (body.rotate || body.r) {
+            body.rotate = parseInt(body.rotate || body.r);
             if (isNaN(body.rotate)) {
                 errorObject.errors.push("Property 'rotate' is not a number");
             } else {
                 background.rotate(-body.rotate);
             };
         };
-        if (body.shape) {
-            switch (body.shape.toLowerCase()) {
+        if (body.shape || body.s) {
+            switch ((body.shape || body.s).toLowerCase()) {
                 case "circle": {
                     background.mask(circleMask.clone().resize(background.bitmap.width, background.bitmap.height), 0, 0);
                     break;
