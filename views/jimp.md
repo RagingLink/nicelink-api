@@ -24,11 +24,11 @@ curl -X POST -H "Content-Type: application/json" \
 ```json
 {
   "root" : "https://api.nicelink.xyz/jimp",
-  "path" : "",
+  "path" : "?background=https://example.com/image.png&",
   "src" : "https://example.com/image.png",
-  "errors" : [],
+  "errors" : ["Invalid background image"],
   "warnings" : [],
-  "childrenObject" : []
+  "childrenObjects" : []
 }
 ```
 
