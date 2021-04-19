@@ -53,7 +53,7 @@ async function processJimp(
                 delete body.background;
             } catch (e) {
                 console.error(e);
-                errorObject.errors.push("Invalid background image");
+                errorObject.errors.push('Invalid background image');
                 return reject(errorObject);
             }
         }
@@ -163,7 +163,9 @@ router.post('/', async(req, res) => {
     let processedJimp = [];
     try {
         processedJimp = await processJimp(req.body);
-    } catch (e) {};
+    } catch (e) {
+        processedJimp[1] = e;
+    };
     let imagePath = Object.keys(req.body).reduce((acc, item) => {
         return acc + `${item}=${req.body[item]}&`
     }, '?');
@@ -171,7 +173,7 @@ router.post('/', async(req, res) => {
         root : 'https://api.nicelink.xyz/jimp',
         path : imagePath
     }, processedJimp[1]);
-    res.type('json').send(JSON.stringify(processJimp[1], null, 2))
+    res.type('json').send(JSON.stringify(processedJimp[1], null, 2))
 });
 
 // ? Transparent image
