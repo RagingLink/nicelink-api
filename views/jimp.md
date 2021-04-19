@@ -13,6 +13,7 @@ code_clipboard: true
 
 #JIMP
 This endpoint interacts with [JIMP](https://www.npmjs.com/package/jimp) in Node.js. At its core this endpoint interacts with as many function from JIMP as possible, if a method/function isn't mentioned on this page, it's **NOT** supported.
+##POST
 >Example request
 ```shell
 curl -X POST -H "Content-Type: application/json" \
@@ -31,7 +32,6 @@ curl -X POST -H "Content-Type: application/json" \
 }
 ```
 
-##POST
 `POST https://api.nicelink.xyz/jimp`
 
 ###Supported root image properties
@@ -53,6 +53,7 @@ If a <code>property</code> is provided in combination with its <code>alias</code
 x||`0`|Horizontal position of the image on the parent image.
 y||`0`|Vertical position of the image on the parent image.
 alignment|align|`undefined`|Alignment of the image on the parent image. Can be `center`. **If this property is provided in combination with `x` and/or `y`, `x` and `y` will be the offset.**
+##GET
 
 >Example request
 ```shell
@@ -60,7 +61,6 @@ curl https://api.nicelink.xyz/jimp?background=https%3A%2F%2Fexample.com%2Fimage.
 ```
 > The above command returns an image or the string `Error rendering content` 
 
-##GET
 `GET https://api.nicelink.xyz/jimp`
 
 The above listed properties can be used as parameters for `GET` requests too. But then they will need to be uriencoded properly.
