@@ -55,8 +55,8 @@ async function processJimp(body = {}, errorObject = {errors :[], warnings: [], c
                     let processedImage = await processJimp(body.images[j]);
                     let image = processedImage[0];
                     errorObject.childrenObjects.push(processedImage[1]);
-                    console.info(image.x + ' ' + image.y)
-                    background.composite(image, !isNaN(parseInt(image.x)) ? parseInt(image.x) :  0, !isNaN(parseInt(image.y)) ? parseInt(image.y) :  0)
+                    console.info(body.images[j].x + ' ' + body.images[j].y)
+                    background.composite(image, !isNaN(parseInt(body.images[j].x)) ? parseInt(body.images[j].x) :  0, !isNaN(parseInt(body.images[j].y)) ? parseInt(body.images[j].y) :  0)
                 }
             }
         }   
