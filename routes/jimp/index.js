@@ -27,7 +27,11 @@ Jimp.read(__dirname + "/transparent.png")
     .catch((err) => {
         console.error("Error reading transparent.png: " + err);
     });
-
+// ? Load 128px Open Sans black font
+var SANS_128_FONT;
+Jimp.loadFont(Jimp.FONT_SANS_128_BLACK).then(font => {
+    SANS_128_FONT = font;
+});
 // ? Process GET or POST request and return [Jimp image, Error object]
 async function processJimp(
     body = {},
@@ -92,6 +96,16 @@ async function processJimp(
                         let processedImage = await processJimp(imageObj);
                         let image = processedImage[0];
                         errorObject.childrenObjects.push(processedImage[1]);
+                        if(imageObj.size) {
+                            switch(imageObj.size.toLowerCase()) {
+                                case 'contain' : {
+                                    if(image.bitmap.width > background.bitmap.width || image.bitmap.height > background.bitmap.height) {
+                                        image.scaleToFit(background.bitmap.width, background.bitmap.height);
+                                    }
+                                    break;
+                                };
+                            };
+                        };
                         if (imageObj.alignment || image.align) {
                             switch((imageObj.alignment || imageObj.align).toLowerCase()) {
                                 case 'center': {
@@ -122,6 +136,18 @@ async function processJimp(
             };
         };
 
+        if(body.text || body.txt) {
+            try { 
+                body.text = JSON.parse(body.text || body.txt)
+            } catch(e) {
+                body.text = undefined;
+            };
+            if(!body.text) {
+                errorObject.errors.push('Property \'text\' is not an object');
+            } else {
+                // TODO maxWidth, height, x, y
+            }
+        }
         if (body.opacity || body.o) {
             body.opacity = parseInt(body.opacity || body.o);
             if (isNaN(body.opacity)) {

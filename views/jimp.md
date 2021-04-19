@@ -14,7 +14,7 @@ code_clipboard: true
 #JIMP
 This endpoint interacts with [JIMP](https://www.npmjs.com/package/jimp) in Node.js. At its core this endpoint interacts with as many function from JIMP as possible, if a method/function isn't mentioned on this page, it's **NOT** supported.
 
-**Base API URL**:
+> Base API URL:
 ```
 https://api.nicelink.xyz/jimp
 ```
@@ -61,6 +61,7 @@ If a <code>property</code> is provided in combination with its <code>alias</code
 x||`0`|Horizontal position of the image on the parent image.
 y||`0`|Vertical position of the image on the parent image.
 alignment|align|`undefined`|Alignment of the image on the parent image. Can be `center`. **If this property is provided in combination with `x` and/or `y`, `x` and `y` will be the offset.**
+size||`undefined`|Can be `contain`. `contain` scales the child image down so it fits inside the parent element.
 
 ##Retrieve image
 
