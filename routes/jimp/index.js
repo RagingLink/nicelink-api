@@ -4,14 +4,19 @@ const router = express.Router();
 const Jimp = require('jimp');
 
 var circleMask;
-Jimp.read(__dirname+'/circle-mask.png', image => {
+Jimp.read(__dirname+'/circle-mask.png').then(image => {
     circleMask = image;
     console.info('Read circle-mask!')
+}).catch(err => {
+    console.error('Error reading circle-mask.png: ' + err);
 });
+
 var transparentBG;
-Jimp.read(__dirname +'/transparent.png', image => {
+Jimp.read(__dirname +'/transparent.png').then( image => {
     transparentBG = image;
     console.info('Read transparentbg!')
+}).catch(err => {
+    console.error('Error reading transparent.png: ' + err);
 });
 
 async function processJimp(body = {}) {
