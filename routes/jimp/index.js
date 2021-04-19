@@ -36,12 +36,13 @@ async function processJimp(body = {}, errorObject = {errors :[], warnings: [], c
                 reject(e);
             };
         };
-        //Resize background accordingly
+        //? Resize background if width or height is specified
         if(!isNaN(parseInt(body.width || body.w)) || !isNaN(parseInt(body.height || body.h))) {
             let width = !isNaN(parseInt(body.w || body.width)) ? parseInt(body.w || body.width) : Jimp.AUTO;
             let height = !isNaN(parseInt(body.h || body.height)) ? parseInt(body.h || body.height) : Jimp.AUTO;
             background.resize(width, height);
         };
+        // ? Place images before changing other properties on the parent
         if(body.images) {
             try {
                 body.images = JSON.parse(body.images);
@@ -55,13 +56,38 @@ async function processJimp(body = {}, errorObject = {errors :[], warnings: [], c
                     let processedImage = await processJimp(body.images[j]);
                     let image = processedImage[0];
                     errorObject.childrenObjects.push(processedImage[1]);
-                    console.info(body.images[j].x + ' ' + body.images[j].y)
                     background.composite(image, !isNaN(parseInt(body.images[j].x)) ? parseInt(body.images[j].x) :  0, !isNaN(parseInt(body.images[j].y)) ? parseInt(body.images[j].y) :  0)
+                };
+            };
+        }; 
+
+        if(body.opacity) {
+            body.opacity = parseInt(body.opacity);
+            if(isNaN(body.opacity)) {
+                errorObject.errors.push('Property \'opacity\' is not a number');
+            } else {
+                background.opacity(body.opacity / 100);
+            };
+        };
+
+        if(body.rotate) {
+            body.rotate = parseInt(body.rotate);
+            if(isNaN(body.opacity)) {
+                errorObject.errors.push('Property \'rotate\' is not a number')
+            } else {
+                background.rotate(body.rotate);
+            };
+        };
+        if(body.shape) {
+            switch(body.shape.toLowerCase()) {
+                case 'circle' : {
+                    background.mask(circleMask, 0, 0);
+                    break;
                 }
-            }
-        }   
+            };
+        };
         return resolve([background, errorObject]);
-    })
+    });
 }
 
 async function processChild(body) {
