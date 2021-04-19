@@ -72,17 +72,26 @@ async function processJimp(
         errorObject.errors.push("Property 'images' is not an array");
       } else {
         for (var j = 0; j < body.images.length; j++) {
-          let processedImage = await processJimp(body.images[j]);
-          let image = processedImage[0];
-          errorObject.childrenObjects.push(processedImage[1]);
-          background.composite(
-            image,
-            !isNaN(parseInt(body.images[j].x)) ? parseInt(body.images[j].x) : 0,
-            !isNaN(parseInt(body.images[j].y)) ? parseInt(body.images[j].y) : 0
-          );
-        }
-      }
-    }
+          try {
+            let processedImage = await processJimp(body.images[j]);
+            let image = processedImage[0];
+            errorObject.childrenObjects.push(processedImage[1]);
+            background.composite(
+              image,
+              !isNaN(parseInt(body.images[j].x))
+                ? parseInt(body.images[j].x)
+                : 0,
+              !isNaN(parseInt(body.images[j].y))
+                ? parseInt(body.images[j].y)
+                : 0
+            );
+          } catch(e) {
+              errorObject.childrenObjects.push(e);
+              return reject(errorObject);
+          };
+        };
+      };
+    };
 
     if (body.opacity) {
       body.opacity = parseInt(body.opacity);
@@ -90,8 +99,8 @@ async function processJimp(
         errorObject.errors.push("Property 'opacity' is not a number");
       } else {
         background.opacity(body.opacity / 100);
-      }
-    }
+      };
+    };
 
     if (body.rotate) {
       body.rotate = parseInt(body.rotate);
@@ -99,19 +108,19 @@ async function processJimp(
         errorObject.errors.push("Property 'rotate' is not a number");
       } else {
         background.rotate(body.rotate);
-      }
-    }
+      };
+    };
     if (body.shape) {
       switch (body.shape.toLowerCase()) {
         case "circle": {
           background.mask(circleMask, 0, 0);
           break;
         }
-      }
-    }
+      };
+    };
     return resolve([background, errorObject]);
   });
-}
+};
 
 async function processChild(body) {}
 
@@ -124,7 +133,7 @@ router.get("/", async (req, res) => {
     console.info(JSON.stringify(image[1], null, 2));
   } catch (e) {
     console.info(e);
-    res.type('json').send(JSON.stringify(e));
-  }
+    res.type("json").send(JSON.stringify(e));
+  };
 });
 module.exports = router;
