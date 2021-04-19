@@ -168,7 +168,10 @@ async function processJimp(
         if (body.shape || body.s) {
             switch ((body.shape || body.s).toLowerCase()) {
                 case "circle": {
-                    background.mask(circleMask.clone().resize(background.bitmap.width, background.bitmap.height), 0, 0);
+                    let highest = background.bitmap.width > background.bitmap.height ? background.bitmap.width : background.bitmap.height;
+                    let x = (highest - background.bitmap.width) / 2;
+                    let y = Math.round((highest - background.bitmap.width) / 2);
+                    background.mask(circleMask.clone().resize(highest, highest), x, y);
                     break;
                 }
             };
