@@ -44,15 +44,18 @@ opacity|o|`100`|Opacity of the image ranging from 0-100
 rotate|r|`0`|Clockwise rotation of the image in degrees.
 shape|s|`undefined`|Shape of the image. Can be `circle`.
 images|children|`[]`|Array of image Objects. All base-images can be used, and all the `child-image` properties below. Child images can also have their own children.
+
 <aside class="notice">
 If a <code>property</code> is provided in combination with its <code>alias</code>, the <code>property</code> will take priority. If the value is invalid, <i>then</i> the <code>alias</code> will be used.
 </aside>
 ###Supported child image properties
+
 |Property|Alias|Default|Description|
 |-|-|-|-|
 x||`0`|Horizontal position of the image on the parent image.
 y||`0`|Vertical position of the image on the parent image.
 alignment|align|`undefined`|Alignment of the image on the parent image. Can be `center`. **If this property is provided in combination with `x` and/or `y`, `x` and `y` will be the offset.**
+
 ##GET
 
 >Example request
