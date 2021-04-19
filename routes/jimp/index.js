@@ -160,7 +160,7 @@ router.get('/', async (req, res) => {
 
 // ? For getting the image path and errors/warnings
 router.post('/', async(req, res) => {
-    let processedJimp;
+    let processedJimp = [];
     try {
         processedJimp = await processJimp(req.body);
     } catch (e) {};

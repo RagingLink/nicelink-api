@@ -48,6 +48,7 @@ images|children|`[]`|Array of image Objects. All base-images can be used, and al
 <aside class="notice">
 If a <code>property</code> is provided in combination with its <code>alias</code>, the <code>property</code> will take priority. If the value is invalid, <i>then</i> the <code>alias</code> will be used.
 </aside>
+
 ###Supported child image properties
 
 |Property|Alias|Default|Description|
