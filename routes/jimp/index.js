@@ -35,8 +35,10 @@ async function processJimp(body = {}) {
                 reject(e);
             };
         };
+        if((body.width || body.w) || (body.height || body.h)) {
+            background.resize(body.width || body.w || Jimp.AUTO, body.height || body.h || Jimp.AUTO);
+        }
         //Resize background accordingly
-        background.resize(body.width || Jimp.AUTO, body.height || Jimp.AUTO);
         let bodyProperties = Object.keys(body);
         for(var i = 0; i < bodyProperties.length; i++) {
             let property = bodyProperties[i];
