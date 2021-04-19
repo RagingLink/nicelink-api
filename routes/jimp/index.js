@@ -35,9 +35,11 @@ async function processJimp(body = {}) {
                 reject(e);
             };
         };
-        if((body.width || body.w) || (body.height || body.h)) {
-            background.resize(body.width || body.w || Jimp.AUTO, body.height || body.h || Jimp.AUTO);
-        }
+        if(!isNaN(parseInt(body.width || body.w)) || !isNaN(parseInt(body.height || body.h))) {
+            let width = !isNaN(parseInt(body.w || body.width)) ? parseInt(body.w || body.width) : Jimp.AUTO;
+            let height = !isNaN(parseInt(body.h || body.height)) ? parseInt(body.h || body.height) : Jimp.AUTO;
+            background.resize(width, height);
+        };
         //Resize background accordingly
         let bodyProperties = Object.keys(body);
         for(var i = 0; i < bodyProperties.length; i++) {
@@ -50,7 +52,7 @@ async function processJimp(body = {}) {
                 case 'images': {
                     for(var j = 0; j < value.length; j++) {
                         let image = await processJimp(value[j]);
-                        background.mask(image, image.x || 0, image.y || 0)
+                        background.mask(image, !isNaN(parseInt(image.x)) ? parseInt(image.x) :  0, !isNaN(parseInt(image.y)) ? parseInt(image.y) :  0)
                     }
                 }
             }
