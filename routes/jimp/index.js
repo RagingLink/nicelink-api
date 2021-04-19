@@ -197,7 +197,7 @@ router.post('/store', async(req, res) => {
     let uniqueID = uuidv4();
     try {
         processedJimp = await processJimp(req.body);
-        fs.writeFileSync(__dirname + '/cached/' + uniqueID + '.png');
+        processedJimp[0].write(__dirname + '/cached/' + uniqueID + '.png');
     } catch (e) {
         processedJimp[1] = e;
         processedJimp[1].error = true;
@@ -207,7 +207,7 @@ router.post('/store', async(req, res) => {
     // ! }, '?');
     processedJimp[1] = Object.assign({
         root : 'https://api.nicelink.xyz/jimp',
-        path : processedJimp[1].error ? null : uniqueID + '.png'
+        path : processedJimp[1].error ? null : '/' + uniqueID + '.png'
     }, processedJimp[1]);
     res.type('json').send(JSON.stringify(processedJimp[1], null, 2))
 });
