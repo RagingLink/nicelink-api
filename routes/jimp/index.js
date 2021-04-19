@@ -171,7 +171,7 @@ async function processJimp(
                     let smallest = background.bitmap.width < background.bitmap.height ? background.bitmap.width : background.bitmap.height;
                     let x = Math.round((background.bitmap.width - smallest) / 2);
                     let y = Math.round((smallest - background.bitmap.height) / 2);
-                    background.crop(smallest, smallest, x, y);
+                    background.crop(x, y, smallest, smallest);
                     background.background(0x000000);
                     background.mask(circleMask.clone().resize(smallest, smallest), x, y);
                     break;
