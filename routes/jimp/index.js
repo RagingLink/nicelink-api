@@ -3,6 +3,8 @@ const express = require("express");
 const router = express.Router();
 const Jimp = require("jimp");
 const { parse } = require("mathjs");
+const fs = require('fs');
+const { v4: uuidv4 } = require('uuid');
 
 // ? Initializing circle-mask for making the 'circle' shape
 var circleMask;
@@ -149,6 +151,15 @@ async function processJimp(
     });
 };
 
+// ? For returning stored images
+router.get('/:image', async(req, res) => {
+    if(fs.existsSync(__dirname + '/cached/' + req.params.image)) {
+        res.sendFile(__dirname + '/cached/' + req.params.image);
+    } else {
+        res.send(req.params.image + ' doesn\'t exist.');
+    };
+})
+
 // ? For getting the image
 router.get('/', async (req, res) => {
     try {
@@ -176,6 +187,27 @@ router.post('/', async(req, res) => {
     processedJimp[1] = Object.assign({
         root : 'https://api.nicelink.xyz/jimp',
         path : imagePath
+    }, processedJimp[1]);
+    res.type('json').send(JSON.stringify(processedJimp[1], null, 2))
+});
+
+
+router.post('/store', async(req, res) => {
+    let processedJimp = [null, {}];
+    let uniqueID = uuidv4();
+    try {
+        processedJimp = await processJimp(req.body);
+        fs.writeFileSync(__dirname + '/cached/' + uniqueID + '.png');
+    } catch (e) {
+        processedJimp[1] = e;
+        processedJimp[1].error = true;
+    };
+    // ! let imagePath = Object.keys(req.body).reduce((acc, item) => {
+    // !    return acc + `${item}=${req.body[item]}&`
+    // ! }, '?');
+    processedJimp[1] = Object.assign({
+        root : 'https://api.nicelink.xyz/jimp',
+        path : processedJimp[1].error ? null : uniqueID + '.png'
     }, processedJimp[1]);
     res.type('json').send(JSON.stringify(processedJimp[1], null, 2))
 });
