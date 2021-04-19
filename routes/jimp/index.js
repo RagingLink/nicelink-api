@@ -55,10 +55,11 @@ async function processJimp(body = {}, errorObject = {errors :[], warnings: [], c
                     let processedImage = await processJimp(body.images[j]);
                     let image = processedImage[0];
                     errorObject.childrenObjects.push(processedImage[1]);
+                    console.info(image.x + ' ' + image.y)
                     background.composite(image, !isNaN(parseInt(image.x)) ? parseInt(image.x) :  0, !isNaN(parseInt(image.y)) ? parseInt(image.y) :  0)
                 }
             }
-        }
+        }   
         return resolve([background, errorObject]);
     })
 }
@@ -70,6 +71,6 @@ async function processChild(body) {
 router.get('/', async (req, res) => {
     let image = await processJimp(req.query);
     image[0].write(__dirname+'/cached/test.png', () => res.sendFile(__dirname + '/cached/test.png'));
-    console.info(JSON.stringify(image[1]));
+    console.info(JSON.stringify(image[1], null, 2));
 })
 module.exports = router;
