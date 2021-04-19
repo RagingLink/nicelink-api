@@ -4,6 +4,7 @@ const router = express.Router();
 const Jimp = require("jimp");
 const { parse } = require("mathjs");
 
+// ? Initializing circle-mask for making the 'circle' shape
 var circleMask;
 Jimp.read(__dirname + "/circle-mask.png")
     .then((image) => {
@@ -14,6 +15,7 @@ Jimp.read(__dirname + "/circle-mask.png")
         console.error("Error reading circle-mask.png: " + err);
     });
 
+// ? Initializing the default background if 'background' is not provided
 var transparentBG;
 Jimp.read(__dirname + "/transparent.png")
     .then((image) => {
@@ -24,6 +26,7 @@ Jimp.read(__dirname + "/transparent.png")
         console.error("Error reading transparent.png: " + err);
     });
 
+// ? Process GET or POST request and return [Jimp image, Error object]
 async function processJimp(
     body = {},
     errorObject = {
@@ -142,18 +145,37 @@ async function processJimp(
     });
 };
 
-async function processChild(body) {}
-
-router.get("/", async (req, res) => {
+// ? For getting the image
+router.get('/', async (req, res) => {
     try {
         let image = await processJimp(req.query);
-        image[0].write(__dirname + "/cached/test.png", () =>
-            res.sendFile(__dirname + "/cached/test.png")
+        image[0].write(__dirname + '/cached/test.png', () =>
+            res.sendFile(__dirname + '/cached/test.png')
         );
-        console.info(JSON.stringify(image[1], null, 2));
     } catch (e) {
-        console.info(e);
-        res.type("json").send(JSON.stringify(e, null, 2));
+        console.error(e);
+        res.send('Error rendering content');
     };
+});
+
+// ? For getting the image path and errors/warnings
+router.post('/', async(req, res) => {
+    let processedJimp;
+    try {
+        processedJimp = await processJimp(req.body);
+    } catch (e) {};
+    let imagePath = Object.keys(req.body).reduce((acc, item) => {
+        return acc + `${item}=${req.body[item]}&`
+    }, '?');
+    processedJimp[1] = Object.assign({
+        root : 'https://api.nicelink.xyz/jimp',
+        path : imagePath
+    }, processedJimp[1]);
+    res.type('json').send(JSON.stringify(processJimp[1], null, 2))
+});
+
+// ? Transparent image
+router.get('/transparent.png', (req, res) => {
+    res.sendFile(__dirname + '/transparent.png');
 });
 module.exports = router;
