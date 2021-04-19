@@ -104,7 +104,7 @@ async function processJimp(
 
     if (body.rotate) {
       body.rotate = parseInt(body.rotate);
-      if (isNaN(body.opacity)) {
+      if (isNaN(body.rotate)) {
         errorObject.errors.push("Property 'rotate' is not a number");
       } else {
         background.rotate(body.rotate);
