@@ -113,7 +113,7 @@ async function processJimp(
     if (body.shape) {
       switch (body.shape.toLowerCase()) {
         case "circle": {
-          background.mask(circleMask, 0, 0);
+          background.mask(circleMask.clone().resize(background.bitmap.width, background.bitmap.height), 0, 0);
           break;
         }
       };
