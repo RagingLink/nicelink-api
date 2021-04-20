@@ -12,12 +12,13 @@ code_clipboard: true
 <!-- Generator: Widdershins v4.0.1 -->
 
 #JIMP
-This endpoint interacts with [JIMP](https://www.npmjs.com/package/jimp) in Node.js. At its core this endpoint interacts with as many function from JIMP as possible, if a method/function isn't mentioned on this page, it's **NOT** supported.
-
 > Base API URL:
 ```
 https://api.nicelink.xyz/jimp
 ```
+This endpoint interacts with [JIMP](https://www.npmjs.com/package/jimp) in Node.js. At its core this endpoint interacts with as many function from JIMP as possible, if a method/function isn't mentioned on this page, it's **NOT** supported.
+
+---
 ##Analyze request
 >Example request
 ```shell
@@ -55,6 +56,7 @@ images|children|`[]`|Array of image Objects. All `root image` properties can be 
 If a <code>property</code> is provided in combination with its <code>alias</code>, the <code>property</code> will take priority. If the value is invalid, <i>then</i> the <code>alias</code> will be used.
 </aside>
 
+---
 ###Supported child image properties
 
 |Property|Alias|Default|Description|
