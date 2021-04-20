@@ -295,7 +295,7 @@ router.get('/:image', async(req, res) => {
 // ? For getting the image
 router.get('/', async (req, res) => {
     if(!req.query || Object.values(req.query).length === 0) {
-        res.send('Error rendering content');    
+        return res.send('Error rendering content');    
     }
     try {
         let image = await processJimp(req.query);
