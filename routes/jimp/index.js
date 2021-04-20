@@ -223,7 +223,14 @@ async function processJimp(
                                 background.composite(textImage, x, y);
                                 break;
                             };
-                        }
+                            default: {
+                                errorObject.errors.push('Invalid alignment mode inside \'text\' property');
+                                let x = !isNaN(parseInt(imageObj.x)) ? parseInt(imageObj.x) : 0;
+                                let y = !isNaN(parseInt(imageObj.y)) ? parseInt(imageObj.y) : 0;
+                                background.composite(textImage, x, y);
+                                break;
+                            };
+                        };
                     } else {
                         let x = !isNaN(parseInt(imageObj.x)) ? parseInt(imageObj.x) : 0;
                         let y = !isNaN(parseInt(imageObj.y)) ? parseInt(imageObj.y) : 0;
