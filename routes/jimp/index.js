@@ -297,7 +297,7 @@ router.post('/', async(req, res) => {
         processedJimp[1] = e;
     };
     let imagePath = Object.keys(req.body).reduce((acc, item) => {
-        return acc + `${item}=${req.body[item]}&`
+        return acc + `${item}=${typeof req.body[item] === 'object' ? JSON.stringify(req.body[item]) : req.body[item]}&`
     }, '?');
     processedJimp[1] = Object.assign({
         root : 'https://api.nicelink.xyz/jimp',
