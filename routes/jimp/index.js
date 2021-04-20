@@ -225,8 +225,8 @@ async function processJimp(
                             };
                         }
                     } else {
-                        let x = !isNaN(parseInt(imageObj.x)) ? baseX + parseInt(imageObj.x) : baseX;
-                        let y = !isNaN(parseInt(imageObj.y)) ? baseY + parseInt(imageObj.y) : baseY;
+                        let x = !isNaN(parseInt(imageObj.x)) ? parseInt(imageObj.x) : 0;
+                        let y = !isNaN(parseInt(imageObj.y)) ? parseInt(imageObj.y) : 0;
                         background.composite(textImage, x, y);
                     }
                 }
