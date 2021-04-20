@@ -2,7 +2,7 @@ const bodyParser = require("body-parser");
 const express = require("express");
 const router = express.Router();
 const Jimp = require("jimp");
-const { parse } = require("mathjs");
+const { parse, boltzmannDependencies } = require("mathjs");
 const fs = require('fs');
 const { v4: uuidv4 } = require('uuid');
 
@@ -137,7 +137,7 @@ async function processJimp(
         };
 
         if(body.text || body.txt) {
-            try { 
+            try {
                 body.text = JSON.parse(body.text || body.txt)
             } catch(e) {
                 body.text = undefined;
@@ -163,6 +163,25 @@ async function processJimp(
                 errorObject.errors.push("Property 'rotate' is not a number");
             } else {
                 background.rotate(-body.rotate);
+            };
+        };
+        if(body.flip || body.mirror) {
+            switch((body.flip || body.mirror).toLowerCase()) {
+                case 'hor':
+                case 'horizontal':
+                case 'true':
+                    background.flip(true);
+                    break;
+                case 'ver':
+                case 'vertical':
+                    background.flip(false, true);
+                    break;
+                case 'false':
+                    break;
+                default:
+                    background.flip(true);
+                    errorObject.warnings.push(`${(body.flip || body.mirror)} is not a valid property for 'flip'. Defaulted to flipping horizontally`);
+                    break;
             };
         };
         if (body.shape || body.s) {

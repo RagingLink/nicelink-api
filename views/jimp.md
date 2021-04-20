@@ -25,7 +25,7 @@ curl -X POST -H "Content-Type: application/json" \
     -d '{"background": "https://example.com/image.png"}' \
     https://api.nicelink.xyz/jimp
 ```
-> The above command returns JSON structured like: 
+> The above command returns JSON structured like:
 ```json
 {
   "root" : "https://api.nicelink.xyz/jimp",
@@ -48,6 +48,7 @@ height|h|Original height|Height of the image.
 opacity|o|`100`|Opacity of the image ranging from 0-100
 rotate|r|`0`|Clockwise rotation of the image in degrees.
 shape|s|`undefined`|Shape of the image. Can be `circle`.
+flip|mirror|`false`|Flips the image horizontally or vertically. Valid values are: `hor, horizontal, ver, vertical`. If `true` is provided, the image will be flipped horizontally
 images|children|`[]`|Array of image Objects. All base-images can be used, and all the `child-image` properties below. Child images can also have their own children.
 
 <aside class="notice">
@@ -69,7 +70,7 @@ size||`undefined`|Can be `contain`. `contain` scales the child image down so it 
 ```shell
 curl https://api.nicelink.xyz/jimp?background=https%3A%2F%2Fexample.com%2Fimage.png
 ```
-> The above command returns an image or `Error rendering content` 
+> The above command returns an image or `Error rendering content`
 
 `GET https://api.nicelink.xyz/jimp`
 
@@ -92,7 +93,7 @@ curl -X POST -H "Content-Type: application/json" \
     -d '{"background": "https://cdn.discordapp.com/avatars/278237925009784832/b5cb6aae1473042ed2a7f7e51928d9ea.png?size=512"}' \
     https://api.nicelink.xyz/jimp/store
 ```
-> The above command returns JSON structured like: 
+> The above command returns JSON structured like:
 ```json
 {
   "root" : "https://api.nicelink.xyz/jimp",
