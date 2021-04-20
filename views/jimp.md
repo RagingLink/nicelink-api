@@ -49,7 +49,7 @@ opacity|o|`100`|Opacity of the image ranging from 0-100
 rotate|r|`0`|Clockwise rotation of the image in degrees.
 shape|s|`undefined`|Shape of the image. Can be `circle`.
 flip|mirror|`false`|Flips the image horizontally or vertically. Valid values are: `hor, horizontal, ver, vertical`. If `true` is provided, the image will be flipped horizontally
-images|children|`[]`|Array of image Objects. All base-images can be used, and all the `child-image` properties below. Child images can also have their own children.
+images|children|`[]`|Array of image Objects. All `root image` properties can be used, and all the `child image` properties below. Child images can also have their own children.
 
 <aside class="notice">
 If a <code>property</code> is provided in combination with its <code>alias</code>, the <code>property</code> will take priority. If the value is invalid, <i>then</i> the <code>alias</code> will be used.
