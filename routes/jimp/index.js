@@ -174,7 +174,10 @@ async function processJimp(
                     if(!imageObj.text && !imageObj.txt) {
                         errorObject.errors.push('Empty \'text\' property');
                     };
-
+                    if(imageObj.size && !isNaN(parseInt(imageObj.size))) {
+                        let size = parseInt(imageObj.size);
+                        imageObj.font = imageObj.font.replace('30px', size + 'px');
+                    };
                     let textBuffer = txt2png(imageObj.text || imageObj.txt, imageObj);
                     let textImage = await new Promise((res, rej) => {
                         Jimp.read(textBuffer).then(res).catch(rej);
@@ -202,7 +205,10 @@ async function processJimp(
                         errorObject.errors.push('Empty \'text\' property at index: ' + j);
                         continue;
                     };
-
+                    if(imageObj.size && !isNaN(parseInt(imageObj.size))) {
+                        let size = parseInt(imageObj.size);
+                        imageObj.font = imageObj.font.replace('30px', size + 'px');
+                    };
                     let textBuffer = txt2png(imageObj.text || imageObj.txt, imageObj);
                     let textImage = await new Promise((res, rej) => {
                         Jimp.read(textBuffer).then(res).catch(rej);
@@ -218,6 +224,10 @@ async function processJimp(
                                 break;
                             };
                         }
+                    } else {
+                        let x = !isNaN(parseInt(imageObj.x)) ? baseX + parseInt(imageObj.x) : baseX;
+                        let y = !isNaN(parseInt(imageObj.y)) ? baseY + parseInt(imageObj.y) : baseY;
+                        background.composite(textImage, x, y);
                     }
                 }
             }
