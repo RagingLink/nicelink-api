@@ -6,6 +6,32 @@ const { parse } = require("mathjs");
 const fs = require('fs');
 const { v4: uuidv4 } = require('uuid');
 
+const txt2png = require('text2png');
+const defaultTextOptions = {
+  color: "black",
+  font: "30px arial", //TODO Customization
+  textAlign: "left",
+  color: "black",
+  backgroundColor: "transparent",
+  lineSpacing: 0,
+  strokeWidth: 0,
+  strokeColor: "white",
+  padding: 0,
+  paddingLeft: 0,
+  paddingRight: 0,
+  paddingTop: 0,
+  paddingBottom: 0,
+  borderWidth: 0,
+  border: 0,
+  borderLeftWidth: 0,
+  borderRightWidth: 0,
+  borderTopWidth: 0,
+  borderBottomWidth: 0,
+  borderColor: "black",
+  localFontPath: undefined, //! Unused
+  localFontName: undefined, //! Unused
+  output: "buffer", //! Unused
+};
 // ? Initializing circle-mask for making the 'circle' shape
 var circleMask;
 Jimp.read(__dirname + "/circle-mask.png")
@@ -32,6 +58,7 @@ var SANS_128_FONT;
 Jimp.loadFont(Jimp.FONT_SANS_128_BLACK).then(font => {
     SANS_128_FONT = font;
 });
+
 // ? Process GET or POST request and return [Jimp image, Error object]
 async function processJimp(
     body = {},
@@ -136,16 +163,41 @@ async function processJimp(
             };
         };
 
+        //? Oh boy
         if(body.text || body.txt) {
             try { 
                 body.text = JSON.parse(body.text || body.txt)
             } catch(e) {
                 body.text = undefined;
             };
-            if(!body.text) {
-                errorObject.errors.push('Property \'text\' is not an object');
+            if(!body.text || !Array.isArray(body.text)) {
+                errorObject.errors.push('Property \'text\' is not a valid array');
             } else {
                 // TODO maxWidth, height, x, y
+                for(var j = 0; j < body.text.length; j++) {
+                    let imageObj = Object.assign(defaultTextOptions, body.text[j]);
+                    if(!imageObj.text && !imageObj.txt) {
+                        errorObject.errors.push('Empty \'text\' property at index: ' + j);
+                        continue;
+                    };
+
+                    let textBuffer = txt2png(imageObj.text || imageObj.txt, imageObj);
+                    let textImage = await new Promise((res, rej) => {
+                        Jimp.read(textBuffer).then(res).catch(rej);
+                    });
+                    if(imageObj.align) {
+                        switch(imageObj.align.toLowerCase()) {
+                            case 'center': {
+                                let baseX = Math.round((background.bitmap.width - textImage.bitmap.width) / 2);
+                                let baseY = Math.round((background.bitmap.height - textImage.bitmap.height) / 2);
+                                let x = !isNaN(parseInt(imageObj.x)) ? baseX + parseInt(imageObj.x) : baseX;
+                                let y = !isNaN(parseInt(imageObj.y)) ? baseY + parseInt(imageObj.y) : baseY;
+                                background.composite(textImage, x, y);
+                                break;
+                            };
+                        }
+                    }
+                }
             }
         }
         if (body.opacity || body.o) {
