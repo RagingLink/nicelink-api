@@ -7,6 +7,7 @@ const fs = require('fs');
 const { v4: uuidv4 } = require('uuid');
 
 const txt2png = require('text2png');
+//! CHANGE FONT AT YOUR OWN RISK 
 const defaultTextOptions = {
   color: "black",
   font: "30px arial", //TODO Customization
@@ -27,9 +28,8 @@ const defaultTextOptions = {
   borderTopWidth: 0,
   borderBottomWidth: 0,
   borderColor: "black",
-  localFontPath: undefined, //! Unused
-  localFontName: undefined, //! Unused
-  output: "buffer", //! Unused
+  localFontPath: undefined, //! NO
+  localFontName: undefined, //! NO
 };
 // ? Initializing circle-mask for making the 'circle' shape
 var circleMask;
@@ -169,7 +169,7 @@ async function processJimp(
             } catch(e) {};
             if(body.text && !Array.isArray(body.text)) {
                 if(typeof body.text === 'object') {
-                    let imageObj = Object.assign(defaultTextOptions, body.text);
+                    let imageObj = Object.assign({}, defaultTextOptions, body.text);
                     if(!imageObj.text && !imageObj.txt) {
                         errorObject.errors.push('Empty \'text\' property');
                     };
@@ -210,7 +210,7 @@ async function processJimp(
             } else if(body.text) {
                 // TODO maxWidth, height, x, y
                 for(var j = 0; j < body.text.length; j++) {
-                    let imageObj = Object.assign(defaultTextOptions, body.text[j]);
+                    let imageObj = Object.assign({}, defaultTextOptions, body.text[j]);
                     if(!imageObj.text && !imageObj.txt) {
                         errorObject.errors.push('Empty \'text\' property at index: ' + j);
                         continue;
