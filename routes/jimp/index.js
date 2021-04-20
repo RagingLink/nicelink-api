@@ -170,7 +170,7 @@ async function processJimp(
                 case 'hor':
                 case 'horizontal':
                 case 'true':
-                    background.flip(true);
+                    background.flip(true, false);
                     break;
                 case 'ver':
                 case 'vertical':
@@ -179,7 +179,7 @@ async function processJimp(
                 case 'false':
                     break;
                 default:
-                    background.flip(true);
+                    background.flip(true, false);
                     errorObject.warnings.push(`${(body.flip || body.mirror)} is not a valid property for 'flip'. Defaulted to flipping horizontally`);
                     break;
             };
