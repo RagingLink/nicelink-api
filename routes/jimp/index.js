@@ -167,12 +167,34 @@ async function processJimp(
         if(body.text || body.txt) {
             try { 
                 body.text = JSON.parse(body.text || body.txt)
-            } catch(e) {
-                body.text = undefined;
-            };
-            if(!body.text || !Array.isArray(body.text)) {
-                errorObject.errors.push('Property \'text\' is not a valid array');
-            } else {
+            } catch(e) {};
+            if(body.text && !Array.isArray(body.text)) {
+                if(typeof body.text === 'object') {
+                    let imageObj = Object.assign(defaultTextOptions, body.text);
+                    if(!imageObj.text && !imageObj.txt) {
+                        errorObject.errors.push('Empty \'text\' property');
+                    };
+
+                    let textBuffer = txt2png(imageObj.text || imageObj.txt, imageObj);
+                    let textImage = await new Promise((res, rej) => {
+                        Jimp.read(textBuffer).then(res).catch(rej);
+                    });
+                    if(imageObj.align) {
+                        switch(imageObj.align.toLowerCase()) {
+                            case 'center': {
+                                let baseX = Math.round((background.bitmap.width - textImage.bitmap.width) / 2);
+                                let baseY = Math.round((background.bitmap.height - textImage.bitmap.height) / 2);
+                                let x = !isNaN(parseInt(imageObj.x)) ? baseX + parseInt(imageObj.x) : baseX;
+                                let y = !isNaN(parseInt(imageObj.y)) ? baseY + parseInt(imageObj.y) : baseY;
+                                background.composite(textImage, x, y);
+                                break;
+                            };
+                        }
+                    }
+                } else {
+                    errorObject.errors.push('Property \'text\' is not a valid array or object');
+                }
+            } else if(body.text) {
                 // TODO maxWidth, height, x, y
                 for(var j = 0; j < body.text.length; j++) {
                     let imageObj = Object.assign(defaultTextOptions, body.text[j]);
