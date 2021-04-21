@@ -101,4 +101,9 @@ router.get("/", async (req, res, next) => {
   );
 });
 
+router.get('/json', async (req, res, next) => {
+  let getJson = bent("json");
+  let newTagJson = await getJson("https://blargbot.xyz/tags/json");
+  return res.type('json').send(JSON.stringify(newTagJson, null, 2));
+})
 module.exports = router;
