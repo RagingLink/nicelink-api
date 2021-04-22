@@ -356,7 +356,7 @@ async function generateTxt(data, image, textIndex = null, errorObject, ) {
             let textImage = await new Promise((res, rej) => {
                 Jimp.read(textBuffer).then(res).catch(rej);
             });
-
+            console.info(JSON.stringify(textObj, null, 2));
             if (textObj.align) {
                 switch (textObj.align.toLowerCase()) {
                     case 'center': {
