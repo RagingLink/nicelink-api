@@ -195,13 +195,13 @@ async function processJimp(
             } catch (e) {};
             if(Array.isArray(body.text)) {
                 for(const i = 0; i < body.text.length; i++) {
-                    let generatedTxt = generateTxt(body.text[i], background, i, errorObject);
+                    let generatedTxt = await generateTxt(body.text[i], background, i, errorObject);
                     if(!generatedTxt) {
                         // ! Error
                     };
                 }
             } else {
-                generateTxt(body.text[i], background, null, errorObject);
+                await generateTxt(body.text[i], background, null, errorObject);
             };
             // if (body.text && !Array.isArray(body.text)) {
             //     if (typeof body.text === 'object') {
@@ -326,7 +326,7 @@ async function processJimp(
 };
 
 // * For generating text png using the text2png package
-function generateTxt(data, image, textIndex = null, errorObject, ) {
+async function generateTxt(data, image, textIndex = null, errorObject, ) {
     try {
         switch (typeof data) {
             case 'string': {
