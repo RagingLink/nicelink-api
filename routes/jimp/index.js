@@ -134,7 +134,7 @@ async function processJimp(
 
             };
             if(typeof body.replaceColor === 'object') {
-                let replaced = await replaceColor(body.replaceColor, background, errorObject);
+                let replaced = await replaceImageColor(body.replaceColor, background, errorObject);
                 if(replaced) {
                     background = replaced;
                 };
@@ -469,7 +469,7 @@ async function outlineCircle(data, image, errorObject) {
       return black;
 };
 
-async function replaceColor(data, image, errorObject) {
+async function replaceImageColor(data, image, errorObject) {
     try {
         return await replaceColor({
             image: image, colors : {
