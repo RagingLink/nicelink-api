@@ -477,7 +477,7 @@ async function replaceImageColor(data, image, errorObject) {
               targetColor: data.target,
               replaceColor: data.replace 
             },
-            deltaE : data.delta
+            deltaE : data.delta || 2.3
           });
     } catch(e) {
         errorObject.errors.push('Something went wrong when replacing the color' + e.message);
