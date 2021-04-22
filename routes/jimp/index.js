@@ -125,12 +125,9 @@ async function processJimp(
 				: Jimp.AUTO;
 			background.resize(width, height);
 		}
-		console.info(JSON.stringify(body, null, 2));
 		let properties = Object.keys(body);
-		console.info(properties);
 		propertiesLoop: for (var i = 0; i < properties.length; i++) {
 			let key = properties[i];
-			console.info(key);
 			let data = body[key] || '';
 			switch (key.toLowerCase()) {
 				case 'replacecolor': {
