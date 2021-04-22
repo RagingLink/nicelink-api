@@ -295,7 +295,7 @@ async function processJimp(
                             data.x || 0,
                             data.y || 0
                         ];
-                        background.crop(w, h, x, y);
+                        background.crop(x, y, w, h);
                     } else if (typeof data === 'string') {
                         if (data.toLowerCase() === 'auto') {
                             // TODO auto crop implementation
