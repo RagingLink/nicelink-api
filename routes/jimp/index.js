@@ -433,7 +433,7 @@ async function outlineCircle(data, image, errorObject) {
         deltaE: 20
       })).resize(image.bitmap.width,image.bitmap.width);
       
-      black.composite(whiteImage, 6,6);
+      black.composite(whiteImage, data.width, data.width);
       black = await replaceColor({
         image: black, colors : {
           type: 'hex',
