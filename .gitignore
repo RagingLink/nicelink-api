@@ -8,3 +8,6 @@ routes/tags.json
 views/blargbot.hbs
 shins_root/pub/css/screen.css
 views/index.hbs
+routes/jimp/cached/*
+views/jimp.hbs
+routes/jimp/text2png

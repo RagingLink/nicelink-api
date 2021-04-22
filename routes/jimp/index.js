@@ -11,13 +11,8 @@ const {
     v4: uuidv4
 } = require('uuid');
 
-const txt2png = require('text2png');
-const {
-    registerFont,
-    createCanvas
-} = require("canvas");
-const canvas = createCanvas(0, 0);
-const ctx = canvas.getContext("2d");
+// ? Custom package https://github.com/RagingLink/text2png.git
+const txt2png = require('./text2png');
 //! CHANGE FONT AT YOUR OWN RISK
 const defaultTextOptions = {
     // color: "black",
@@ -208,6 +203,9 @@ async function processJimp(
                         let size = parseInt(imageObj.size);
                         imageObj.font = imageObj.font.replace('30px', size + 'px');
                     };
+                    if(!imageObj.maxWidth) {
+                        imageObj.maxWidth = background.bitmap.width;
+                    };
                     let textBuffer = txt2png(imageObj.text || imageObj.txt, imageObj);
                     let textImage = await new Promise((res, rej) => {
                         Jimp.read(textBuffer).then(res).catch(rej);
@@ -249,6 +247,9 @@ async function processJimp(
                     if (imageObj.size && !isNaN(parseInt(imageObj.size))) {
                         let size = parseInt(imageObj.size);
                         imageObj.font = imageObj.font.replace('30px', size + 'px');
+                    };
+                    if(!imageObj.maxWidth) {
+                        imageObj.maxWidth = background.bitmap.width;
                     };
                     let textBuffer = txt2png(imageObj.text || imageObj.txt, imageObj);
                     let textImage = await new Promise((res, rej) => {
