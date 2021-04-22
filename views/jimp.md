@@ -18,7 +18,6 @@ https://api.nicelink.xyz/jimp
 ```
 This endpoint interacts with [JIMP](https://www.npmjs.com/package/jimp) in Node.js. At its core this endpoint interacts with as many function from JIMP as possible, if a method/function isn't mentioned on this page, it's **NOT** supported.
 
----
 ##Analyze request
 >Example request
 ```shell
@@ -124,4 +123,3 @@ curl https://api.nicelink.xyz/jimp/795c8388-d36a-4499-a7c5-4995a4ee01c2.png
 >The above command returns an image or *filename* doesn't exist
 
 `GET https://api.nicelink.xyz/jimp/imageID.png`
-
