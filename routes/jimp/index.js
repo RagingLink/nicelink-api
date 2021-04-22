@@ -196,12 +196,15 @@ async function processJimp(
             if(Array.isArray(body.text)) {
                 for(var i = 0; i < body.text.length; i++) {
                     let generatedTxt = await generateTxt(body.text[i], background, i, errorObject);
-                    if(!generatedTxt) {
-                        // ! Error
+                    if(generatedTxt) {
+                        background = generatedTxt;
                     };
                 }
             } else {
-                await generateTxt(body.text, background, null, errorObject);
+                let generatedTxt = await generateTxt(body.text, background, null, errorObject);
+                if(generatedTxt) {
+                    background = generatedTxt;
+                }
             };
             // if (body.text && !Array.isArray(body.text)) {
             //     if (typeof body.text === 'object') {
@@ -331,7 +334,7 @@ async function generateTxt(data, image, textIndex = null, errorObject, ) {
         switch (typeof data) {
             case 'string': {
                 errorObject.warnings.push('Property \'text\' is \'string\' but expected \'object\'. Assuming ' + data + ' is \'text\'.');
-                return generateTxt({
+                return await generateTxt({
                     text: data
                 });
             };
@@ -369,14 +372,14 @@ async function generateTxt(data, image, textIndex = null, errorObject, ) {
                     let x = !isNaN(parseInt(imageObj.x)) ? parseInt(imageObj.x) : 0;
                     let y = !isNaN(parseInt(imageObj.y)) ? parseInt(imageObj.y) : 0;
                     image.composite(textImage, x, y);
-                    return true;
+                    return image;
                 };
                 };
             } else {
                 let x = !isNaN(parseInt(imageObj.x)) ? parseInt(imageObj.x) : 0;
                 let y = !isNaN(parseInt(imageObj.y)) ? parseInt(imageObj.y) : 0;
                 image.composite(textImage, x, y);
-                return true;
+                return image;
             }
         };
         default:
