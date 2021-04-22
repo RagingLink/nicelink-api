@@ -6,7 +6,8 @@ const { parse } = require("mathjs");
 const fs = require('fs');
 const { v4: uuidv4 } = require('uuid');
 
-const txt2png = require('text2png');
+// ? Custom package https://github.com/RagingLink/text2png.git
+const txt2png = require('./text2png');
 //! CHANGE FONT AT YOUR OWN RISK 
 const defaultTextOptions = {
   color: "black",
@@ -14,6 +15,7 @@ const defaultTextOptions = {
   textAlign: "left",
   backgroundColor: "transparent",
   lineSpacing: 0,
+  maxWidth: undefined,
   strokeWidth: 0,
   strokeColor: "white",
   padding: 0,
