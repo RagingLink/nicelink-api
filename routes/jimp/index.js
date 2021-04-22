@@ -194,7 +194,7 @@ async function processJimp(
                 body.text = JSON.parse(body.text || body.txt)
             } catch (e) {};
             if(Array.isArray(body.text)) {
-                for(const i = 0; i < body.text.length; i++) {
+                for(var i = 0; i < body.text.length; i++) {
                     let generatedTxt = await generateTxt(body.text[i], background, i, errorObject);
                     if(!generatedTxt) {
                         // ! Error
