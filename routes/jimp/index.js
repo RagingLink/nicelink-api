@@ -13,6 +13,9 @@ const {
 
 // ? Custom package https://github.com/RagingLink/text2png.git
 const txt2png = require('./text2png');
+//? Custom package https://github.com/RagingLink/replace-color.git
+const replaceColor = require('./replace-color');
+
 //! CHANGE FONT AT YOUR OWN RISK
 const defaultTextOptions = {
     // color: "black",
@@ -42,7 +45,7 @@ const defaultTextOptions = {
 // ? Initialize the circle-mask and default background
 var circleMask;
 var transparentBG;
-
+var blackImage;
 function initializeBackgrounds() {
     // ? Initializing circle-mask for making the 'circle' shape
 
@@ -64,6 +67,9 @@ function initializeBackgrounds() {
         .catch((err) => {
             console.error("Error reading transparent.png: " + err);
         });
+    blackImage = await new Promise((resolve, reject) => {
+        Jimp.read(__dirname + '/black.png').then(resolve).catch(reject);
+    });
 };
 initializeBackgrounds();
 
@@ -320,6 +326,17 @@ async function processJimp(
                     background.crop(x, y, smallest, smallest);
                     background.background(0x000000);
                     background.mask(circleMask.clone().resize(smallest, smallest), 0, 0);
+                    if(body.outline) {
+                        try {
+                            body.outline = JSON.parse(body.outline);
+                        } catch(e) {
+                        };
+                        if(typeof body.outline !== 'object') {
+                            errorObject.errors.push('Property \'outline\' is not an object');
+                        } else {
+                            background = outlineCircle(body.outline, background, errorObject)
+                        }
+                    }
                     break;
                 }
             };
@@ -391,6 +408,51 @@ async function generateTxt(data, image, textIndex = null, errorObject, ) {
     };
 };
 
+async function outlineCircle(data, image, errorObject) {
+    if(!data.width) {
+        data.width = 4;
+    } else if (isNaN(parseInt(data.width))) {
+        errorObject.errors.push('Width is not a number in \'outline\' property');
+        return image;
+    } else {
+        data.width = parseInt(data.width);
+    };
+    let circle = circleMask.clone();
+    let black = blackImage.clone();
+    circle.resize(2*data.width + image.bitmap.width, 2*data.width + image.bitmap.width)
+    black.resize(2*data.width + image.bitmap.width, 2*data.width + image.bitmap.width);
+    black.mask(circle, 0 , 0);
+    
+      let whiteImage = (await replaceColor({
+        image: black.clone(), 
+        colors: {
+          type: 'hex',
+          targetColor: '#000000',
+          replaceColor: '#FFFFFF'
+        },
+        deltaE: 20
+      })).resize(image.bitmap.width,image.bitmap.width);
+      
+      black.composite(whiteImage, 6,6);
+      black = await replaceColor({
+        image: black, colors : {
+          type: 'hex',
+          targetColor: '#FFFFFF',
+          replaceColor:'#00000000' 
+        },
+        deltaE : 70
+      });
+      black = await replaceColor({
+        image: black, colors : {
+          type: 'hex',
+          targetColor: '#000000',
+          replaceColor: data.color 
+        },
+        deltaE : 70
+      })
+      black.composite(image, data.width, data.width);
+      return black;
+}
 // ? For returning stored images
 router.get('/:image', async (req, res) => {
     if (fs.existsSync(__dirname + '/cached/' + req.params.image)) {
