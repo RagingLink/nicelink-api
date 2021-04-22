@@ -46,7 +46,7 @@ const defaultTextOptions = {
 var circleMask;
 var transparentBG;
 var blackImage;
-function initializeBackgrounds() {
+async function initializeBackgrounds() {
     // ? Initializing circle-mask for making the 'circle' shape
 
     Jimp.read(__dirname + "/circle-mask.png")
@@ -334,7 +334,7 @@ async function processJimp(
                         if(typeof body.outline !== 'object') {
                             errorObject.errors.push('Property \'outline\' is not an object');
                         } else {
-                            background = outlineCircle(body.outline, background, errorObject)
+                            background = await outlineCircle(body.outline, background, errorObject)
                         }
                     }
                     break;
