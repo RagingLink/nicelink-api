@@ -336,7 +336,7 @@ async function generateTxt(data, image, textIndex = null, errorObject, ) {
                 errorObject.warnings.push('Property \'text\' is \'string\' but expected \'object\'. Assuming ' + data + ' is \'text\'.');
                 return await generateTxt({
                     text: data
-                });
+                }, image, textIndex, errorObject);
             };
         case 'object': {
             let textObj = Object.assign({}, defaultTextOptions, data);
