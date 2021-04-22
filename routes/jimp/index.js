@@ -298,6 +298,7 @@ async function processJimp(
                     } else if (typeof data === 'string') {
                         if (data.toLowerCase() === 'auto') {
                             background.autocrop();
+                            console.log('Auto cropped!');
                         }
                     } else {
                         errorObject.errors.push('Unrecognized value with type \'' + typeof data + '\' of property \'' + key + '\'');
