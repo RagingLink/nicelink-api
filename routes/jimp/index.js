@@ -345,39 +345,39 @@ async function generateTxt(data, image, textIndex = null, errorObject, ) {
                 errorObject.errors.push('Empty \'text\' property' + (textIndex ? ' at index: ' + textIndex + '.' : '.'));
                 return false;
             };
-            if (imageObj.size && !isNaN(parseInt(imageObj.size))) {
-                let size = parseInt(imageObj.size);
-                imageObj.font = imageObj.font.replace('30px', size + 'px');
+            if (textObj.size && !isNaN(parseInt(textObj.size))) {
+                let size = parseInt(textObj.size);
+                textObj.font = textObj.font.replace('30px', size + 'px');
             };
-            if (!imageObj.maxWidth) {
-                imageObj.maxWidth = image.bitmap.width;
+            if (!textObj.maxWidth) {
+                textObj.maxWidth = image.bitmap.width;
             }
-            let textBuffer = txt2png(imageObj.text || imageObj.txt, imageObj);
+            let textBuffer = txt2png(textObj.text || textObj.txt, textObj);
             let textImage = await new Promise((res, rej) => {
                 Jimp.read(textBuffer).then(res).catch(rej);
             });
 
-            if (imageObj.align) {
-                switch (imageObj.align.toLowerCase()) {
+            if (textObj.align) {
+                switch (textObj.align.toLowerCase()) {
                     case 'center': {
                         let baseX = Math.round((image.bitmap.width - textImage.bitmap.width) / 2);
                         let baseY = Math.round((image.bitmap.height - textImage.bitmap.height) / 2);
-                        let x = !isNaN(parseInt(imageObj.x)) ? baseX + parseInt(imageObj.x) : baseX;
-                        let y = !isNaN(parseInt(imageObj.y)) ? baseY + parseInt(imageObj.y) : baseY;
+                        let x = !isNaN(parseInt(textObj.x)) ? baseX + parseInt(textObj.x) : baseX;
+                        let y = !isNaN(parseInt(textObj.y)) ? baseY + parseInt(textObj.y) : baseY;
                         image.composite(textImage, x, y);
                         break;
                     };
                 default: {
                     errorObject.errors.push('Invalid alignment mode inside \'text\' property');
-                    let x = !isNaN(parseInt(imageObj.x)) ? parseInt(imageObj.x) : 0;
-                    let y = !isNaN(parseInt(imageObj.y)) ? parseInt(imageObj.y) : 0;
+                    let x = !isNaN(parseInt(textObj.x)) ? parseInt(textObj.x) : 0;
+                    let y = !isNaN(parseInt(textObj.y)) ? parseInt(textObj.y) : 0;
                     image.composite(textImage, x, y);
                     return image;
                 };
                 };
             } else {
-                let x = !isNaN(parseInt(imageObj.x)) ? parseInt(imageObj.x) : 0;
-                let y = !isNaN(parseInt(imageObj.y)) ? parseInt(imageObj.y) : 0;
+                let x = !isNaN(parseInt(textObj.x)) ? parseInt(textObj.x) : 0;
+                let y = !isNaN(parseInt(textObj.y)) ? parseInt(textObj.y) : 0;
                 image.composite(textImage, x, y);
                 return image;
             }
