@@ -193,93 +193,103 @@ async function processJimp(
             try {
                 body.text = JSON.parse(body.text || body.txt)
             } catch (e) {};
-            if (body.text && !Array.isArray(body.text)) {
-                if (typeof body.text === 'object') {
-                    let imageObj = Object.assign({}, defaultTextOptions, body.text);
-                    if (!imageObj.text && !imageObj.txt) {
-                        errorObject.errors.push('Empty \'text\' property');
+            if(Array.isArray(body.text)) {
+                for(const i = 0; i < body.text.length; i++) {
+                    let generatedTxt = generateTxt(body.text[i], background, i, errorObject);
+                    if(!generatedTxt) {
+                        // ! Error
                     };
-                    if (imageObj.size && !isNaN(parseInt(imageObj.size))) {
-                        let size = parseInt(imageObj.size);
-                        imageObj.font = imageObj.font.replace('30px', size + 'px');
-                    };
-                    if(!imageObj.maxWidth) {
-                        imageObj.maxWidth = background.bitmap.width;
-                    };
-                    let textBuffer = txt2png(imageObj.text || imageObj.txt, imageObj);
-                    let textImage = await new Promise((res, rej) => {
-                        Jimp.read(textBuffer).then(res).catch(rej);
-                    });
-                    if (imageObj.align) {
-                        switch (imageObj.align.toLowerCase()) {
-                            case 'center': {
-                                let baseX = Math.round((background.bitmap.width - textImage.bitmap.width) / 2);
-                                let baseY = Math.round((background.bitmap.height - textImage.bitmap.height) / 2);
-                                let x = !isNaN(parseInt(imageObj.x)) ? baseX + parseInt(imageObj.x) : baseX;
-                                let y = !isNaN(parseInt(imageObj.y)) ? baseY + parseInt(imageObj.y) : baseY;
-                                background.composite(textImage, x, y);
-                                break;
-                            };
-                        default: {
-                            errorObject.errors.push('Invalid alignment mode inside \'text\' property');
-                            let x = !isNaN(parseInt(imageObj.x)) ? parseInt(imageObj.x) : 0;
-                            let y = !isNaN(parseInt(imageObj.y)) ? parseInt(imageObj.y) : 0;
-                            background.composite(textImage, x, y);
-                            break;
-                        };
-                        };
-                    } else {
-                        let x = !isNaN(parseInt(imageObj.x)) ? parseInt(imageObj.x) : 0;
-                        let y = !isNaN(parseInt(imageObj.y)) ? parseInt(imageObj.y) : 0;
-                        background.composite(textImage, x, y);
-                    }
-                } else {
-                    errorObject.errors.push('Property \'text\' is not a valid array or object');
                 }
-            } else if (body.text) {
-                // TODO maxWidth, height, x, y
-                for (var j = 0; j < body.text.length; j++) {
-                    let imageObj = Object.assign({}, defaultTextOptions, body.text[j]);
-                    if (!imageObj.text && !imageObj.txt) {
-                        errorObject.errors.push('Empty \'text\' property at index: ' + j);
-                        continue;
-                    };
-                    if (imageObj.size && !isNaN(parseInt(imageObj.size))) {
-                        let size = parseInt(imageObj.size);
-                        imageObj.font = imageObj.font.replace('30px', size + 'px');
-                    };
-                    if(!imageObj.maxWidth) {
-                        imageObj.maxWidth = background.bitmap.width;
-                    };
-                    let textBuffer = txt2png(imageObj.text || imageObj.txt, imageObj);
-                    let textImage = await new Promise((res, rej) => {
-                        Jimp.read(textBuffer).then(res).catch(rej);
-                    });
-                    if (imageObj.align) {
-                        switch (imageObj.align.toLowerCase()) {
-                            case 'center': {
-                                let baseX = Math.round((background.bitmap.width - textImage.bitmap.width) / 2);
-                                let baseY = Math.round((background.bitmap.height - textImage.bitmap.height) / 2);
-                                let x = !isNaN(parseInt(imageObj.x)) ? baseX + parseInt(imageObj.x) : baseX;
-                                let y = !isNaN(parseInt(imageObj.y)) ? baseY + parseInt(imageObj.y) : baseY;
-                                background.composite(textImage, x, y);
-                                break;
-                            };
-                        default: {
-                            errorObject.errors.push('Invalid alignment mode inside \'text\' property');
-                            let x = !isNaN(parseInt(imageObj.x)) ? parseInt(imageObj.x) : 0;
-                            let y = !isNaN(parseInt(imageObj.y)) ? parseInt(imageObj.y) : 0;
-                            background.composite(textImage, x, y);
-                            break;
-                        };
-                        };
-                    } else {
-                        let x = !isNaN(parseInt(imageObj.x)) ? parseInt(imageObj.x) : 0;
-                        let y = !isNaN(parseInt(imageObj.y)) ? parseInt(imageObj.y) : 0;
-                        background.composite(textImage, x, y);
-                    }
-                }
-            }
+            } else {
+                generateTxt(body.text[i], background, null, errorObject);
+            };
+            // if (body.text && !Array.isArray(body.text)) {
+            //     if (typeof body.text === 'object') {
+            //         let imageObj = Object.assign({}, defaultTextOptions, body.text);
+            //         if (!imageObj.text && !imageObj.txt) {
+            //             errorObject.errors.push('Empty \'text\' property');
+            //         };
+            //         if (imageObj.size && !isNaN(parseInt(imageObj.size))) {
+            //             let size = parseInt(imageObj.size);
+            //             imageObj.font = imageObj.font.replace('30px', size + 'px');
+            //         };
+            //         if(!imageObj.maxWidth) {
+            //             imageObj.maxWidth = background.bitmap.width;
+            //         };
+            //         let textBuffer = txt2png(imageObj.text || imageObj.txt, imageObj);
+            //         let textImage = await new Promise((res, rej) => {
+            //             Jimp.read(textBuffer).then(res).catch(rej);
+            //         });
+            //         if (imageObj.align) {
+            //             switch (imageObj.align.toLowerCase()) {
+            //                 case 'center': {
+            //                     let baseX = Math.round((background.bitmap.width - textImage.bitmap.width) / 2);
+            //                     let baseY = Math.round((background.bitmap.height - textImage.bitmap.height) / 2);
+            //                     let x = !isNaN(parseInt(imageObj.x)) ? baseX + parseInt(imageObj.x) : baseX;
+            //                     let y = !isNaN(parseInt(imageObj.y)) ? baseY + parseInt(imageObj.y) : baseY;
+            //                     background.composite(textImage, x, y);
+            //                     break;
+            //                 };
+            //             default: {
+            //                 errorObject.errors.push('Invalid alignment mode inside \'text\' property');
+            //                 let x = !isNaN(parseInt(imageObj.x)) ? parseInt(imageObj.x) : 0;
+            //                 let y = !isNaN(parseInt(imageObj.y)) ? parseInt(imageObj.y) : 0;
+            //                 background.composite(textImage, x, y);
+            //                 break;
+            //             };
+            //             };
+            //         } else {
+            //             let x = !isNaN(parseInt(imageObj.x)) ? parseInt(imageObj.x) : 0;
+            //             let y = !isNaN(parseInt(imageObj.y)) ? parseInt(imageObj.y) : 0;
+            //             background.composite(textImage, x, y);
+            //         }
+            //     } else {
+            //         errorObject.errors.push('Property \'text\' is not a valid array or object');
+            //     }
+            // } else if (body.text) {
+            //     // TODO maxWidth, height, x, y
+            //     for (var j = 0; j < body.text.length; j++) {
+            //         let imageObj = Object.assign({}, defaultTextOptions, body.text[j]);
+            //         if (!imageObj.text && !imageObj.txt) {
+            //             errorObject.errors.push('Empty \'text\' property at index: ' + j);
+            //             continue;
+            //         };
+            //         if (imageObj.size && !isNaN(parseInt(imageObj.size))) {
+            //             let size = parseInt(imageObj.size);
+            //             imageObj.font = imageObj.font.replace('30px', size + 'px');
+            //         };
+            //         if(!imageObj.maxWidth) {
+            //             imageObj.maxWidth = background.bitmap.width;
+            //         };
+            //         let textBuffer = txt2png(imageObj.text || imageObj.txt, imageObj);
+            //         let textImage = await new Promise((res, rej) => {
+            //             Jimp.read(textBuffer).then(res).catch(rej);
+            //         });
+            //         if (imageObj.align) {
+            //             switch (imageObj.align.toLowerCase()) {
+            //                 case 'center': {
+            //                     let baseX = Math.round((background.bitmap.width - textImage.bitmap.width) / 2);
+            //                     let baseY = Math.round((background.bitmap.height - textImage.bitmap.height) / 2);
+            //                     let x = !isNaN(parseInt(imageObj.x)) ? baseX + parseInt(imageObj.x) : baseX;
+            //                     let y = !isNaN(parseInt(imageObj.y)) ? baseY + parseInt(imageObj.y) : baseY;
+            //                     background.composite(textImage, x, y);
+            //                     break;
+            //                 };
+            //             default: {
+            //                 errorObject.errors.push('Invalid alignment mode inside \'text\' property');
+            //                 let x = !isNaN(parseInt(imageObj.x)) ? parseInt(imageObj.x) : 0;
+            //                 let y = !isNaN(parseInt(imageObj.y)) ? parseInt(imageObj.y) : 0;
+            //                 background.composite(textImage, x, y);
+            //                 break;
+            //             };
+            //             };
+            //         } else {
+            //             let x = !isNaN(parseInt(imageObj.x)) ? parseInt(imageObj.x) : 0;
+            //             let y = !isNaN(parseInt(imageObj.y)) ? parseInt(imageObj.y) : 0;
+            //             background.composite(textImage, x, y);
+            //         }
+            //     }
+            // }
         }
         if (body.opacity || body.o) {
             body.opacity = parseInt(body.opacity || body.o);
