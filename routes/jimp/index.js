@@ -2,56 +2,76 @@ const bodyParser = require("body-parser");
 const express = require("express");
 const router = express.Router();
 const Jimp = require("jimp");
-const { parse } = require("mathjs");
+const {
+    parse
+} = require("mathjs");
+
 const fs = require('fs');
-const { v4: uuidv4 } = require('uuid');
+const {
+    v4: uuidv4
+} = require('uuid');
 
 const txt2png = require('text2png');
-//! CHANGE FONT AT YOUR OWN RISK 
+const {
+    registerFont,
+    createCanvas
+} = require("canvas");
+const canvas = createCanvas(0, 0);
+const ctx = canvas.getContext("2d");
+//! CHANGE FONT AT YOUR OWN RISK
 const defaultTextOptions = {
-  color: "black",
-  font: "30px arial", //TODO Customization
-  textAlign: "left",
-  backgroundColor: "transparent",
-  lineSpacing: 0,
-  strokeWidth: 0,
-  strokeColor: "white",
-  padding: 0,
-  paddingLeft: 0,
-  paddingRight: 0,
-  paddingTop: 0,
-  paddingBottom: 0,
-  borderWidth: 0,
-  border: 0,
-  borderLeftWidth: 0,
-  borderRightWidth: 0,
-  borderTopWidth: 0,
-  borderBottomWidth: 0,
-  borderColor: "black",
-  localFontPath: undefined, //! NO
-  localFontName: undefined, //! NO
+    // color: "black",
+    font: "30px arial", //TODO Customization
+    // textAlign: "left",
+    // backgroundColor: "transparent",
+    // lineSpacing: 0,
+    // strokeWidth: 0,
+    // strokeColor: "white",
+    // padding: 0,
+    // paddingLeft: 0,
+    // paddingRight: 0,
+    // paddingTop: 0,
+    // paddingBottom: 0,
+    // borderWidth: 0,
+    // border: 0,
+    // borderLeftWidth: 0,
+    // borderRightWidth: 0,
+    // borderTopWidth: 0,
+    // borderBottomWidth: 0,
+    // borderColor: "black",
+    // localFontPath: undefined, //! NO
+    // localFontName: undefined, //! NO
 };
-// ? Initializing circle-mask for making the 'circle' shape
-var circleMask;
-Jimp.read(__dirname + "/circle-mask.png")
-    .then((image) => {
-        circleMask = image;
-        console.info("Read circle-mask!");
-    })
-    .catch((err) => {
-        console.error("Error reading circle-mask.png: " + err);
-    });
 
-// ? Initializing the default background if 'background' is not provided
+
+// ? Initialize the circle-mask and default background
+var circleMask;
 var transparentBG;
-Jimp.read(__dirname + "/transparent.png")
-    .then((image) => {
-        transparentBG = image;
-        console.info("Read transparentbg!");
-    })
-    .catch((err) => {
-        console.error("Error reading transparent.png: " + err);
-    });
+
+function initializeBackgrounds() {
+    // ? Initializing circle-mask for making the 'circle' shape
+
+    Jimp.read(__dirname + "/circle-mask.png")
+        .then((image) => {
+            circleMask = image;
+            console.info("Read circle-mask!");
+        })
+        .catch((err) => {
+            console.error("Error reading circle-mask.png: " + err);
+        });
+
+    // ? Initializing the default background if 'background' is not provided
+    Jimp.read(__dirname + "/transparent.png")
+        .then((image) => {
+            transparentBG = image;
+            console.info("Read transparentbg!");
+        })
+        .catch((err) => {
+            console.error("Error reading transparent.png: " + err);
+        });
+};
+initializeBackgrounds();
+
 // ? Load 128px Open Sans black font
 var SANS_128_FONT;
 Jimp.loadFont(Jimp.FONT_SANS_128_BLACK).then(font => {
@@ -68,10 +88,11 @@ async function processJimp(
     }
 ) {
     errorObject = Object.assign({
-            src: body.background || "transparent.png"
+            src: body.background || "https://api.nicelink.xyz/jimp/transparent.png"
         },
         errorObject
     );
+    // * All the big boy logic
     return new Promise(async (resolve, reject) => {
         let background;
         if (!body.background && !body.bg) {
@@ -89,7 +110,10 @@ async function processJimp(
                 return reject(errorObject);
             }
         }
-        //? Resize background if width or height is specified
+        /**
+         * * Resize background if width and/or height is specified
+         * ? If one value is omitted, the ratio will be preserved
+         */
         if (
             !isNaN(parseInt(body.width || body.w)) ||
             !isNaN(parseInt(body.height || body.h))
@@ -102,30 +126,37 @@ async function processJimp(
                 Jimp.AUTO;
             background.resize(width, height);
         }
-        // ? Place images before changing other properties on the parent
+        // * Place images before changing other properties on the parent
         if (body.images || body.children) {
+            // TODO maybe change this ugly nested JSON parsing
             try {
                 body.images = JSON.parse(body.images);
             } catch (e) {
                 try {
                     body.images = JSON.parse(body.children)
-                } catch(e) {};
+                } catch (e) {};
             };
+            // * Error if invalid or not an array
             if (!body.images) {
                 errorObject.errors.push("Invalid property 'images'");
             } else if (!Array.isArray(body.images)) {
                 errorObject.errors.push("Property 'images' is not an array");
             } else {
+                // * Loop through all the images and place them on the background
+                /**
+                 * ? As the images are placed in order, the order of images is essentially the order of the layers too
+                 * ? First element in the array will be the lowest layer and thus displayed below the second element
+                 */
                 for (var j = 0; j < body.images.length; j++) {
                     let imageObj = body.images[j];
                     try {
-                        let processedImage = await processJimp(imageObj);
-                        let image = processedImage[0];
-                        errorObject.childrenObjects.push(processedImage[1]);
-                        if(imageObj.size) {
-                            switch(imageObj.size.toLowerCase()) {
-                                case 'contain' : {
-                                    if(image.bitmap.width > background.bitmap.width || image.bitmap.height > background.bitmap.height) {
+                        let [image, childErrorObject] = await processJimp(imageObj);
+                        errorObject.childrenObjects.push(childErrorObject);
+                        if (imageObj.size) {
+                            switch (imageObj.size.toLowerCase()) {
+                                // ! This only downscales the image if necessary. This doesn't upscale the image if it fits in the parent
+                                case 'contain': {
+                                    if (image.bitmap.width > background.bitmap.width || image.bitmap.height > background.bitmap.height) {
                                         image.scaleToFit(background.bitmap.width, background.bitmap.height);
                                     }
                                     break;
@@ -133,7 +164,7 @@ async function processJimp(
                             };
                         };
                         if (imageObj.alignment || image.align) {
-                            switch((imageObj.alignment || imageObj.align).toLowerCase()) {
+                            switch ((imageObj.alignment || imageObj.align).toLowerCase()) {
                                 case 'center': {
                                     let baseX = Math.round((background.bitmap.width - image.bitmap.width) / 2);
                                     let baseY = Math.round((background.bitmap.height - image.bitmap.height) / 2);
@@ -163,17 +194,17 @@ async function processJimp(
         };
 
         //? Oh boy
-        if(body.text || body.txt) {
-            try { 
+        if (body.text || body.txt) {
+            try {
                 body.text = JSON.parse(body.text || body.txt)
-            } catch(e) {};
-            if(body.text && !Array.isArray(body.text)) {
-                if(typeof body.text === 'object') {
+            } catch (e) {};
+            if (body.text && !Array.isArray(body.text)) {
+                if (typeof body.text === 'object') {
                     let imageObj = Object.assign({}, defaultTextOptions, body.text);
-                    if(!imageObj.text && !imageObj.txt) {
+                    if (!imageObj.text && !imageObj.txt) {
                         errorObject.errors.push('Empty \'text\' property');
                     };
-                    if(imageObj.size && !isNaN(parseInt(imageObj.size))) {
+                    if (imageObj.size && !isNaN(parseInt(imageObj.size))) {
                         let size = parseInt(imageObj.size);
                         imageObj.font = imageObj.font.replace('30px', size + 'px');
                     };
@@ -181,8 +212,8 @@ async function processJimp(
                     let textImage = await new Promise((res, rej) => {
                         Jimp.read(textBuffer).then(res).catch(rej);
                     });
-                    if(imageObj.align) {
-                        switch(imageObj.align.toLowerCase()) {
+                    if (imageObj.align) {
+                        switch (imageObj.align.toLowerCase()) {
                             case 'center': {
                                 let baseX = Math.round((background.bitmap.width - textImage.bitmap.width) / 2);
                                 let baseY = Math.round((background.bitmap.height - textImage.bitmap.height) / 2);
@@ -191,13 +222,13 @@ async function processJimp(
                                 background.composite(textImage, x, y);
                                 break;
                             };
-                            default: {
-                                errorObject.errors.push('Invalid alignment mode inside \'text\' property');
-                                let x = !isNaN(parseInt(imageObj.x)) ? parseInt(imageObj.x) : 0;
-                                let y = !isNaN(parseInt(imageObj.y)) ? parseInt(imageObj.y) : 0;
-                                background.composite(textImage, x, y);
-                                break;
-                            };
+                        default: {
+                            errorObject.errors.push('Invalid alignment mode inside \'text\' property');
+                            let x = !isNaN(parseInt(imageObj.x)) ? parseInt(imageObj.x) : 0;
+                            let y = !isNaN(parseInt(imageObj.y)) ? parseInt(imageObj.y) : 0;
+                            background.composite(textImage, x, y);
+                            break;
+                        };
                         };
                     } else {
                         let x = !isNaN(parseInt(imageObj.x)) ? parseInt(imageObj.x) : 0;
@@ -207,15 +238,15 @@ async function processJimp(
                 } else {
                     errorObject.errors.push('Property \'text\' is not a valid array or object');
                 }
-            } else if(body.text) {
+            } else if (body.text) {
                 // TODO maxWidth, height, x, y
-                for(var j = 0; j < body.text.length; j++) {
+                for (var j = 0; j < body.text.length; j++) {
                     let imageObj = Object.assign({}, defaultTextOptions, body.text[j]);
-                    if(!imageObj.text && !imageObj.txt) {
+                    if (!imageObj.text && !imageObj.txt) {
                         errorObject.errors.push('Empty \'text\' property at index: ' + j);
                         continue;
                     };
-                    if(imageObj.size && !isNaN(parseInt(imageObj.size))) {
+                    if (imageObj.size && !isNaN(parseInt(imageObj.size))) {
                         let size = parseInt(imageObj.size);
                         imageObj.font = imageObj.font.replace('30px', size + 'px');
                     };
@@ -223,8 +254,8 @@ async function processJimp(
                     let textImage = await new Promise((res, rej) => {
                         Jimp.read(textBuffer).then(res).catch(rej);
                     });
-                    if(imageObj.align) {
-                        switch(imageObj.align.toLowerCase()) {
+                    if (imageObj.align) {
+                        switch (imageObj.align.toLowerCase()) {
                             case 'center': {
                                 let baseX = Math.round((background.bitmap.width - textImage.bitmap.width) / 2);
                                 let baseY = Math.round((background.bitmap.height - textImage.bitmap.height) / 2);
@@ -233,13 +264,13 @@ async function processJimp(
                                 background.composite(textImage, x, y);
                                 break;
                             };
-                            default: {
-                                errorObject.errors.push('Invalid alignment mode inside \'text\' property');
-                                let x = !isNaN(parseInt(imageObj.x)) ? parseInt(imageObj.x) : 0;
-                                let y = !isNaN(parseInt(imageObj.y)) ? parseInt(imageObj.y) : 0;
-                                background.composite(textImage, x, y);
-                                break;
-                            };
+                        default: {
+                            errorObject.errors.push('Invalid alignment mode inside \'text\' property');
+                            let x = !isNaN(parseInt(imageObj.x)) ? parseInt(imageObj.x) : 0;
+                            let y = !isNaN(parseInt(imageObj.y)) ? parseInt(imageObj.y) : 0;
+                            background.composite(textImage, x, y);
+                            break;
+                        };
                         };
                     } else {
                         let x = !isNaN(parseInt(imageObj.x)) ? parseInt(imageObj.x) : 0;
@@ -283,9 +314,73 @@ async function processJimp(
     });
 };
 
+// * For generating text png using the text2png package
+function generateTxt(data, image, textIndex = null, errorObject, ) {
+    try {
+        switch (typeof data) {
+            case 'string': {
+                errorObject.warnings.push('Property \'text\' is \'string\' but expected \'object\'. Assuming ' + data + ' is \'text\'.');
+                return generateTxt({
+                    text: data
+                });
+            };
+        case 'object': {
+            let textObj = Object.assign({}, defaultTextOptions, data);
+            let text = textObj.text || textObj.txt;
+            if (!text) {
+                errorObject.errors.push('Empty \'text\' property' + (textIndex ? ' at index: ' + textIndex + '.' : '.'));
+                return false;
+            };
+            if (imageObj.size && !isNaN(parseInt(imageObj.size))) {
+                let size = parseInt(imageObj.size);
+                imageObj.font = imageObj.font.replace('30px', size + 'px');
+            };
+            if (!imageObj.maxWidth) {
+                imageObj.maxWidth = image.bitmap.width;
+            }
+            let textBuffer = txt2png(imageObj.text || imageObj.txt, imageObj);
+            let textImage = await new Promise((res, rej) => {
+                Jimp.read(textBuffer).then(res).catch(rej);
+            });
+
+            if (imageObj.align) {
+                switch (imageObj.align.toLowerCase()) {
+                    case 'center': {
+                        let baseX = Math.round((image.bitmap.width - textImage.bitmap.width) / 2);
+                        let baseY = Math.round((image.bitmap.height - textImage.bitmap.height) / 2);
+                        let x = !isNaN(parseInt(imageObj.x)) ? baseX + parseInt(imageObj.x) : baseX;
+                        let y = !isNaN(parseInt(imageObj.y)) ? baseY + parseInt(imageObj.y) : baseY;
+                        image.composite(textImage, x, y);
+                        break;
+                    };
+                default: {
+                    errorObject.errors.push('Invalid alignment mode inside \'text\' property');
+                    let x = !isNaN(parseInt(imageObj.x)) ? parseInt(imageObj.x) : 0;
+                    let y = !isNaN(parseInt(imageObj.y)) ? parseInt(imageObj.y) : 0;
+                    image.composite(textImage, x, y);
+                    return true;
+                };
+                };
+            } else {
+                let x = !isNaN(parseInt(imageObj.x)) ? parseInt(imageObj.x) : 0;
+                let y = !isNaN(parseInt(imageObj.y)) ? parseInt(imageObj.y) : 0;
+                image.composite(textImage, x, y);
+                return true;
+            }
+        };
+        default:
+            errorObject.errors.push('Property \'text\' is \'' + typeof data + '\' but expected \'object\'');
+            return false;
+        };
+    } catch (e) {
+        // ! Not sure about this but the error should be inside the errorObject so....
+        return false;
+    };
+};
+
 // ? For returning stored images
-router.get('/:image', async(req, res) => {
-    if(fs.existsSync(__dirname + '/cached/' + req.params.image)) {
+router.get('/:image', async (req, res) => {
+    if (fs.existsSync(__dirname + '/cached/' + req.params.image)) {
         res.sendFile(__dirname + '/cached/' + req.params.image);
     } else {
         res.send(req.params.image + ' doesn\'t exist.');
@@ -294,8 +389,8 @@ router.get('/:image', async(req, res) => {
 
 // ? For getting the image
 router.get('/', async (req, res) => {
-    if(!req.query || Object.values(req.query).length === 0) {
-        return res.send('Error rendering content');    
+    if (!req.query || Object.values(req.query).length === 0) {
+        return res.send('Error rendering content');
     }
     try {
         let image = await processJimp(req.query);
@@ -309,7 +404,7 @@ router.get('/', async (req, res) => {
 });
 
 // ? For getting the image path and errors/warnings
-router.post('/', async(req, res) => {
+router.post('/', async (req, res) => {
     let processedJimp = [];
     try {
         processedJimp = await processJimp(req.body);
@@ -320,14 +415,14 @@ router.post('/', async(req, res) => {
         return acc + `${item}=${typeof req.body[item] === 'object' ? JSON.stringify(req.body[item]) : req.body[item]}&`
     }, '?');
     processedJimp[1] = Object.assign({
-        root : 'https://api.nicelink.xyz/jimp',
-        path : imagePath
+        root: 'https://api.nicelink.xyz/jimp',
+        path: imagePath
     }, processedJimp[1]);
     res.type('json').send(JSON.stringify(processedJimp[1], null, 2))
 });
 
 
-router.post('/store', async(req, res) => {
+router.post('/store', async (req, res) => {
     let processedJimp = [null, {}];
     let uniqueID = uuidv4();
     try {
@@ -341,8 +436,8 @@ router.post('/store', async(req, res) => {
     // !    return acc + `${item}=${req.body[item]}&`
     // ! }, '?');
     processedJimp[1] = Object.assign({
-        root : 'https://api.nicelink.xyz/jimp',
-        path : processedJimp[1].error ? null : '/' + uniqueID + '.png'
+        root: 'https://api.nicelink.xyz/jimp',
+        path: processedJimp[1].error ? null : '/' + uniqueID + '.png'
     }, processedJimp[1]);
     res.type('json').send(JSON.stringify(processedJimp[1], null, 2))
 });
