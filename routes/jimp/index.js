@@ -308,6 +308,8 @@ async function processJimp(
                     break;
                 };
                 default: {
+                    let exceptions = ['size', 'align', 'alignment'];
+                    if(exceptions.includes(key)) break;
                     errorObject.errors.push('Unrecognized property \'' + key + '\'');
                 };
             };
@@ -515,8 +517,8 @@ async function generateTxt(data, image, textIndex = null, errorObject) {
                                 baseY + parseInt(textObj.y) :
                                 baseY;
                             image.composite(textImage, x, y);
-                            break;
-                        }
+                            return image;
+                        };
                         default: {
                             errorObject.errors.push(
                                 "Invalid alignment mode inside 'text' property"
@@ -649,7 +651,7 @@ async function handleChildren(data, background, errorObject) {
                     }
                 }
             }
-            if (imageObj.alignment || image.align) {
+            if (imageObj.alignment || imageObj.align) {
                 switch ((imageObj.alignment || imageObj.align).toLowerCase()) {
                     case 'center': {
                         let baseX = Math.round(
