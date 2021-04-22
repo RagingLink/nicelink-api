@@ -297,7 +297,8 @@ async function processJimp(
                         background.crop(w, h, x, y);
                     } else if (typeof data === 'string') {
                         if (data.toLowerCase() === 'auto') {
-                            background.autocrop();
+                            // TODO auto crop implementation
+                            background.autocrop(false);
                             console.log('Auto cropped!');
                         }
                     } else {
