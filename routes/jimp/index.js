@@ -201,7 +201,7 @@ async function processJimp(
                     };
                 }
             } else {
-                await generateTxt(body.text[i], background, null, errorObject);
+                await generateTxt(body.text, background, null, errorObject);
             };
             // if (body.text && !Array.isArray(body.text)) {
             //     if (typeof body.text === 'object') {
