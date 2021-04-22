@@ -131,6 +131,7 @@ async function processJimp(
                 Jimp.AUTO;
             background.resize(width, height);
         }
+        delete body.width && delete body.w && delete body.h && delete body.height;
         let properties = Object.keys(body);
         propertiesLoop: for (var i = 0; i < properties.length; i++) {
             let key = properties[i];
