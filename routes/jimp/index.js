@@ -126,7 +126,22 @@ async function processJimp(
                 parseInt(body.height || body.h) :
                 Jimp.AUTO;
             background.resize(width, height);
-        }
+        };
+        if(body.replaceColor) {
+            try {
+                body.replaceColor = JSON.parse(body.replaceColor);
+            } catch(e) {
+
+            };
+            if(typeof body.replaceColor === 'object') {
+                let replaced = await replaceColor(body.replaceColor, background, errorObject);
+                if(replaced) {
+                    background = replaced;
+                };
+            } else {
+                errorObject.errors.push('Property \'replaceColor\' is not an object');
+            };
+        };
         // * Place images before changing other properties on the parent
         if (body.images || body.children) {
             // TODO maybe change this ugly nested JSON parsing
@@ -452,6 +467,22 @@ async function outlineCircle(data, image, errorObject) {
       })
       black.composite(image, data.width, data.width);
       return black;
+};
+
+async function replaceColor(data, image, errorObject) {
+    try {
+        return await replaceColor({
+            image: image, colors : {
+              type: 'hex',
+              targetColor: data.target,
+              replaceColor: data.replace 
+            },
+            deltaE : data.delta
+          });
+    } catch(e) {
+        errorObject.errors.push('Something went wrong when replacing the color' + e.message);
+        return false;
+    };
 }
 // ? For returning stored images
 router.get('/:image', async (req, res) => {
