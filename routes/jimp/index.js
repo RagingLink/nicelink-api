@@ -308,7 +308,7 @@ async function processJimp(
                     break;
                 };
                 default: {
-                    let exceptions = ['size', 'align', 'alignment', 'x', 'y'];
+                    let exceptions = ['size', 'align', 'alignment', 'x', 'y', 'outline'];
                     if(exceptions.includes(key)) break;
                     errorObject.errors.push('Unrecognized property \'' + key + '\'');
                 };
@@ -350,8 +350,10 @@ async function generateTxt(data, image, textIndex = null, errorObject) {
                     let size = parseInt(textObj.size);
                     textObj.font = textObj.font.replace('30px', size + 'px');
                 }
+                let x = !isNaN(parseInt(textObj.x)) ? parseInt(textObj.x) : 0;
+                let y = !isNaN(parseInt(textObj.y)) ? parseInt(textObj.y) : 0;
                 if (!textObj.maxWidth) {
-                    textObj.maxWidth = image.bitmap.width;
+                    textObj.maxWidth = image.bitmap.width - x;
                 }
                 let textBuffer = txt2png(textObj.text || textObj.txt, textObj);
                 let textImage = await new Promise((res, rej) => {
@@ -367,12 +369,8 @@ async function generateTxt(data, image, textIndex = null, errorObject) {
                             let baseY = Math.round(
                                 (image.bitmap.height - textImage.bitmap.height) / 2
                             );
-                            let x = !isNaN(parseInt(textObj.x)) ?
-                                baseX + parseInt(textObj.x) :
-                                baseX;
-                            let y = !isNaN(parseInt(textObj.y)) ?
-                                baseY + parseInt(textObj.y) :
-                                baseY;
+                            x += baseX
+                            x += baseY
                             image.composite(textImage, x, y);
                             return image;
                         };
@@ -380,15 +378,11 @@ async function generateTxt(data, image, textIndex = null, errorObject) {
                             errorObject.errors.push(
                                 "Invalid alignment mode inside 'text' property"
                             );
-                            let x = !isNaN(parseInt(textObj.x)) ? parseInt(textObj.x) : 0;
-                            let y = !isNaN(parseInt(textObj.y)) ? parseInt(textObj.y) : 0;
                             image.composite(textImage, x, y);
                             return image;
                         }
                     }
                 } else {
-                    let x = !isNaN(parseInt(textObj.x)) ? parseInt(textObj.x) : 0;
-                    let y = !isNaN(parseInt(textObj.y)) ? parseInt(textObj.y) : 0;
                     image.composite(textImage, x, y);
                     return image;
                 }
