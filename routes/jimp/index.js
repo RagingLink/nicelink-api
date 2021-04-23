@@ -373,7 +373,7 @@ async function generateTxt(data, image, textIndex = null, errorObject) {
                                 (image.bitmap.height - textImage.bitmap.height) / 2
                             );
                             x += baseX
-                            x += baseY
+                            y += baseY
                             image.composite(textImage, x, y);
                             return image;
                         };
