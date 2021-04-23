@@ -178,6 +178,9 @@ async function processJimp(
                 case 'txt': {
                     try {
                         data = JSON.parse(data);
+                        if(typeof data === 'number') {
+                            data = data.toString();
+                        }
                     } catch (e) {}
                     if (Array.isArray(data)) {
                         for (var i = 0; i < data.length; i++) {
