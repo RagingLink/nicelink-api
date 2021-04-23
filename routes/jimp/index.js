@@ -308,156 +308,12 @@ async function processJimp(
                     break;
                 };
                 default: {
-                    let exceptions = ['size', 'align', 'alignment'];
+                    let exceptions = ['size', 'align', 'alignment', 'x', 'y'];
                     if(exceptions.includes(key)) break;
                     errorObject.errors.push('Unrecognized property \'' + key + '\'');
                 };
             };
         };
-        // if (body.replaceColor) {
-        // 	try {
-        // 		body.replaceColor = JSON.parse(body.replaceColor);
-        // 	} catch (e) {}
-        // 	if (typeof body.replaceColor === 'object') {
-        // 		let replaced = await replaceImageColor(
-        // 			body.replaceColor,
-        // 			background,
-        // 			errorObject
-        // 		);
-        // 		if (replaced) {
-        // 			background = replaced;
-        // 		}
-        // 	} else {
-        // 		errorObject.errors.push("Property 'replaceColor' is not an object");
-        // 	}
-        // }
-        // // * Place images before changing other properties on the parent
-        // if (body.images || body.children) {
-        // 	// TODO maybe change this ugly nested JSON parsing
-        // 	try {
-        // 		body.images = JSON.parse(body.images);
-        // 	} catch (e) {
-        // 		try {
-        // 			body.images = JSON.parse(body.children);
-        // 		} catch (e) {}
-        // 	}
-        // 	// * Error if invalid or not an array
-        // 	if (!body.images) {
-        // 		errorObject.errors.push("Invalid property 'images'");
-        // 	} else if (!Array.isArray(body.images)) {
-        // 		errorObject.errors.push("Property 'images' is not an array");
-        // 	} else {
-        // 		// * Loop through all the images and place them on the background
-        // 		/**
-        // 		 * ? As the images are placed in order, the order of images is essentially the order of the layers too
-        // 		 * ? First element in the array will be the lowest layer and thus displayed below the second element
-        // 		 */
-        // 		for (var j = 0; j < body.images.length; j++) {
-        // 			let imageObj = body.images[j];
-        // 			try {
-        // 				let [image, childErrorObject] = await processJimp(imageObj);
-        // 				errorObject.childrenObjects.push(childErrorObject);
-        // 				if (imageObj.size) {
-        // 					switch (imageObj.size.toLowerCase()) {
-        // 						// ! This only downscales the image if necessary. This doesn't upscale the image if it fits in the parent
-        // 						case 'contain': {
-        // 							if (
-        // 								image.bitmap.width > background.bitmap.width ||
-        // 								image.bitmap.height > background.bitmap.height
-        // 							) {
-        // 								image.scaleToFit(
-        // 									background.bitmap.width,
-        // 									background.bitmap.height
-        // 								);
-        // 							}
-        // 							break;
-        // 						}
-        // 					}
-        // 				}
-        // 				if (imageObj.alignment || image.align) {
-        // 					switch ((imageObj.alignment || imageObj.align).toLowerCase()) {
-        // 						case 'center': {
-        // 							let baseX = Math.round(
-        // 								(background.bitmap.width - image.bitmap.width) / 2
-        // 							);
-        // 							let baseY = Math.round(
-        // 								(background.bitmap.height - image.bitmap.height) / 2
-        // 							);
-        // 							let x = !isNaN(parseInt(imageObj.x))
-        // 								? baseX + parseInt(imageObj.x)
-        // 								: baseX;
-        // 							let y = !isNaN(parseInt(imageObj.y))
-        // 								? baseY + parseInt(imageObj.y)
-        // 								: baseY;
-        // 							background.composite(image, x, y);
-        // 							break;
-        // 						}
-        // 					}
-        // 				} else {
-        // 					background.composite(
-        // 						image,
-        // 						!isNaN(parseInt(imageObj.x)) ? parseInt(imageObj.x) : 0,
-        // 						!isNaN(parseInt(imageObj.y)) ? parseInt(imageObj.y) : 0
-        // 					);
-        // 				}
-        // 			} catch (e) {
-        // 				errorObject.childrenObjects.push(e);
-        // 				return reject(errorObject);
-        // 			}
-        // 		}
-        // 	}
-        // }
-        // // * Utilize generateTxt(data, image, textIndex, err)
-        // if (body.text || body.txt) {
-        // }
-        // // * Changes opacity 0-100
-        // if (body.opacity || body.o) {
-        // 	body.opacity = parseInt(body.opacity || body.o);
-        // 	if (isNaN(body.opacity)) {
-        // 		errorObject.errors.push("Property 'opacity' is not a number");
-        // 	} else {
-        // 		background.opacity(body.opacity / 100);
-        // 	}
-        // }
-        // // * Rotation clockwise
-        // if (body.rotate || body.r) {
-        // 	body.rotate = parseInt(body.rotate || body.r);
-        // 	if (isNaN(body.rotate)) {
-        // 		errorObject.errors.push("Property 'rotate' is not a number");
-        // 	} else {
-        // 		background.rotate(-body.rotate);
-        // 	}
-        // }
-        // if (body.shape || body.s) {
-        // 	switch ((body.shape || body.s).toLowerCase()) {
-        // 		case 'circle': {
-        // 			let smallest =
-        // 				background.bitmap.width < background.bitmap.height
-        // 					? background.bitmap.width
-        // 					: background.bitmap.height;
-        // 			let x = Math.round((background.bitmap.width - smallest) / 2);
-        // 			let y = Math.round((smallest - background.bitmap.height) / 2);
-        // 			background.crop(x, y, smallest, smallest);
-        // 			background.background(0x000000);
-        // 			background.mask(circleMask.clone().resize(smallest, smallest), 0, 0);
-        // 			if (body.outline) {
-        // 				try {
-        // 					body.outline = JSON.parse(body.outline);
-        // 				} catch (e) {}
-        // 				if (typeof body.outline !== 'object') {
-        // 					errorObject.errors.push("Property 'outline' is not an object");
-        // 				} else {
-        // 					background = await outlineCircle(
-        // 						body.outline,
-        // 						background,
-        // 						errorObject
-        // 					);
-        // 				}
-        // 			}
-        // 			break;
-        // 		}
-        // 	}
-        // }
         return resolve([background, errorObject]);
     });
 }
@@ -501,8 +357,9 @@ async function generateTxt(data, image, textIndex = null, errorObject) {
                 let textImage = await new Promise((res, rej) => {
                     Jimp.read(textBuffer).then(res).catch(rej);
                 });
-                if (textObj.align) {
-                    switch (textObj.align.toLowerCase()) {
+                let align = textObj.alignment || textObj.align;
+                if (align) {
+                    switch (align.toLowerCase()) {
                         case 'center': {
                             let baseX = Math.round(
                                 (image.bitmap.width - textImage.bitmap.width) / 2
@@ -651,8 +508,9 @@ async function handleChildren(data, background, errorObject) {
                     }
                 }
             }
-            if (imageObj.alignment || imageObj.align) {
-                switch ((imageObj.alignment || imageObj.align).toLowerCase()) {
+            let align = imageObj.alignment || imageObj.align;
+            if (align) {
+                switch (align.toLowerCase()) {
                     case 'center': {
                         let baseX = Math.round(
                             (background.bitmap.width - image.bitmap.width) / 2
