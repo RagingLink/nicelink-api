@@ -287,19 +287,17 @@ async function processJimp(
                                 data[cropProperties[cropPropertyIndex]]);
                         };
 
-												console.log(JSON.stringify(data));
                         [
                             w,
                             h,
                             x,
                             y
                         ] = [
-                            data.w !== 'undefined' ? data.w : background.bitmap.width,
-                            data.h !== 'undefined' ? data.h :  background.bitmap.height,
-                            data.x !== 'undefined' ? data.x : 0,
-                            data.y !== 'undefined' ? data.y : 0
+                            data.w !== undefined ? data.w : background.bitmap.width,
+                            data.h !== undefined ? data.h :  background.bitmap.height,
+                            data.x !== undefined ? data.x : 0,
+                            data.y !== undefined ? data.y : 0
                         ];
-												console.log(`${x}${y}${w}${h}`);
                         background.crop(x, y, w, h);
                     } else if (typeof data === 'string') {
                         if (data.toLowerCase() === 'auto') {
