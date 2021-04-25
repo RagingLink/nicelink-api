@@ -597,7 +597,7 @@ router.post('/multiple', async (req, res) => {
         return res.type('json').send(JSON.stringify({error: 'Sources property not set.'}));
     };
 
-    if(!Array.isArray(!req.body.sources)) {
+    if(!Array.isArray(req.body.sources)) {
         return res.type('json').send(JSON.stringify({error: 'Sources property is not an array.'}));
     };
 
