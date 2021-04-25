@@ -635,7 +635,7 @@ router.post('/multiple', async (req, res) => {
                 });
         })
     }))
-    res.type('json').send(JSON.stringify(sources.map(i => i[1]), null, 2));
+    res.type('json').send(JSON.stringify(sources, null, 2));
 
 })
 router.post('/store', async (req, res) => {
