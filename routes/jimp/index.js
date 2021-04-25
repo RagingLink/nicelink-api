@@ -178,7 +178,7 @@ async function processJimp(
                 case 'txt': {
                     try {
                         data = JSON.parse(data);
-                        if(typeof data === 'number') {
+                        if (typeof data === 'number') {
                             data = data.toString();
                         }
                     } catch (e) {}
@@ -264,57 +264,57 @@ async function processJimp(
                         }
                     }
                 };
-                case 'crop': {
-                    try {
-                        data = JSON.parse(data);
-                    } catch (e) {};
+            case 'crop': {
+                try {
+                    data = JSON.parse(data);
+                } catch (e) {};
 
-                    if (!isNaN(parseInt(data))) {
-                        data = {
-                            x: 0,
-                            y: 0,
-                            w: parseInt(data),
-                            h: parseInt(data),
-                        };
+                if (!isNaN(parseInt(data))) {
+                    data = {
+                        x: 0,
+                        y: 0,
+                        w: parseInt(data),
+                        h: parseInt(data),
+                    };
+                };
+
+                if (typeof data === 'object') {
+                    let cropProperties = Object.keys(data)
+                    // ? This just parses number I guess it's ugly
+                    for (var cropPropertyIndex = 0; cropPropertyIndex < cropProperties.length; cropPropertyIndex++) {
+                        data[cropProperties[cropPropertyIndex]] = (!isNaN(parseInt(data[cropProperties[cropPropertyIndex]])) ?
+                            parseInt(data[cropProperties[cropPropertyIndex]]) :
+                            data[cropProperties[cropPropertyIndex]]);
                     };
 
-                    if (typeof data === 'object') {
-                        let cropProperties = Object.keys(data)
-                        // ? This just parses number I guess it's ugly
-                        for (var cropPropertyIndex = 0; cropPropertyIndex < cropProperties.length; cropPropertyIndex++) {
-                            data[cropProperties[cropPropertyIndex]] = (!isNaN(parseInt(data[cropProperties[cropPropertyIndex]])) ?
-                                parseInt(data[cropProperties[cropPropertyIndex]]) :
-                                data[cropProperties[cropPropertyIndex]]);
-                        };
-
-                        [
-                            w,
-                            h,
-                            x,
-                            y
-                        ] = [
-                            data.w !== undefined ? data.w : background.bitmap.width,
-                            data.h !== undefined ? data.h :  background.bitmap.height,
-                            data.x !== undefined ? data.x : 0,
-                            data.y !== undefined ? data.y : 0
-                        ];
-                        background.crop(x, y, w, h);
-                    } else if (typeof data === 'string') {
-                        if (data.toLowerCase() === 'auto') {
-                            // TODO auto crop implementation
-                            background.autocrop(false);
-                            console.log('Auto cropped!');
-                        }
-                    } else {
-                        errorObject.errors.push('Unrecognized value with type \'' + typeof data + '\' of property \'' + key + '\'');
-                    };
-                    break;
+                    [
+                        w,
+                        h,
+                        x,
+                        y
+                    ] = [
+                        data.w !== undefined ? data.w : background.bitmap.width,
+                        data.h !== undefined ? data.h : background.bitmap.height,
+                        data.x !== undefined ? data.x : 0,
+                        data.y !== undefined ? data.y : 0
+                    ];
+                    background.crop(x, y, w, h);
+                } else if (typeof data === 'string') {
+                    if (data.toLowerCase() === 'auto') {
+                        // TODO auto crop implementation
+                        background.autocrop(false);
+                        console.log('Auto cropped!');
+                    }
+                } else {
+                    errorObject.errors.push('Unrecognized value with type \'' + typeof data + '\' of property \'' + key + '\'');
                 };
-                default: {
-                    let exceptions = ['size', 'align', 'alignment', 'x', 'y', 'outline'];
-                    if(exceptions.includes(key)) break;
-                    errorObject.errors.push('Unrecognized property \'' + key + '\'');
-                };
+                break;
+            };
+            default: {
+                let exceptions = ['size', 'align', 'alignment', 'x', 'y', 'outline'];
+                if (exceptions.includes(key)) break;
+                errorObject.errors.push('Unrecognized property \'' + key + '\'');
+            };
             };
         };
         return resolve([background, errorObject]);
@@ -377,13 +377,13 @@ async function generateTxt(data, image, textIndex = null, errorObject) {
                             image.composite(textImage, x, y);
                             return image;
                         };
-                        default: {
-                            errorObject.errors.push(
-                                "Invalid alignment mode inside 'text' property"
-                            );
-                            image.composite(textImage, x, y);
-                            return image;
-                        }
+                    default: {
+                        errorObject.errors.push(
+                            "Invalid alignment mode inside 'text' property"
+                        );
+                        image.composite(textImage, x, y);
+                        return image;
+                    }
                     }
                 } else {
                     image.composite(textImage, x, y);
@@ -593,41 +593,46 @@ router.post('/', async (req, res) => {
 });
 
 router.post('/multiple', async (req, res) => {
-    if(!req.body || !req.body.sources) {
-        return res.type('json').send(JSON.stringify({error: 'Sources property not set.'}));
+    if (!req.body || !req.body.sources) {
+        return res.type('json').send(JSON.stringify({
+            error: 'Sources property not set.'
+        }));
     };
 
-    if(!Array.isArray(req.body.sources)) {
-        return res.type('json').send(JSON.stringify({error: 'Sources property is not an array.'}));
+    if (!Array.isArray(req.body.sources)) {
+        return res.type('json').send(JSON.stringify({
+            error: 'Sources property is not an array.'
+        }));
     };
 
     let sources = req.body.sources.map(src => {
         let uniqueID = uuidv4();
         return ({
             uniqueID,
-            body : src
+            body: src
         });
     });
     sources = await Promise.all(sources.map((src) => {
         return new Promise((resolve, reject) => {
             processJimp(src.body)
                 .then(processed => {
-                processed[0].write(__dirname + '/cached/' + src.uniqueID + '.png');
-                resolve(Object.assign({
-                    root : 'https://api.nicelink.xyz/jimp',
-                    path: processedJimp[1].error ? null : '/' + src.uniqueID + '.png',
-                },
-                processJimp[1]));
-            })
-            .catch(e => {
-                let returnObject = [null, {}];
-                returnObject[1] = e;
-                returnObject[1].error = true;
-                resolve(Object.assign({
-                    root : 'https://api.nicelink.xyz/jimp',
-                    path: processedJimp[1].error ? null : '/' + src.uniqueID + '.png',
-                },
-                processJimp[1]));            });
+                    processed[0].write(__dirname + '/cached/' + src.uniqueID + '.png');
+                    resolve(Object.assign({
+                            root: 'https://api.nicelink.xyz/jimp',
+                            path: processed[1].error ? null : '/' + src.uniqueID + '.png',
+                        },
+                        processed[1]));
+                })
+                .catch(e => {
+                    let returnObject = [null, {}];
+                    returnObject[1] = e;
+                    returnObject[1].error = true;
+                    resolve(Object.assign({
+                            root: 'https://api.nicelink.xyz/jimp',
+                            path: returnObject[1].error ? null : '/' + src.uniqueID + '.png',
+                        },
+                        returnObject[1]));
+                });
         })
     }))
     res.type('json').send(JSON.stringify(sources.map(i => i[1]), null, 2));
