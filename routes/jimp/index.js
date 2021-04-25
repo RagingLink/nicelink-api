@@ -592,6 +592,47 @@ router.post('/', async (req, res) => {
     res.type('json').send(JSON.stringify(processedJimp[1], null, 2));
 });
 
+router.post('/multiple', async (req, res) => {
+    if(!req.body || !req.body.sources) {
+        return res.type('json').send(JSON.stringify({error: 'Sources property not set.'}));
+    };
+
+    if(!Array.isArray(!req.body.sources)) {
+        return res.type('json').send(JSON.stringify({error: 'Sources property is not an array.'}));
+    };
+
+    let sources = req.body.sources.map(src => {
+        let uniqueID = uuidv4();
+        return ({
+            uniqueID,
+            body : src
+        });
+    });
+    sources = await Promise.all(sources.map((src) => {
+        return new Promise((resolve, reject) => {
+            processJimp(src.body)
+                .then(processed => {
+                processed[0].write(__dirname + '/cached/' + src.uniqueID + '.png');
+                resolve(Object.assign({
+                    root : 'https://api.nicelink.xyz/jimp',
+                    path: processedJimp[1].error ? null : '/' + src.uniqueID + '.png',
+                },
+                processJimp[1]));
+            })
+            .catch(e => {
+                let returnObject = [null, {}];
+                returnObject[1] = e;
+                returnObject[1].error = true;
+                resolve(Object.assign({
+                    root : 'https://api.nicelink.xyz/jimp',
+                    path: processedJimp[1].error ? null : '/' + src.uniqueID + '.png',
+                },
+                processJimp[1]));            });
+        })
+    }))
+    res.type('json').send(JSON.stringify(sources.map(i => i[1]), null, 2));
+
+})
 router.post('/store', async (req, res) => {
     let processedJimp = [null, {}];
     let uniqueID = uuidv4();
