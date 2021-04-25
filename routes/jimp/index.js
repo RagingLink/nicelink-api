@@ -293,10 +293,10 @@ async function processJimp(
                             x,
                             y
                         ] = [
-                            data.w || background.bitmap.width,
-                            data.h || background.bitmap.height,
-                            data.x || 0,
-                            data.y || 0
+                            data.w !== undefined ? data.w : background.bitmap.width,
+                            data.h !== undefined ? data.h :  background.bitmap.height,
+                            data.x !== undefined ? data.x : 0,
+                            data.y !== undefined ? data.y : 0
                         ];
                         background.crop(x, y, w, h);
                     } else if (typeof data === 'string') {
