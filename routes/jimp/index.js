@@ -303,7 +303,6 @@ async function processJimp(
                     if (data.toLowerCase() === 'auto') {
                         // TODO auto crop implementation
                         background.autocrop(false);
-                        console.log('Auto cropped!');
                     }
                 } else {
                     errorObject.errors.push('Unrecognized value with type \'' + typeof data + '\' of property \'' + key + '\'');
