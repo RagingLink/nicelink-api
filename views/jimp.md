@@ -58,7 +58,6 @@ replacecolor||`undefined`|Object with properties `target` and `replace`. `target
 If a <code>property</code> is provided in combination with its <code>alias</code>, the <code>property</code> will take priority. If the value is invalid, <i>then</i> the <code>alias</code> will be used.
 </aside>
 
----
 ###Supported child image properties
 
 |Property|Alias|Default|Description|
