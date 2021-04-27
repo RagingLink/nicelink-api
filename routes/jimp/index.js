@@ -448,11 +448,15 @@ async function generateTxt(data, image, textIndex = null, errorObject) {
 							let baseY = Math.round(
 								image.bitmap.height - textImage.bitmap.height
 							);
+                            x += baseX;
+							y += baseY;
+							image.composite(textImage, x, y);
+							return image;
 						}
 
 						default: {
 							errorObject.errors.push(
-								"Invalid alignment mode inside 'text' property"
+								"Invalid alignment mode '"+ align +"'inside 'text' property"
 							);
 							image.composite(textImage, x, y);
 							return image;
