@@ -72,10 +72,10 @@ async function initializeBackgrounds() {
 initializeBackgrounds();
 
 // ? Load 128px Open Sans black font
-var SANS_128_FONT;
-Jimp.loadFont(Jimp.FONT_SANS_128_BLACK).then((font) => {
-	SANS_128_FONT = font;
-});
+// var SANS_128_FONT;
+// Jimp.loadFont(Jimp.FONT_SANS_128_BLACK).then((font) => {
+// 	SANS_128_FONT = font;
+// });
 
 // ? Process GET or POST request and return [Jimp image, Error object]
 async function processJimp(

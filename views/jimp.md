@@ -50,6 +50,9 @@ rotate|r|`0`|Clockwise rotation of the image in degrees.
 shape|s|`undefined`|Shape of the image. Can be `circle`.
 flip|mirror|`false`|Flips the image horizontally or vertically. Valid values are: `hor, horizontal, ver, vertical`. If `true` is provided, the image will be flipped horizontally
 images|children|`[]`|Array of image Objects. All `root image` properties can be used, and all the `child image` properties below. Child images can also have their own children.
+text|txt|`undefined`|Can be an array of objects, a single object or a string with the text to display. **It's recommended to provide an object for more control of the text. For information about the supported properties visit the [text](https://api.nicelink.xyz/docs/jimp#text) section**
+crop||`undefined`|Crops the image based on the argument provided. Argument can be a number in which case it will crop from `x = 0` and `y = 0` until `x = number` and `y = number`. Or the argument can be an object with properties `x, y, w, h` where it will start cropping from `x` and `y` until `w` (width) and `h` (height).
+replacecolor||`undefined`|Object with properties `target` and `replace`. `target` is the color to be replaced, and `replace` is the color it will be replaced with. An optional property `delta` can also be provided, this is the `deltaE` value (more info [here](http://zschuessler.github.io/DeltaE/learn/)). Defaults to `2.3`.
 
 <aside class="notice">
 If a <code>property</code> is provided in combination with its <code>alias</code>, the <code>property</code> will take priority. If the value is invalid, <i>then</i> the <code>alias</code> will be used.
@@ -62,8 +65,27 @@ If a <code>property</code> is provided in combination with its <code>alias</code
 |-|-|-|-|
 x||`0`|Horizontal position of the image on the parent image.
 y||`0`|Vertical position of the image on the parent image.
-alignment|align|`undefined`|Alignment of the image on the parent image. Can be `center`. **If this property is provided in combination with `x` and/or `y`, `x` and `y` will be the offset.**
+alignment|align|`undefined`|Alignment of the image on the parent image. Can be any of the modes listed under "[Supported alignment modes](https://api.nicelink.xyz/docs/jimp#supported-alignment-modes)". **If this property is provided in combination with `x` and/or `y`, `x` and `y` will be the offset.**
 size||`undefined`|Can be `contain`. `contain` scales the child image down so it fits inside the parent element.
+
+###Supported alignment modes
+<table>
+<tr>
+    <td>top-left</td>
+    <td>top-middle</td>
+    <td>top-right</td>
+</tr>
+<tr>
+    <td>left</td>
+    <td>center</td>
+    <td>right</td>
+</tr>
+<tr>
+    <td>bot-left</td>
+    <td>bot-middle</td>
+    <td>bot-right</td>
+</tr>
+</table>
 
 ##Retrieve image
 
@@ -123,3 +145,34 @@ curl https://api.nicelink.xyz/jimp/795c8388-d36a-4499-a7c5-4995a4ee01c2.png
 >The above command returns an image or *filename* doesn't exist
 
 `GET https://api.nicelink.xyz/jimp/imageID.png`
+
+
+##Text
+
+###Supported text properties
+Property|Alias|Default|Description
+|-|-|-|-|
+x||`0`|x coordinate/offset of the text block.
+y||`0`|y coordinate/offset of the text block.
+align||`top-left`|Alignment mode of the text block. Alignment modes can be seen in the [Supported alignment modes](https://api.nicelink.xyz/docs/jimp#supported-alignment-modes) section
+size||`30`|Pixel size of the text.
+font||`30px sans-serif`|Font must be of the format `SIZEpx FONT` where `SIZE` is the text size and `FONT` is the font you want to use. **This property DOES NOT returns errors if the font is invalid. In general this property should NOT be used.**
+textAlign||`left`|Alignment mode of the text inside the text block. This is **not** the same as the `align` property.
+textColor|color|`black`|Color of the text.
+backgroundColor|bgColor|`transparent`|Color of the background.
+lineSpacing||`0`|Amount of spacing between lines.
+maxWidth||`width of parent - x`|Max width of the text block. Defaults to the width of the parent image minus the `x` offset.
+strokeWidth||`0`|Width of the text stroke in pixels.
+strokeColor||`white`|Color of the text stroke.
+||||When using a stroke, the padding might need to be increased to avoid cutting off.
+paddingLeft|padding|`0`|Padding in pixels on the left side.
+paddingRight|padding|`0`|Padding in pixels on the right side.
+PaddingTop|padding|`0`|Padding in pixels on the top side.
+paddingBottom|padding|`0`|Padding in pixels on the bottom side.
+||||The `padding` property is only used for a side if the side-specific property is not provided.
+borderLeftWidth|borderWidth|`0`|Width of the border on the left side.
+borderRightWidth|borderWidth|`0`|Width of the border on the right side.
+borderTopWidth|borderWidth|`0`|Width of the border on the top side.
+borderBottomWidth|borderWidth|`0`|Width of the border on the bottom side.
+||||The `borderWidth` property is only used for a side if the side-specific property is not provided.
+borderColor||`black`|Color of the border.
