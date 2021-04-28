@@ -533,56 +533,67 @@ async function alignImage(background, image, data, errorObject) {
 			case 'source-over':
 			case 'sourceover': {
 				mode = Jimp.BLEND_SOURCE_OVER;
+				break;
 			}
 			case 'blend-destination-over':
 			case 'blend_destination_over':
 			case 'blenddestinationover': {
 				mode = Jimp.BLEND_DESTINATION_OVER;
+				break;
 			}
 			case 'blend-multiply':
 			case 'blend_multiply':
 			case 'blendmultiply': {
 				mode = Jimp.BLEND_MULTIPLY;
+				break;
 			}
 			case 'blend_add':
 			case 'blend-add':
 			case 'blendadd': {
 				mode = Jimp.BLEND_ADD;
+				break;
 			}
 			case 'blend_screen':
 			case 'blend-screen':
 			case 'blendscreen': {
 				mode = Jimp.BLEND_SCREEN;
+				break;
 			}
 			case 'blend_overlay':
 			case 'blend-overlay':
 			case 'blendoverlay': {
 				mode = Jimp.BLEND_OVERLAY;
+				break;
 			}
 			case 'blend_darken':
 			case 'blend-darken':
 			case 'blenddarken': {
 				mode = Jimp.BLEND_DARKEN;
+				break;
 			}
 			case 'blend_lighten':
 			case 'blend-lighten':
 			case 'blendlighten': {
 				mode = Jimp.BLEND_LIGHTEN;
+				break;
 			}
 			case 'blend_hardlight':
 			case 'blend-hardlight':
 			case 'blendhardlight': {
 				mode = Jimp.BLEND_HARDLIGHT;
+				break;
 			}
 			case 'blend_difference':
 			case 'blend-difference':
 			case 'blenddifference': {
 				mode = Jimp.BLEND_DIFFERENCE;
+				break;
 			}
 			case 'blend_exclusion':
 			case 'blend-exclusion':
 			case 'blendexclusion': {
 				mode = Jimp.BLEND_EXCLUSION;
+				break;
 			};
 			default : {
 				errorObject.errors.push('Blend mode \''+ mode + '\' is not a valid blend mode.');
