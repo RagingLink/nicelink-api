@@ -531,67 +531,78 @@ async function alignImage(background, image, data, errorObject) {
 		switch (mode.toLowerCase()) {
 			case 'source_over':
 			case 'source-over':
-			case 'sourceover': {
+			case 'sourceover':
+			case 'srcover': {
 				mode = Jimp.BLEND_SOURCE_OVER;
 				break;
 			}
 			case 'blend-destination-over':
 			case 'blend_destination_over':
-			case 'blenddestinationover': {
+			case 'blenddestinationover':
+			case 'destover': {
 				mode = Jimp.BLEND_DESTINATION_OVER;
 				break;
 			}
 			case 'blend-multiply':
 			case 'blend_multiply':
-			case 'blendmultiply': {
+			case 'blendmultiply':
+			case 'multiply': {
 				mode = Jimp.BLEND_MULTIPLY;
 				break;
 			}
 			case 'blend_add':
 			case 'blend-add':
-			case 'blendadd': {
+			case 'blendadd':
+			case 'add': {
 				mode = Jimp.BLEND_ADD;
 				break;
 			}
 			case 'blend_screen':
 			case 'blend-screen':
-			case 'blendscreen': {
+			case 'blendscreen':
+			case 'screen': {
 				mode = Jimp.BLEND_SCREEN;
 				break;
 			}
 			case 'blend_overlay':
 			case 'blend-overlay':
-			case 'blendoverlay': {
+			case 'blendoverlay':
+			case 'overlay': {
 				mode = Jimp.BLEND_OVERLAY;
 				break;
 			}
 			case 'blend_darken':
 			case 'blend-darken':
-			case 'blenddarken': {
+			case 'blenddarken':
+			case 'darken': {
 				mode = Jimp.BLEND_DARKEN;
 				break;
 			}
 			case 'blend_lighten':
 			case 'blend-lighten':
-			case 'blendlighten': {
+			case 'blendlighten':
+			case 'lighten': {
 				mode = Jimp.BLEND_LIGHTEN;
 				break;
 			}
 			case 'blend_hardlight':
 			case 'blend-hardlight':
-			case 'blendhardlight': {
+			case 'blendhardlight':
+			case 'hardlight': {
 				mode = Jimp.BLEND_HARDLIGHT;
 				break;
 			}
 			case 'blend_difference':
 			case 'blend-difference':
-			case 'blenddifference': {
+			case 'blenddifference':
+			case 'difference': {
 				mode = Jimp.BLEND_DIFFERENCE;
 				break;
 			}
 			case 'blend_exclusion':
 			case 'blend-exclusion':
-			case 'blendexclusion': {
+			case 'blendexclusion':
+			case 'exclusion': {
 				mode = Jimp.BLEND_EXCLUSION;
 				break;
 			};
@@ -688,6 +699,7 @@ async function alignImage(background, image, data, errorObject) {
 			}
 		}
 	}
+	console.log('X:' + x + ' Y:' + y);
 	background.composite(image, x, y, {
 		mode,
 		opacitySource : blendOpacitySrc,
