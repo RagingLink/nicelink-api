@@ -596,8 +596,11 @@ async function alignImage(background, image, data, errorObject) {
 				break;
 			};
 			default : {
-				errorObject.errors.push('Blend mode \''+ mode + '\' is not a valid blend mode.');
-				return false;
+				if(!ALIGNMENT_MODES.includes(mode)) {
+					errorObject.errors.push('Blend mode \''+ mode + '\' is not a valid blend mode.');
+					return false;
+				}
+ 				
 			}
 		}
 	} else {
