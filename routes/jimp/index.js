@@ -12,6 +12,7 @@ const txt2png = require('./text2png');
 //? Custom package https://github.com/RagingLink/replace-color.git
 const replaceColor = require('./replace-color');
 const { type } = require('os');
+const { background } = require('jimp');
 
 //! CHANGE FONT AT YOUR OWN RISK
 const defaultTextOptions = {
@@ -37,7 +38,19 @@ const defaultTextOptions = {
 	// localFontPath: undefined, //! NO
 	// localFontName: undefined, //! NO
 };
-
+const ALIGNMENT_MODES = [
+	Jimp.BLEND_SOURCE_OVER,
+	Jimp.BLEND_DESTINATION_OVER,
+	Jimp.BLEND_MULTIPLY,
+	Jimp.BLEND_ADD,
+	Jimp.BLEND_SCREEN,
+	Jimp.BLEND_OVERLAY,
+	Jimp.BLEND_DARKEN,
+	Jimp.BLEND_LIGHTEN,
+	Jimp.BLEND_HARDLIGHT,
+	Jimp.BLEND_DIFFERENCE,
+	Jimp.BLEND_EXCLUSION,
+];
 // ? Initialize the circle-mask and default background
 var circleMask;
 var transparentBG;
@@ -138,8 +151,8 @@ async function processJimp(
 					} catch (e) {}
 					if (typeof data === 'object') {
 						let replaced = await replaceImageColor(
-							data,
 							background,
+							data,
 							errorObject
 						);
 						if (replaced) {
@@ -162,7 +175,7 @@ async function processJimp(
 					} else if (!Array.isArray(data)) {
 						errorObject.errors.push("Property '" + key + "' is not an array");
 					} else {
-						let images = await handleChildren(data, background, errorObject);
+						let images = await handleChildren(background, data, errorObject);
 						if (images) {
 							background = images;
 						}
@@ -180,8 +193,8 @@ async function processJimp(
 					if (Array.isArray(data)) {
 						for (var i = 0; i < data.length; i++) {
 							let generatedTxt = await generateTxt(
-								data[i],
 								background,
+								data[i],
 								i,
 								errorObject
 							);
@@ -191,8 +204,8 @@ async function processJimp(
 						}
 					} else {
 						let generatedTxt = await generateTxt(
-							data,
 							background,
+							data,
 							null,
 							errorObject
 						);
@@ -249,8 +262,8 @@ async function processJimp(
 									);
 								} else {
 									background = await outlineCircle(
-										body.outline,
 										background,
+										body.outline,
 										errorObject
 									);
 								}
@@ -312,7 +325,7 @@ async function processJimp(
 					break;
 				}
 				default: {
-					let exceptions = ['size', 'align', 'alignment', 'x', 'y', 'outline'];
+					let exceptions = ['size', 'align', 'alignment', 'x', 'y', 'outline', 'blendMode', 'blendOpacitySrc', 'blendOpacityDest', ''];
 					if (exceptions.includes(key)) break;
 					errorObject.errors.push("Unrecognized property '" + key + "'");
 				}
@@ -323,7 +336,7 @@ async function processJimp(
 }
 
 // * For generating text png using the text2png package
-async function generateTxt(data, image, textIndex = null, errorObject) {
+async function generateTxt(background, data, textIndex = null, errorObject) {
 	try {
 		switch (typeof data) {
 			case 'string': {
@@ -333,10 +346,10 @@ async function generateTxt(data, image, textIndex = null, errorObject) {
 						" is 'text'."
 				);
 				return await generateTxt(
+					background,
 					{
 						text: data,
 					},
-					image,
 					textIndex,
 					errorObject
 				);
@@ -359,113 +372,20 @@ async function generateTxt(data, image, textIndex = null, errorObject) {
 				let y = !isNaN(parseInt(textObj.y)) ? parseInt(textObj.y) : 0;
 
 				if (!textObj.maxWidth) {
-					textObj.maxWidth = image.bitmap.width - x;
+					textObj.maxWidth = background.bitmap.width - x;
 				}
 				let textBuffer = txt2png(textObj.text || textObj.txt, textObj);
 				let textImage = await new Promise((res, rej) => {
 					Jimp.read(textBuffer).then(res).catch(rej);
 				});
-				let align = textObj.alignment || textObj.align;
-				if (align) {
-					switch (align.toLowerCase()) {
-						case 'top-left': {
-							image.composite(textImage, x, y);
-							return image;
-						}
-						case 'top-middle': {
-							let baseX = Math.round(
-								(image.bitmap.width - textImage.bitmap.width) / 2
-							);
-							x += baseX;
-							image.composite(textImage, x, y);
-							return image;
-						}
-						case 'top-right': {
-							let baseX = Math.round(
-								image.bitmap.width - textImage.bitmap.width
-							);
-							x += baseX;
-							image.composite(textImage, x, y);
-							return image;
-						}
-						case 'left': {
-							let baseY = Math.round(
-								(image.bitmap.height - textImage.bitmap.height) / 2
-							);
-							y += baseY;
-							image.composite(textImage, x, y);
-							return image;
-						}
-						case 'center': {
-							let baseX = Math.round(
-								(image.bitmap.width - textImage.bitmap.width) / 2
-							);
-							let baseY = Math.round(
-								(image.bitmap.height - textImage.bitmap.height) / 2
-							);
-							x += baseX;
-							y += baseY;
-							image.composite(textImage, x, y);
-							return image;
-						}
-						case 'right': {
-							let baseX = Math.round(
-								image.bitmap.width - textImage.bitmap.width
-							);
-							let baseY = Math.round(
-								(image.bitmap.height - textImage.bitmap.height) / 2
-							);
-							x += baseX;
-							y += baseY;
-
-							image.composite(textImage, x, y);
-							return image;
-						}
-						case 'bot-left': {
-							let baseY = Math.round(
-								image.bitmap.height - textImage.bitmap.height
-							);
-							y += baseY;
-							image.composite(textImage, x, y);
-							return image;
-						}
-						case 'bot-middle': {
-							let baseX = Math.round(
-								(image.bitmap.width - textImage.bitmap.width) / 2
-							);
-							let baseY = Math.round(
-								image.bitmap.height - textImage.bitmap.height
-							);
-							x += baseX;
-							y += baseY;
-							image.composite(textImage, x, y);
-							return image;
-						}
-						case 'bot-right': {
-							let baseX = Math.round(
-								image.bitmap.width - textImage.bitmap.width
-							);
-							let baseY = Math.round(
-								image.bitmap.height - textImage.bitmap.height
-							);
-                            x += baseX;
-							y += baseY;
-							image.composite(textImage, x, y);
-							return image;
-						}
-
-						default: {
-							errorObject.errors.push(
-								"Invalid alignment mode '"+ align +"'inside 'text' property"
-							);
-							image.composite(textImage, x, y);
-							return image;
-						}
-					}
+				let alignedImage = await alignImage(background, textImage, textObj, errorObject);
+				if(alignedImage) {
+					background = alignedImage;
+					return background;
 				} else {
-					image.composite(textImage, x, y);
-					return image;
-				}
+					errorObject.errors.push('Text object invalid.');
+					return background;
+				};
 			}
 			default:
 				errorObject.errors.push(
@@ -479,7 +399,7 @@ async function generateTxt(data, image, textIndex = null, errorObject) {
 	}
 }
 
-async function outlineCircle(data, image, errorObject) {
+async function outlineCircle(image, data, errorObject) {
 	if (!data.width) {
 		data.width = 4;
 	} else if (isNaN(parseInt(data.width))) {
@@ -535,7 +455,7 @@ async function outlineCircle(data, image, errorObject) {
 	return black;
 }
 
-async function replaceImageColor(data, image, errorObject) {
+async function replaceImageColor(image, data, errorObject) {
 	try {
 		return await replaceColor({
 			image: image,
@@ -554,7 +474,7 @@ async function replaceImageColor(data, image, errorObject) {
 	}
 }
 
-async function handleChildren(data, background, errorObject) {
+async function handleChildren(background, data, errorObject) {
 	// * Loop through all the images and place them on the background
 	/**
 	 * ? As the images are placed in order, the order of images is essentially the order of the layers too
@@ -585,108 +505,12 @@ async function handleChildren(data, background, errorObject) {
 			let x = !isNaN(parseInt(imageObj.x)) ? parseInt(imageObj.x) : 0;
 			let y = !isNaN(parseInt(imageObj.y)) ? parseInt(imageObj.y) : 0;
 
-			let align = imageObj.alignment || imageObj.align;
-			if (align) {
-				switch (align.toLowerCase()) {
-					case 'top-left': {
-						background.composite(textImage, x, y);
-						break;
-					}
-					case 'top-middle': {
-						let baseX = Math.round(
-							(background.bitmap.width - image.bitmap.width) / 2
-						);
-						x += baseX;
-						background.composite(textImage, x, y);
-						break;
-					}
-					case 'top-right': {
-						let baseX = Math.round(
-							background.bitmap.width - image.bitmap.width
-						);
-						x += baseX;
-						background.composite(textImage, x, y);
-						break;
-					}
-					case 'left': {
-						let baseY = Math.round(
-							(background.bitmap.height - image.bitmap.height) / 2
-						);
-						y += baseY;
-						background.composite(textImage, x, y);
-						break;
-					}
-					case 'center': {
-						let baseX = Math.round(
-							(background.bitmap.width - image.bitmap.width) / 2
-						);
-						let baseY = Math.round(
-							(background.bitmap.height - image.bitmap.height) / 2
-						);
-						x += baseX;
-						y += baseY;
-						background.composite(textImage, x, y);
-						break;
-					}
-					case 'right': {
-						let baseX = Math.round(
-							background.bitmap.width - image.bitmap.width
-						);
-						let baseY = Math.round(
-							(background.bitmap.height - image.bitmap.height) / 2
-						);
-						x += baseX;
-						y += baseY;
-
-						background.composite(textImage, x, y);
-						break;
-					}
-					case 'bot-left': {
-						let baseY = Math.round(
-							background.bitmap.height - image.bitmap.height
-						);
-						y += baseY;
-						background.composite(textImage, x, y);
-						break;
-					}
-					case 'bot-middle': {
-						let baseX = Math.round(
-							(background.bitmap.width - image.bitmap.width) / 2
-						);
-						let baseY = Math.round(
-							background.bitmap.height - image.bitmap.height
-						);
-						x += baseX;
-						y += baseY;
-						background.composite(textImage, x, y);
-						break;
-					}
-					case 'bot-right': {
-						let baseX = Math.round(
-							background.bitmap.width - image.bitmap.width
-						);
-						let baseY = Math.round(
-							background.bitmap.height - image.bitmap.height
-						);
-						x += baseX;
-						y += baseY;
-						break;
-					}
-					case 'center': {
-						let baseX = Math.round(
-							(background.bitmap.width - image.bitmap.width) / 2
-						);
-						let baseY = Math.round(
-							(background.bitmap.height - image.bitmap.height) / 2
-						);
-						x += baseX;
-						y += baseY;
-						background.composite(image, x, y);
-						break;
-					}
-				}
+			let alignedImage = await alignImage(background, image, imageObj, errorObject);
+			if(alignedImage) {
+				background = alignedImage;
+				return background;
 			} else {
-				background.composite(image, x, y);
+				return background;
 			}
 		} catch (e) {
 			errorObject.childrenObjects.push(e);
@@ -696,6 +520,167 @@ async function handleChildren(data, background, errorObject) {
 	return background;
 }
 
+async function alignImage(background, image, data, errorObject) {
+	let x = !isNaN(parseInt(data.x)) ? parseInt(data.x) : 0;
+	let y = !isNaN(parseInt(data.y)) ? parseInt(data.y) : 0;
+
+	let align = data.alignment || data.align;
+	let mode = data.blendMode;
+	let {blendOpacitySrc, blendOpacityDest} = data;
+	if (mode) {
+		switch (mode.toLowerCase()) {
+			case 'source_over':
+			case 'source-over':
+			case 'sourceover': {
+				mode = Jimp.BLEND_SOURCE_OVER;
+			}
+			case 'blend-destination-over':
+			case 'blend_destination_over':
+			case 'blenddestinationover': {
+				mode = Jimp.BLEND_DESTINATION_OVER;
+			}
+			case 'blend-multiply':
+			case 'blend_multiply':
+			case 'blendmultiply': {
+				mode = Jimp.BLEND_MULTIPLY;
+			}
+			case 'blend_add':
+			case 'blend-add':
+			case 'blendadd': {
+				mode = Jimp.BLEND_ADD;
+			}
+			case 'blend_screen':
+			case 'blend-screen':
+			case 'blendscreen': {
+				mode = Jimp.BLEND_SCREEN;
+			}
+			case 'blend_overlay':
+			case 'blend-overlay':
+			case 'blendoverlay': {
+				mode = Jimp.BLEND_OVERLAY;
+			}
+			case 'blend_darken':
+			case 'blend-darken':
+			case 'blenddarken': {
+				mode = Jimp.BLEND_DARKEN;
+			}
+			case 'blend_lighten':
+			case 'blend-lighten':
+			case 'blendlighten': {
+				mode = Jimp.BLEND_LIGHTEN;
+			}
+			case 'blend_hardlight':
+			case 'blend-hardlight':
+			case 'blendhardlight': {
+				mode = Jimp.BLEND_HARDLIGHT;
+			}
+			case 'blend_difference':
+			case 'blend-difference':
+			case 'blenddifference': {
+				mode = Jimp.BLEND_DIFFERENCE;
+			}
+			case 'blend_exclusion':
+			case 'blend-exclusion':
+			case 'blendexclusion': {
+				mode = Jimp.BLEND_EXCLUSION;
+			};
+			default : {
+				errorObject.errors.push('Blend mode \''+ mode + '\' is not a valid blend mode.');
+				return false;
+			}
+		}
+	} else {
+		mode = Jimp.BLEND_SOURCE_OVER;
+	};
+	if (align) {
+		switch (align.toLowerCase()) {
+			case 'top-left': {
+				break;
+			}
+			case 'top-middle': {
+				let baseX = Math.round(
+					(background.bitmap.width - image.bitmap.width) / 2
+				);
+				x += baseX;
+				break;
+			}
+			case 'top-right': {
+				let baseX = Math.round(background.bitmap.width - image.bitmap.width);
+				x += baseX;
+				break;
+			}
+			case 'left': {
+				let baseY = Math.round(
+					(background.bitmap.height - image.bitmap.height) / 2
+				);
+				y += baseY;
+				break;
+			}
+			case 'center': {
+				let baseX = Math.round(
+					(background.bitmap.width - image.bitmap.width) / 2
+				);
+				let baseY = Math.round(
+					(background.bitmap.height - image.bitmap.height) / 2
+				);
+				x += baseX;
+				y += baseY;
+				break;
+			}
+			case 'right': {
+				let baseX = Math.round(background.bitmap.width - image.bitmap.width);
+				let baseY = Math.round(
+					(background.bitmap.height - image.bitmap.height) / 2
+				);
+				x += baseX;
+				y += baseY;
+				break;
+			}
+			case 'bot-left': {
+				let baseY = Math.round(background.bitmap.height - image.bitmap.height);
+				y += baseY;
+				break;
+			}
+			case 'bot-middle': {
+				let baseX = Math.round(
+					(background.bitmap.width - image.bitmap.width) / 2
+				);
+				let baseY = Math.round(background.bitmap.height - image.bitmap.height);
+				x += baseX;
+				y += baseY;
+				break;
+			}
+			case 'bot-right': {
+				let baseX = Math.round(background.bitmap.width - image.bitmap.width);
+				let baseY = Math.round(background.bitmap.height - image.bitmap.height);
+				x += baseX;
+				y += baseY;
+				break;
+			}
+			case 'center': {
+				let baseX = Math.round(
+					(background.bitmap.width - image.bitmap.width) / 2
+				);
+				let baseY = Math.round(
+					(background.bitmap.height - image.bitmap.height) / 2
+				);
+				x += baseX;
+				y += baseY;
+				break;
+			}
+			default : {
+				errorObject.errors.push('Alignment mode \'' + align + '\' is not a valid alignment mode');
+				return false;
+			}
+		}
+	}
+	background.composite(image, x, y, {
+		mode,
+		opacitySource : blendOpacitySrc,
+		opacityDest : blendOpacityDest
+	});
+	return background;
+}
 // ? For returning stored images
 router.get('/:image', async (req, res) => {
 	if (fs.existsSync(__dirname + '/cached/' + req.params.image)) {
