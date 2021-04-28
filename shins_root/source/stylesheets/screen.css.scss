@@ -173,6 +173,25 @@ html, body {
     padding-left: $nav-padding + $nav-indent;
     font-size: 12px;
   }
+  
+  .toc-list-h3 {
+    background-color: $nav-subitem-bg;
+  }
+  
+  .toc-h3 {
+    padding-left: $nav-padding + $nav-padding + $nav-indent;
+    font-size: 12px;
+  }
+  
+  .toc-list-h4 {
+    display: none;
+    background-color: $nav-subitem-bg;
+  }
+  
+  .toc-h4 {
+    padding-left: $nav-padding + $nav-padding + $nav-padding + $nav-indent;
+    font-size: 12px;
+  }
 
   .toc-footer {
     padding: 1em 0;
