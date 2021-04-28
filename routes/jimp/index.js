@@ -699,7 +699,6 @@ async function alignImage(background, image, data, errorObject) {
 			}
 		}
 	}
-	console.log('X:' + x + ' Y:' + y);
 	background.composite(image, x, y, {
 		mode,
 		opacitySource : blendOpacitySrc,

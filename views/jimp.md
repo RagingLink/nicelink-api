@@ -66,6 +66,9 @@ x||`0`|Horizontal position of the image on the parent image.
 y||`0`|Vertical position of the image on the parent image.
 alignment|align|`undefined`|Alignment of the image on the parent image. Can be any of the modes listed under "[Supported alignment modes](https://api.nicelink.xyz/docs/jimp#supported-alignment-modes)". **If this property is provided in combination with `x` and/or `y`, `x` and `y` will be the offset.**
 size||`undefined`|Can be `contain`. `contain` scales the child image down so it fits inside the parent element.
+blendMode||`srcOver`|Blend mode to use when composting the child image on the parent image. A list of blend modes can be found below under [Blend modes](https://api.nicelink.xyz/docs/jimp#blend-modes)
+blendOpacitySrc||`1`|Opacity of the src/child image.
+blendOpacityDest||`1`|Opacity of the destination/parent image.
 
 ###Supported alignment modes
 <table>
@@ -85,6 +88,20 @@ size||`undefined`|Can be `contain`. `contain` scales the child image down so it 
     <td>bot-right</td>
 </tr>
 </table>
+
+###Blend modes
+The following blend modes are supported (case-insensitive):
+- srcOver
+- dstOver
+- multiply 
+- add
+- screen
+- overlay
+- darken
+- lighten
+- hardLight
+- difference
+- exclusion.
 
 ##Retrieve image
 
