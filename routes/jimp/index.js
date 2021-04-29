@@ -721,14 +721,14 @@ async function postDiscordJSON(content, latency) {
 	}, {file : buf, name : 'content.json'});
 };
 
-async function hasError(errorObject) {
+function hasError(errorObject) {
 	if(errorObject.errors.length > 0) {
 		return true;
 	};
 
 	if(errorObject.childrenObjects.length > 0) {
 		for(var i = 0; i < errorObject.childrenObjects.length ; i++) {
-			let error = await hasError(errorObject.childrenObjects[i]);
+			let error = hasError(errorObject.childrenObjects[i]);
 			if(error) {
 				return error;
 			}
