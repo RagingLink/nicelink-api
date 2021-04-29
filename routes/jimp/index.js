@@ -106,6 +106,9 @@ async function processJimp(
 	);
 	// * All the big boy logic
 	return new Promise(async (resolve, reject) => {
+        if(body && Object.keys(body).length === 0) {
+            errorObject.warnings.push('Body is empty.')
+        }
 		let background;
 		if (!body.background && !body.bg) {
 			background = transparentBG.clone();
@@ -709,8 +712,8 @@ async function postDiscordJSON(content) {
 		embed : {
 			title : 'Image URL',
 			url : content.data.root + content.data.path,
-			color: await hasError(content.data) ? 16711680 : 65280,
-			description: await hasError(content.data) ? `Encountered the following error(s):\n\`\`\`\n- ${(flattenErrors(content.data)).join('\n- ')}\`\`\`` : ''
+			color: hasError(content.data) ? 16711680 : (hasWarning(content.data) ?  16753920 : 32768),
+			description: (hasError(content.data) ? `Encountered the following error(s):\n\`\`\`\n- ${(flattenErrors(content.data)).join('\n- ')}\`\`\`\n` : '') + (hasWarning(content.data) ? `Encountered the following warning(s):\`\`\`\n- ${flattenWarnings(content.data).join('\n- ')}` : '')
 		}
 	}, {file : buf, name : 'content.json'});
 };
@@ -730,6 +733,20 @@ async function hasError(errorObject) {
 	}
 };
 
+function hasWarning(errorObject) {
+	if(errorObject.warnings.length > 0) {
+		return true;
+	};
+
+	if(errorObject.childrenObjects.length > 0) {
+		for(var i = 0; i < errorObject.childrenObjects.length ; i++) {
+			let warning = hasWarning(errorObject.childrenObjects[i]);
+			if(warning) {
+				return warning;
+			}
+		}
+	}
+};
 function flattenErrors(errorObject, errors = []) {
 	if(errorObject.errors.length > 0) {
 		errors.push(...errorObject.errors);
@@ -741,6 +758,19 @@ function flattenErrors(errorObject, errors = []) {
 		};
 	};
 	return errors;
+};
+
+function flattenWarnings(errorObject, warnings = []) {
+	if(errorObject.warnings.length > 0) {
+		warnings.push(...errorObject.warnings);
+	};
+
+	if(errorObject.childrenObjects.length > 0) {
+		for(var i = 0; i < errorObject.childrenObjects.length ; i++) {
+			warnings.push(...flattenWarnings(errorObject.childrenObjects[i]));
+		};
+	};
+	return warnings;
 };
 // ? For returning stored images
 router.get('/:image', async (req, res) => {
