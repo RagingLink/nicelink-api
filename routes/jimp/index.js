@@ -741,7 +741,7 @@ function flattenErrors(errorObject, errors = []) {
 
 	if(errorObject.childrenObjects.length > 0) {
 		for(var i = 0; i < errorObject.childrenObjects.length ; i++) {
-			errors.push(...await flattenErrors(errorObject.childrenObjects[i]));
+			errors.push(...flattenErrors(errorObject.childrenObjects[i]));
 		};
 	};
 	return errors;
