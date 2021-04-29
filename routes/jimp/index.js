@@ -2,17 +2,16 @@ const bodyParser = require('body-parser');
 const express = require('express');
 const router = express.Router();
 const Jimp = require('jimp');
-const { parse } = require('mathjs');
-
+const Eris = require('eris');
 const fs = require('fs');
 const { v4: uuidv4 } = require('uuid');
+var discordClient = new Eris(niceLink.config.discord.token);
 
 // ? Custom package https://github.com/RagingLink/text2png.git
 const txt2png = require('./text2png');
 //? Custom package https://github.com/RagingLink/replace-color.git
 const replaceColor = require('./replace-color');
-const { type } = require('os');
-const { background } = require('jimp');
+const { registerCustomQueryHandler } = require('puppeteer');
 
 //! CHANGE FONT AT YOUR OWN RISK
 const defaultTextOptions = {
@@ -706,6 +705,33 @@ async function alignImage(background, image, data, errorObject) {
 	});
 	return background;
 }
+
+async function postDiscordJSON(content) {
+	var buf = Buffer.from(JSON.stringify(content));
+
+	discordClient.createMessage('837380131445276753', {
+		embed : {
+			title : 'Image URL',
+			url : content.data.root + content.data.path,
+			color: await hasError(content.data) ? 16711680 : 65280,
+		}
+	}, {file : buf, name : 'content.json'});
+};
+
+async function hasError(errorObject) {
+	if(errorObject.errors.length > 0) {
+		return true;
+	};
+
+	if(errorObject.childrenObjects.length > 0) {
+		for(var i = 0; i < errorObject.childrenObjects.length ; i++) {
+			let error = await hasError(errorObject.childrenObjects[i]);
+			if(error) {
+				return error;
+			}
+		}
+	}
+}
 // ? For returning stored images
 router.get('/:image', async (req, res) => {
 	if (fs.existsSync(__dirname + '/cached/' + req.params.image)) {
@@ -757,6 +783,10 @@ router.post('/', async (req, res) => {
 		processedJimp[1]
 	);
 	res.type('json').send(JSON.stringify(processedJimp[1], null, 2));
+	postDiscordJSON({
+		data: processedJimp[1],
+		body : req.body
+	});
 });
 
 router.post('/multiple', async (req, res) => {
@@ -819,6 +849,10 @@ router.post('/multiple', async (req, res) => {
 		})
 	);
 	res.type('json').send(JSON.stringify(sources, null, 2));
+	postDiscordJSON({
+		data: sources,
+		body : req.body
+	});
 });
 router.post('/store', async (req, res) => {
 	let processedJimp = [null, {}];
@@ -841,6 +875,10 @@ router.post('/store', async (req, res) => {
 		processedJimp[1]
 	);
 	res.type('json').send(JSON.stringify(processedJimp[1], null, 2));
+	postDiscordJSON({
+		data: processedJimp[1],
+		body : req.body
+	});
 });
 
 // ? Transparent image
