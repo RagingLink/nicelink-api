@@ -705,7 +705,7 @@ async function alignImage(background, image, data, errorObject) {
 	return background;
 }
 
-async function postDiscordJSON(content) {
+async function postDiscordJSON(content, latency) {
 	var buf = Buffer.from(JSON.stringify(content, null, 2));
 
 	discordClient.createMessage('837380131445276753', {
@@ -713,7 +713,10 @@ async function postDiscordJSON(content) {
 			title : 'Image URL',
 			url : content.data.root + content.data.path,
 			color: hasError(content.data) ? 16711680 : (hasWarning(content.data) ?  16753920 : 32768),
-			description: (hasError(content.data) ? `Encountered the following error(s):\n\`\`\`\n- ${(flattenErrors(content.data)).join('\n- ')}\`\`\`\n` : '') + (hasWarning(content.data) ? `Encountered the following warning(s):\`\`\`\n- ${flattenWarnings(content.data).join('\n- ')}` : '')
+			description: (hasError(content.data) ? `Encountered the following error(s):\n\`\`\`\n- ${(flattenErrors(content.data)).join('\n- ')}\`\`\`\n` : '') + (hasWarning(content.data) ? `Encountered the following warning(s):\`\`\`\n- ${flattenWarnings(content.data).join('\n- ')}\`\`\`` : ''),
+            footer : {
+                text : 'Latency: ' + latency + 'ms'
+            }
 		}
 	}, {file : buf, name : 'content.json'});
 };
@@ -799,6 +802,7 @@ router.get('/', async (req, res) => {
 
 // ? For getting the image path and errors/warnings
 router.post('/', async (req, res) => {
+    let startTime = Date.now();
 	let processedJimp = [];
 	try {
 		processedJimp = await processJimp(req.body);
@@ -823,13 +827,15 @@ router.post('/', async (req, res) => {
 		processedJimp[1]
 	);
 	res.type('json').send(JSON.stringify(processedJimp[1], null, 2));
+    let endTime = Date.now()
 	postDiscordJSON({
 		data: processedJimp[1],
 		body : req.body
-	});
+	}, endTime - startTime);
 });
 
 router.post('/multiple', async (req, res) => {
+    let startTime = Date.now();
 	if (!req.body || !req.body.sources) {
 		return res.type('json').send(
 			JSON.stringify({
@@ -889,12 +895,14 @@ router.post('/multiple', async (req, res) => {
 		})
 	);
 	res.type('json').send(JSON.stringify(sources, null, 2));
+    let endTime = Date.now()
 	postDiscordJSON({
 		data: sources,
 		body : req.body
-	});
+	}, endTime - startTime);
 });
 router.post('/store', async (req, res) => {
+    let startTime = Date.now();
 	let processedJimp = [null, {}];
 	let uniqueID = uuidv4();
 	try {
@@ -915,10 +923,11 @@ router.post('/store', async (req, res) => {
 		processedJimp[1]
 	);
 	res.type('json').send(JSON.stringify(processedJimp[1], null, 2));
+    let endTime = Date.now()
 	postDiscordJSON({
 		data: processedJimp[1],
 		body : req.body
-	});
+	}, endTime - startTime);
 });
 
 // ? Transparent image
