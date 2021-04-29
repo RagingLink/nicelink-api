@@ -14,4 +14,4 @@ routes/jimp/text2png
 shins_root/pub/css/print.css
 shins_root/pub/css/screen.css
 routes/jimp/replace-color
-
+config.json
