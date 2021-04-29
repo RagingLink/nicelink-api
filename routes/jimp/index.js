@@ -886,4 +886,10 @@ router.get('/transparent.png', (req, res) => {
 	res.sendFile(__dirname + '/transparent.png');
 });
 
+discordClient.on('ready', () => {
+	console.log('Discord client connected.')
+});
+
+discordClient.connect();
+
 module.exports = router;
