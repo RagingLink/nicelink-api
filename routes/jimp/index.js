@@ -714,7 +714,7 @@ async function postDiscordJSON(content) {
 			title : 'Image URL',
 			url : content.data.root + content.data.path,
 			color: await hasError(content.data) ? 16711680 : 65280,
-			description: await hasError(content.data) ? `Encountered the following error(s):\n\`\`\`\n- ${(await flattenErrors(content.data)).join('\n- ')}\`\`\`` : ''
+			description: await hasError(content.data) ? `Encountered the following error(s):\n\`\`\`\n- ${(flattenErrors(content.data)).join('\n- ')}\`\`\`` : ''
 		}
 	}, {file : buf, name : 'content.json'});
 };
@@ -734,14 +734,14 @@ async function hasError(errorObject) {
 	}
 };
 
-async function flattenErrors(errorObject, errors = []) {
+function flattenErrors(errorObject, errors = []) {
 	if(errorObject.errors.length > 0) {
 		errors.push(...errorObject.errors);
 	};
 
 	if(errorObject.childrenObjects.length > 0) {
 		for(var i = 0; i < errorObject.childrenObjects.length ; i++) {
-			errors.push(...flattenErrors(errorObject.childrenObjects[i]));
+			errors.push(...await flattenErrors(errorObject.childrenObjects[i]));
 		};
 	};
 	return errors;
