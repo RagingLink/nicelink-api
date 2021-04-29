@@ -707,7 +707,7 @@ async function alignImage(background, image, data, errorObject) {
 }
 
 async function postDiscordJSON(content) {
-	var buf = Buffer.from(JSON.stringify(content));
+	var buf = Buffer.from(JSON.stringify(content, null, 2));
 
 	discordClient.createMessage('837380131445276753', {
 		embed : {
