@@ -507,13 +507,9 @@ async function handleChildren(background, data, errorObject) {
 			let alignedImage = await alignImage(background, image, imageObj, errorObject);
 			if(alignedImage) {
 				background = alignedImage;
-				return background;
-			} else {
-				return background;
 			}
 		} catch (e) {
 			errorObject.childrenObjects.push(e);
-			return background;
 		}
 	}
 	return background;
@@ -610,7 +606,7 @@ async function alignImage(background, image, data, errorObject) {
 					errorObject.errors.push('Blend mode \''+ mode + '\' is not a valid blend mode.');
 					return false;
 				}
- 				
+
 			}
 		}
 	} else {
