@@ -1,8 +1,8 @@
 /**
  * @Author: RagingLink
  * @Date: 2020-06-22 17:41:47
- * @Last Modified by: mikey.zhaopeng
- * @Last Modified time: 2021-04-19 01:11:38
+ * @Last Modified by: RagingLink
+ * @Last Modified time: 2021-04-29 19:35:35
  *
  * This project uses the AGPLv3 license. Please read the license file before using/adapting any of the code.
  */
@@ -20,6 +20,8 @@ const bodyparser = require("body-parser");
 const path = require('path');
 const sass = require('node-sass');
 const assetFunctions = require('node-sass-asset-functions');
+
+global.niceLink = {config : require('./config.json')};
 
 let buildSass = async (options = {}) => {
   return new Promise(async (resolve, reject) => {
