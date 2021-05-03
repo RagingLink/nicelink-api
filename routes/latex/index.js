@@ -31,7 +31,7 @@ router.post("/", async (req, res, next) => {
   let textColor = data.colour || "FFFFFF";
   let block = data.block || "flushleft";
   let documentClass = data.documentClass || "standalone";
-  let preview = documentClass === 'standalone' ? ',preview' : '';
+  let preview = false ? ',preview' : '';
   let content = data.content;
   let template = data.advanced ? advancedTemplate : standardTemplate;
   for (var key in replacements) {
