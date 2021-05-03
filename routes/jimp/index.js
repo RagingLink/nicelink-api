@@ -861,7 +861,7 @@ router.post('/multiple', async (req, res) => {
 	});
 	sources = await Promise.all(
 		sources.map((src) => {
-			return new Promise((resolve, reject) => {
+			return new Promise(async (resolve, reject) => {
 				processJimp(src.body)
 					.then((processed) => {
 						await processed[0].writeAsync(__dirname + '/cached/' + src.uniqueID + '.png');
