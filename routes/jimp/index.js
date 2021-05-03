@@ -864,7 +864,7 @@ router.post('/multiple', async (req, res) => {
 			return new Promise((resolve, reject) => {
 				processJimp(src.body)
 					.then((processed) => {
-						processed[0].write(__dirname + '/cached/' + src.uniqueID + '.png');
+						await processed[0].writeAsync(__dirname + '/cached/' + src.uniqueID + '.png');
 						resolve(
 							Object.assign(
 								{
@@ -907,7 +907,7 @@ router.post('/store', async (req, res) => {
 	let uniqueID = uuidv4();
 	try {
 		processedJimp = await processJimp(req.body);
-		processedJimp[0].write(__dirname + '/cached/' + uniqueID + '.png');
+		await processedJimp[0].writeAsync(__dirname + '/cached/' + uniqueID + '.png');
 	} catch (e) {
 		processedJimp[1] = e;
 		processedJimp[1].error = true;
