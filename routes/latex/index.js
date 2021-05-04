@@ -31,6 +31,7 @@ router.post("/", async (req, res, next) => {
   let textColor = data.colour || "FFFFFF";
   let block = data.block || "flushleft";
   let documentClass = data.documentClass || "standalone";
+  let preview = false ? ',preview' : '';
   let content = data.content;
   let template = data.advanced ? advancedTemplate : standardTemplate;
   for (var key in replacements) {
@@ -42,6 +43,7 @@ router.post("/", async (req, res, next) => {
   let document = template
     .replace(/#BACKGROUNDCOLOUR/g, backgroundColor)
     .replace(/#DOCUMENTCLASS/g, documentClass)
+    .replace(/#PREVIEW/g, preview)
     .replace(/#COLOUR/g, textColor)
     .replace(/#BLOCK/g, block)
     .replace(/#CONTENT/g, content);
