@@ -1,7 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const bent = require("bent");
-const postPlot = bent("https://api.nicelink.xyz/", "POST", "json");
+const postPlot = bent("http://localhost:8061", "POST", "json");
 const Nightmare = require('nightmare')
 const nightmare = Nightmare();
 const fs = require('fs');
