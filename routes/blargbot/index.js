@@ -12,7 +12,12 @@ router.use("/shards", require("./shards"));
 router.use("/tags", require("./tags"));
 router.use("/stats", require("./stats"));
 router.use("/plot", require("./plot"));
-router.use('/domains', proxy('https://blargbot.xyz/domains/json'));
+
+router.get('/domains', proxy('https://blargbot.xyz', {
+  proxyReqPathResolver: function(req) {
+    return '/domains/json';
+  }
+}));
 
 router.get('/decancer', (req, res) => {
   let text = req.query ? req.query.q || req.query.txt || req.query.text : '';
