@@ -68,6 +68,9 @@ let updateMeta = async () => {
 //Update metadata every minute
 setInterval(updateMeta, 1000 * 60);
 
+router.use((req, res, next) => {
+  console.info(req.ip);
+})
 //If multiple params are provided, prioritize the one higher in order: down -> guild -> cluster -> shard
 router.get("/", (req, res) => {
   res.type("json");
