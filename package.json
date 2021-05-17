@@ -22,7 +22,7 @@
     "inkscape": "^3.1.1",
     "jimp": "^0.16.1",
     "limax": "^3.0.0",
-    "mathjs": "^9.3.2",
+    "mathjs": "^9.4.0",
     "moment": "^2.29.1",
     "mongodb": "^3.6.6",
     "mongoose": "^5.12.3",
