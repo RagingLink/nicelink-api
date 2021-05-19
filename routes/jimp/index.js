@@ -118,7 +118,6 @@ async function processJimp(
 					url: body.background || body.bg,
 					headers: {},
 				});
-				delete body.background && delete body.bg;
 			} catch (e) {
 				console.error(e);
 				errorObject.errors.push('Invalid background image');
@@ -141,7 +140,6 @@ async function processJimp(
 				: Jimp.AUTO;
 			background.resize(width, height);
 		}
-		delete body.width && delete body.w && delete body.h && delete body.height;
 		let properties = Object.keys(body);
 		propertiesLoop: for (var i = 0; i < properties.length; i++) {
 			let key = properties[i];
@@ -327,7 +325,21 @@ async function processJimp(
 					break;
 				}
 				default: {
-					let exceptions = ['size', 'align', 'alignment', 'x', 'y', 'outline', 'blendMode', 'blendOpacitySrc', 'blendOpacityDest', ''];
+					let exceptions = [
+						'size',
+						'align',
+						'alignment',
+						'x',
+						'y',
+						'outline',
+						'blendMode',
+						'blendOpacitySrc',
+						'blendOpacityDest',
+						'w',
+						'width',
+						'h',
+						'height'
+					];
 					if (exceptions.includes(key)) break;
 					errorObject.errors.push("Unrecognized property '" + key + "'");
 				}
