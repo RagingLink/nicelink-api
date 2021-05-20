@@ -338,7 +338,8 @@ async function processJimp(
 						'w',
 						'width',
 						'h',
-						'height'
+						'height',
+'bg','background'
 					];
 					if (exceptions.includes(key)) break;
 					errorObject.errors.push("Unrecognized property '" + key + "'");
