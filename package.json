@@ -25,7 +25,7 @@
     "mathjs": "^9.3.2",
     "moment": "^2.29.1",
     "mongodb": "^3.6.6",
-    "mongoose": "^5.12.3",
+    "mongoose": "^5.12.12",
     "nightmare": "^3.0.2",
     "node-html-parser": "^3.1.5",
     "node-latex": "^3.0.0",
