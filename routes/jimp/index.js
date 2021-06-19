@@ -792,7 +792,7 @@ function flattenWarnings(errorObject, warnings = []) {
 router.get('/:image', async (req, res) => {
 	if (fs.existsSync(__dirname + '/cached/' + req.params.image)) {
 		res.sendFile(__dirname + '/cached/' + req.params.image);
-	} else if (fs.existSync(__dirname + '/persistent/' + req.params.image)) {
+	} else if (fs.existsSync(__dirname + '/persistent/' + req.params.image)) {
 		res.sendFile(__dirname + '/persistent/' + req.params.image);
 	} else if (fs.existsSync(__dirname + '/temporary' + req.params.image)) {
 		res.sendFile(__dirname + '/temporary/' + req.params.image);
