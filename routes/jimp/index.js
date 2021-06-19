@@ -790,6 +790,8 @@ function flattenWarnings(errorObject, warnings = []) {
 };
 // ? For returning stored images
 router.get('/:image', async (req, res) => {
+	console.info('New image: ' + req.params.image);
+	console.log
 	try {
 		if (fs.existsSync(__dirname + '/cached/' + req.params.image)) {
 			res.sendFile(__dirname + '/cached/' + req.params.image);
