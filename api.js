@@ -2,7 +2,7 @@
  * @Author: RagingLink
  * @Date: 2020-06-22 17:41:47
  * @Last Modified by: RagingLink
- * @Last Modified time: 2021-04-29 19:35:35
+ * @Last Modified time: 2021-06-19 19:06:58
  *
  * This project uses the AGPLv3 license. Please read the license file before using/adapting any of the code.
  */
@@ -161,7 +161,6 @@ app.use('/jimp', require('./routes/jimp'));
 app.get("/:path(docs)?", (req, res, next) => {
   res.render("index");
 });
-app.use('/latex', require('./routes/latex'));
 app.get("/docs/:page", async (req, res, next) => {
   let dirs = await fs.readdirSync("./views");
   dirs = dirs.filter((f) => f.endsWith(".hbs")).map((f) => f.split(".")[0]);

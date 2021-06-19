@@ -792,12 +792,16 @@ function flattenWarnings(errorObject, warnings = []) {
 router.get('/:image', async (req, res) => {
 	if (fs.existsSync(__dirname + '/cached/' + req.params.image)) {
 		res.sendFile(__dirname + '/cached/' + req.params.image);
+	} else if (fs.existSync(__dirname + '/persistent/' + req.params.image)) {
+		res.sendFile(__dirname + '/persistent/' + req.params.image);
+	} else if (fs.existsSync(__dirname + '/temporary' + req.params.image)) {
+		res.sendFile(__dirname + '/temporary/' + req.params.image);
 	} else {
 		res.send(req.params.image + " doesn't exist.");
 	}
 });
 
-// ? For getting the image
+// ! DEPRECATED
 router.get('/', async (req, res) => {
 	if (!req.query || Object.values(req.query).length === 0) {
 		return res.send('Error rendering content');
@@ -813,7 +817,7 @@ router.get('/', async (req, res) => {
 	}
 });
 
-// ? For getting the image path and errors/warnings
+// ? For getting errors/warnings
 router.post('/', async (req, res) => {
     let startTime = Date.now();
 	let processedJimp = [];
@@ -822,32 +826,28 @@ router.post('/', async (req, res) => {
 	} catch (e) {
 		processedJimp[1] = e;
 	}
-	let imagePath = Object.keys(req.body).reduce((acc, item) => {
-		return (
-			acc +
-			`${item}=${
-				typeof req.body[item] === 'object'
-					? JSON.stringify(req.body[item])
-					: req.body[item]
-			}&`
-		);
-	}, '?');
+
 	processedJimp[1] = Object.assign(
 		{
-			root: 'https://api.nicelink.xyz/jimp',
-			path: imagePath,
+			root: 'https://api.nicelink.xyz/jimp/store',
+			body: req.body,
 		},
 		processedJimp[1]
 	);
 	res.type('json').send(JSON.stringify(processedJimp[1], null, 2));
     let endTime = Date.now()
 	postDiscordJSON({
-		data: processedJimp[1],
-		body : req.body
+		data: processedJimp[1]
 	}, endTime - startTime);
 });
 
 router.post('/multiple', async (req, res) => {
+	var directoryPath = '/temporary/'
+	if (req.headers.Authorization) {
+		if (req.header.Authorization === 'SomePersistentAPIKey') {
+			directoryPath = '/persistent/'
+		}
+	}
     let startTime = Date.now();
 	if (!req.body || !req.body.sources) {
 		return res.type('json').send(
@@ -877,7 +877,7 @@ router.post('/multiple', async (req, res) => {
 			return new Promise(async (resolve, reject) => {
 				processJimp(src.body)
 					.then(async (processed) => {
-						await processed[0].writeAsync(__dirname + '/cached/' + src.uniqueID + '.png');
+						await processed[0].writeAsync(__dirname + directoryPath + src.uniqueID + '.png');
 						resolve(
 							Object.assign(
 								{
@@ -915,12 +915,18 @@ router.post('/multiple', async (req, res) => {
 	}, endTime - startTime);
 });
 router.post('/store', async (req, res) => {
+	var directoryPath = '/temporary/'
+	if (req.headers.Authorization) {
+		if (req.header.Authorization === 'SomePersistentAPIKey') {
+			directoryPath = '/persistent/'
+		}
+	}
     let startTime = Date.now();
 	let processedJimp = [null, {}];
 	let uniqueID = uuidv4();
 	try {
 		processedJimp = await processJimp(req.body);
-		await processedJimp[0].writeAsync(__dirname + '/cached/' + uniqueID + '.png');
+		await processedJimp[0].writeAsync(__dirname + directoryPath + uniqueID + '.png');
 	} catch (e) {
 		processedJimp[1] = e;
 		processedJimp[1].error = true;
