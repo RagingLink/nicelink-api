@@ -801,8 +801,8 @@ router.get('/:image', async (req, res) => {
 	try {
 		if (fs.existsSync(__dirname + '/cached/' + req.params.image)) {
 			res.sendFile(__dirname + '/cached/' + req.params.image);
-		} else if (fs.existsSync(__dirname + '/persistent/' + req.params.image)) {
-			res.sendFile(__dirname + '/persistent/' + req.params.image);
+		// } else if (fs.existsSync(__dirname + '/persistent/' + req.params.image)) {
+		// 	res.sendFile(__dirname + '/persistent/' + req.params.image);
 		} else if (fs.existsSync(__dirname + '/temporary' + req.params.image)) {
 			res.sendFile(__dirname + '/temporary/' + req.params.image);
 		} else {
