@@ -11,7 +11,6 @@ router.get("/test", (req, res) => {
 router.use("/shards", require("./shards"));
 router.use("/tags", require("./tags"));
 router.use("/stats", require("./stats"));
-router.use("/plot", require("./plot"));
 
 router.get('/domains', proxy('https://blargbot.xyz', {
   proxyReqPathResolver: function(req) {
