@@ -790,15 +790,21 @@ function flattenWarnings(errorObject, warnings = []) {
 };
 // ? For returning stored images
 router.get('/:image', async (req, res) => {
-	if (fs.existsSync(__dirname + '/cached/' + req.params.image)) {
-		res.sendFile(__dirname + '/cached/' + req.params.image);
-	} else if (fs.existsSync(__dirname + '/persistent/' + req.params.image)) {
-		res.sendFile(__dirname + '/persistent/' + req.params.image);
-	} else if (fs.existsSync(__dirname + '/temporary' + req.params.image)) {
-		res.sendFile(__dirname + '/temporary/' + req.params.image);
-	} else {
-		res.send(req.params.image + " doesn't exist.");
+	try {
+		if (fs.existsSync(__dirname + '/cached/' + req.params.image)) {
+			res.sendFile(__dirname + '/cached/' + req.params.image);
+		} else if (fs.existsSync(__dirname + '/persistent/' + req.params.image)) {
+			res.sendFile(__dirname + '/persistent/' + req.params.image);
+		} else if (fs.existsSync(__dirname + '/temporary' + req.params.image)) {
+			res.sendFile(__dirname + '/temporary/' + req.params.image);
+		} else {
+			res.send(req.params.image + " doesn't exist.");
+		}
+	} catch(e) {
+		console.error(e);
+		res.send('An error occurred!');
 	}
+
 });
 
 // ! DEPRECATED
