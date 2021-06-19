@@ -47,7 +47,7 @@ router.get("/", async (req, res, next) => {
     sent = true;
   }
 
-  let querySelector = await text.querySelector("#" + matchedTag.name);
+  let querySelector = await text.querySelector("#" + matchedTag.name.replace(/\//, '\/'));
   let limitsQuery = await querySelector.parentNode.childNodes.find((c) =>
     c.text.startsWith("Limits")
   );
