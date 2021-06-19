@@ -796,7 +796,7 @@ router.use('*', (req, res, next) => {
 router.get('/:image', async (req, res) => {
 	console.info('New image: ' + req.params.image);
 	console.info(__dirname);
-	console.info(fs.readdirSync(__dirname));
+	console.info(fs.readdirSync(__dirname + '/temporary'));
 	console.info(`Cached: ${fs.existsSync(__dirname + '/cached/' + req.params.image)}\nPers: ${fs.existsSync(__dirname + '/persistent/' + req.params.image)}\nTemp: ${fs.existsSync(__dirname + '/temporary' + req.params.image)}`)
 	try {
 		if (fs.existsSync(__dirname + '/cached/' + req.params.image)) {
