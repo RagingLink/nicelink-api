@@ -51,8 +51,6 @@ router.get("/", async (req, res, next) => {
 
 
 
-  matchedTag.limits = limits;
-  matchedTag.deprecated = deprecated;
   subtagCache[matchedTag.name] = matchedTag;
   tagJson[matchedTag.name] = matchedTag;
 
