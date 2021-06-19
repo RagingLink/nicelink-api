@@ -11,7 +11,6 @@ router.get("/", async (req, res, next) => {
   let sent;
   res.type("json");
   let name = req.query.tag;
-  let update = req.query.update;
 
   if (!name) {
     res.send(JSON.stringify(Object.values(tagJson), null, 2));
@@ -19,12 +18,15 @@ router.get("/", async (req, res, next) => {
   }
 
   let getJson = bent("json");
-  let newTagJson = await getJson("https://blargbot.xyz/tags/json");
+  let newTagJson = Object.values(await require('bent')('https://beta.blargbot.xyz/api/subtags', 'json')()).reduce((acc, item) => {
+    acc.push(...item.el)
+    return acc;
+    }, []);
   let getTags = bent("GET");
-  let text = await parse(
+  let tagList = await parse(
     await (await getTags("https://blargbot.xyz/tags")).text()
   );
-  let matchedTag = Object.values(newTagJson)
+  let matchedTag = newTagJson
     .filter((e) => e.name === name.toLowerCase())
     .shift();
   if (!matchedTag) {
@@ -32,14 +34,14 @@ router.get("/", async (req, res, next) => {
       JSON.stringify({
         error: "Subtag doesn't exist",
         message:
-          "This subtag doesn't exist, please provide a valid name. If you believe this is a bug please try providing the `update=true` parameter to the url",
+          "This subtag doesn't exist, please provide a valid name.",
       })
     );
     return;
   }
 
   if (subtagCache[name]) {
-    res.status(200).send(JSON.stringify(subtagCache[name], null, 2));
+    res.status(200).send(JSON.stringify(matchedTag, null, 2));
     sent = true;
   }
   if (tagJson[name] && !sent) {
@@ -47,34 +49,7 @@ router.get("/", async (req, res, next) => {
     sent = true;
   }
 
-  let querySelector = await text.querySelector("#" + matchedTag.name.replace(/\//, '\\/'));
-  let limitsQuery = await querySelector.parentNode.childNodes.find((c) =>
-    c.text.startsWith("Limits")
-  );
-  let deprecatedQuery = await querySelector.parentNode.childNodes.find((c) =>
-    c.classNames.includes("tagdeprecated")
-  );
 
-  let deprecated = !!deprecatedQuery
-    ? {
-        isDeprecated: true,
-        replacement: !!/Please use (\w*) instead/gim.exec(deprecatedQuery.text)
-          ? /Please use (\w*) instead/gim.exec(deprecatedQuery.text).pop()
-          : null,
-      }
-    : { isDeprecated: false };
-  let limits = !!limitsQuery
-    ? limitsQuery.childNodes.map((n) => {
-        return {
-          type: n.childNodes[0].text.substring(11),
-          limits: n.childNodes[1].text
-            .trim()
-            .split("-")
-            .map((i) => i.trim())
-            .filter((i) => i),
-        };
-      })
-    : [];
 
   matchedTag.limits = limits;
   matchedTag.deprecated = deprecated;
