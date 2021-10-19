@@ -11,7 +11,7 @@ Jimp.read(path.join(__dirname, '..', '..', 'images', 'pillshape.png')).then(pill
 });
 
 router.get('/', async (req, res) => {
-    const color = req.query.color || req.query.colour || '#FFFFFF';
+    const color = req.query.c || req.query.color || req.query.colour || 'FFFFFF';
     console.info(req.query);
     const percentage = parseInt(req.query.p || req.query.percentage);
     if (isNaN(percentage))
