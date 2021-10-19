@@ -2,7 +2,7 @@
  * @Author: RagingLink
  * @Date: 2020-06-22 17:41:47
  * @Last Modified by: RagingLink
- * @Last Modified time: 2021-08-21 21:27:51
+ * @Last Modified time: 2021-10-19 17:49:49
  *
  * This project uses the AGPLv3 license. Please read the license file before using/adapting any of the code.
  */
@@ -158,6 +158,7 @@ app.use("/blargbot", require("./routes/blargbot"));
 app.use('/math', require('./routes/math'));
 app.use('/timezones', require('./routes/timezones'));
 app.use('/jimp', require('./routes/jimp'));
+app.use('/misc', require('./routes/misc'));
 app.get("/:path(docs)?", (req, res, next) => {
   res.render("index");
 });
