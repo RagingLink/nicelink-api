@@ -24,7 +24,7 @@ router.get('/', async (req, res) => {
         return res.send(cachedImage.buffer)
     }
     const colouredImage = await replaceColor({
-        image: pillShape.clone().resize(992, Jimp.AUTO),
+        image: pillShape.clone().resize(992, 60),
 			colors: {
 				type: 'hex',
 				targetColor: '#000000',
