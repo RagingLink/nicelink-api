@@ -504,6 +504,7 @@ async function handleChildren(background, data, errorObject) {
 		return processJimp(image).then(response => {
 			return response;
 		}).catch(err => {
+			console.error(err);
 			return {
 				error: err
 			}
@@ -515,9 +516,9 @@ async function handleChildren(background, data, errorObject) {
 		const imageData = data[j];
 		const align = imageData.alignment || imageData.align;
 
-		if ('error' in imageObj)
+		if ('error' in imageObj) {
 			errorObject.childrenObjects.push(imageObj.error);
-		else {
+		} else {
 			try {
 				let [image, childErrorObject] = imageObj;
 				errorObject.childrenObjects.push(childErrorObject);
@@ -550,7 +551,6 @@ async function handleChildren(background, data, errorObject) {
 							[x, y] = [alignResult.x, alignResult.y];
 					}
 					background = image.mask(background, x, y);
-					console.info('Masked!')
 				} else {
 					let alignedImage = await alignImage(background, image, imageData, errorObject);
 					if (alignedImage) {
@@ -1019,19 +1019,17 @@ router.post('/process', async (req, res) => {
 		await processedJimp[0].getBuffer(Jimp.MIME_PNG, async function(err, buffer) {
 			if (err) {
 				console.error(err)
-				res.send('An error occured')
+				res.send(JSON.stringify({error: true}, null, 2));
 			} else {
 				res.set("Content-Type", Jimp.MIME_PNG);
 				await res.send(buffer);
-				console.info(`End buffer: ${Date.now() - bufferTime}`)
 				endTime = Date.now()
 			}
 		});
 	} catch (e) {
 		console.error(e);
-		res.send('An error occured');
-		processedJimp[1] = e;
 		processedJimp[1].error = true;
+		res.send(JSON.stringify(processedJimp[1], null, 2));
 	}
 	// ! let imagePath = Object.keys(req.body).reduce((acc, item) => {
 	// !    return acc + `${item}=${req.body[item]}&`
