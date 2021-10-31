@@ -1017,12 +1017,19 @@ router.post('/process', async (req, res) => {
 		processedJimp = await processJimp(req.body);
 		let bufferTime = Date.now();
 		await processedJimp[0].getBuffer(Jimp.MIME_PNG, async function(err, buffer) {
-			res.set("Content-Type", Jimp.MIME_PNG);
-			await res.send(buffer);
-			console.info(`End buffer: ${Date.now() - bufferTime}`)
-			endTime = Date.now()
+			if (err) {
+				console.error(err)
+				res.send('An error occured')
+			} else {
+				res.set("Content-Type", Jimp.MIME_PNG);
+				await res.send(buffer);
+				console.info(`End buffer: ${Date.now() - bufferTime}`)
+				endTime = Date.now()
+			}
 		});
 	} catch (e) {
+		console.error(e);
+		res.send('An error occured');
 		processedJimp[1] = e;
 		processedJimp[1].error = true;
 	}
