@@ -771,7 +771,7 @@ async function postDiscordJSON(content, latency) {
 	discordClient.createMessage('837380131445276753', {
 		embed : {
 			title : 'Image URL',
-			url : content.data.root + content.data.path,
+			url : content.data.path ? (content.data.root + content.data.path) : undefined,
 			color: hasError(content.data) ? 16711680 : (hasWarning(content.data) ?  16753920 : 32768),
 			description: (hasError(content.data) ? `Encountered the following error(s):\n\`\`\`\n- ${(flattenErrors(content.data)).join('\n- ')}\`\`\`\n` : '') + (hasWarning(content.data) ? `Encountered the following warning(s):\`\`\`\n- ${flattenWarnings(content.data).join('\n- ')}\`\`\`` : ''),
             footer : {
@@ -981,8 +981,10 @@ router.post('/store', async (req, res) => {
     let startTime = Date.now();
 	let processedJimp = [null, {}];
 	let uniqueID = uuidv4();
+	let startWriteTime;
 	try {
 		processedJimp = await processJimp(req.body);
+		startWriteTime = Date.now();
 		await processedJimp[0].writeAsync(__dirname + directoryPath + uniqueID + '.png');
 	} catch (e) {
 		processedJimp[1] = e;
@@ -998,7 +1000,8 @@ router.post('/store', async (req, res) => {
 		},
 		processedJimp[1]
 	);
-	res.type('json').send(JSON.stringify(processedJimp[1], null, 2));
+	await res.type('json').send(JSON.stringify(processedJimp[1], null, 2));
+	console.info('End write: ' + (Date.now() - startWriteTime));
     let endTime = Date.now()
 	postDiscordJSON({
 		data: processedJimp[1],
@@ -1006,6 +1009,37 @@ router.post('/store', async (req, res) => {
 	}, endTime - startTime);
 });
 
+router.post('/process', async (req, res) => {
+    const startTime = Date.now();
+	let endTime;
+	let processedJimp = [null, {}];
+	try {
+		processedJimp = await processJimp(req.body);
+		let bufferTime = Date.now();
+		await processedJimp[0].getBuffer(Jimp.MIME_PNG, async function(err, buffer) {
+			res.set("Content-Type", Jimp.MIME_PNG);
+			await res.send(buffer);
+			console.info(`End buffer: ${Date.now() - bufferTime}`)
+			endTime = Date.now()
+		});
+	} catch (e) {
+		processedJimp[1] = e;
+		processedJimp[1].error = true;
+	}
+	// ! let imagePath = Object.keys(req.body).reduce((acc, item) => {
+	// !    return acc + `${item}=${req.body[item]}&`
+	// ! }, '?');
+	processedJimp[1] = Object.assign(
+		{
+			root: 'file',
+		},
+		processedJimp[1]
+	);
+	postDiscordJSON({
+		data: processedJimp[1],
+		body : req.body
+	}, endTime - startTime);
+})
 // ? Transparent image
 router.get('/transparent.png', (req, res) => {
 	res.sendFile(__dirname + '/transparent.png');
