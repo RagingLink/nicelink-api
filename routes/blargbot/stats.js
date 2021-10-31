@@ -27,14 +27,14 @@ var updateStats = async () => {
       "nodejs_heap_space_size_available_bytes",
       "bot_command_latency_ms",
       "bot_subtag_latency_ms" //This one should be included in some way, though I'm not sure how rn
-  
+
     ]
     let metrics = await getString("https://blargbot.xyz/metrics");
     var metricsArray = prom2json(metrics);
     metricsArray = metricsArray.filter(i => !(excludedMetrics.includes(i.name)));
     //Replace JSON with key : value instead of an array
     var metricsJSON = metricsArray.reduce((obj, metric) => (obj[metric.name] = metric, obj) ,{});
-    console.info(Object.keys(metricsJSON));
+    //console.info(Object.keys(metricsJSON));
   } catch (e) {}
 }
 router.get("/stats", async (req, res, next) => {

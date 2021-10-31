@@ -104,6 +104,7 @@ async function processJimp(
 		},
 		errorObject
 	);
+	let time = Date.now();
 	// * All the big boy logic
 	return new Promise(async (resolve, reject) => {
         if(body && Object.keys(body).length === 0) {
@@ -339,13 +340,16 @@ async function processJimp(
 						'width',
 						'h',
 						'height',
-'bg','background'
+						'bg',
+						'background',
+						'mask'
 					];
 					if (exceptions.includes(key)) break;
 					errorObject.errors.push("Unrecognized property '" + key + "'");
 				}
 			}
 		}
+		console.info('Processed in ' + (Date.now() - time));
 		return resolve([background, errorObject]);
 	});
 }
@@ -495,42 +499,160 @@ async function handleChildren(background, data, errorObject) {
 	 * ? As the images are placed in order, the order of images is essentially the order of the layers too
 	 * ? First element in the array will be the lowest layer and thus displayed below the second element
 	 */
-	for (var j = 0; j < data.length; j++) {
-		let imageObj = data[j];
-		try {
-			let [image, childErrorObject] = await processJimp(imageObj);
-			errorObject.childrenObjects.push(childErrorObject);
-			if (imageObj.size) {
-				switch (imageObj.size.toLowerCase()) {
-					// ! This only downscales the image if necessary. This doesn't upscale the image if it fits in the parent
-					case 'contain': {
-						if (
-							image.bitmap.width > background.bitmap.width ||
-							image.bitmap.height > background.bitmap.height
-						) {
-							image.scaleToFit(
-								background.bitmap.width,
-								background.bitmap.height
-							);
+	let time = Date.now()
+	const images = await Promise.all(data.map(image => {
+		return processJimp(image).then(response => {
+			return response;
+		}).catch(err => {
+			return {
+				error: err
+			}
+		});
+	}));
+	console.info('Process children in ' + (Date.now() - time))
+	for (var j = 0; j < images.length; j++) {
+		const imageObj = images[j];
+		const imageData = data[j];
+		const align = imageData.alignment || imageData.align;
+
+		if ('error' in imageObj)
+			errorObject.childrenObjects.push(imageObj.error);
+		else {
+			try {
+				let [image, childErrorObject] = imageObj;
+				errorObject.childrenObjects.push(childErrorObject);
+				if (imageData.size) {
+					switch (imageData.size.toLowerCase()) {
+						// ! This only downscales the image if necessary. This doesn't upscale the image if it fits in the parent
+						case 'contain': {
+							if (
+								image.bitmap.width > background.bitmap.width ||
+								image.bitmap.height > background.bitmap.height
+							) {
+								image.scaleToFit(
+									background.bitmap.width,
+									background.bitmap.height
+								);
+							}
+							break;
 						}
-						break;
 					}
 				}
-			}
-			let x = !isNaN(parseInt(imageObj.x)) ? parseInt(imageObj.x) : 0;
-			let y = !isNaN(parseInt(imageObj.y)) ? parseInt(imageObj.y) : 0;
 
-			let alignedImage = await alignImage(background, image, imageObj, errorObject);
-			if(alignedImage) {
-				background = alignedImage;
+				if ('mask' in imageData && Boolean(imageData.mask)) {
+					let x = !isNaN(parseInt(data.x)) ? parseInt(data.x) : 0;
+					let y = !isNaN(parseInt(data.y)) ? parseInt(data.y) : 0;
+					if (align) {
+						const alignResult = getAlignData(background, image, data, align);
+						if (typeof alignResult === 'string')
+							errorObject.errors.push(alignResult);
+						else
+							[x, y] = [alignResult.x, alignResult.y];
+					}
+					background = image.mask(background, x, y);
+					console.info('Masked!')
+				} else {
+					let alignedImage = await alignImage(background, image, imageData, errorObject);
+					if (alignedImage) {
+						background = alignedImage;
+					}
+				}
+
+			} catch (e) {
+				errorObject.childrenObjects.push(e);
 			}
-		} catch (e) {
-			errorObject.childrenObjects.push(e);
 		}
 	}
 	return background;
 }
 
+function getAlignData(background, image, data, align) {
+	let x = !isNaN(parseInt(data.x)) ? parseInt(data.x) : 0;
+	let y = !isNaN(parseInt(data.y)) ? parseInt(data.y) : 0;
+	switch (align.toLowerCase()) {
+		case 'top-left': {
+			break;
+		}
+		case 'top-middle': {
+			let baseX = Math.round(
+				(background.bitmap.width - image.bitmap.width) / 2
+			);
+			x += baseX;
+			break;
+		}
+		case 'top-right': {
+			let baseX = Math.round(background.bitmap.width - image.bitmap.width);
+			x += baseX;
+			break;
+		}
+		case 'left': {
+			let baseY = Math.round(
+				(background.bitmap.height - image.bitmap.height) / 2
+			);
+			y += baseY;
+			break;
+		}
+		case 'center': {
+			let baseX = Math.round(
+				(background.bitmap.width - image.bitmap.width) / 2
+			);
+			let baseY = Math.round(
+				(background.bitmap.height - image.bitmap.height) / 2
+			);
+			x += baseX;
+			y += baseY;
+			break;
+		}
+		case 'right': {
+			let baseX = Math.round(background.bitmap.width - image.bitmap.width);
+			let baseY = Math.round(
+				(background.bitmap.height - image.bitmap.height) / 2
+			);
+			x += baseX;
+			y += baseY;
+			break;
+		}
+		case 'bot-left': {
+			let baseY = Math.round(background.bitmap.height - image.bitmap.height);
+			y += baseY;
+			break;
+		}
+		case 'bot-middle': {
+			let baseX = Math.round(
+				(background.bitmap.width - image.bitmap.width) / 2
+			);
+			let baseY = Math.round(background.bitmap.height - image.bitmap.height);
+			x += baseX;
+			y += baseY;
+			break;
+		}
+		case 'bot-right': {
+			let baseX = Math.round(background.bitmap.width - image.bitmap.width);
+			let baseY = Math.round(background.bitmap.height - image.bitmap.height);
+			x += baseX;
+			y += baseY;
+			break;
+		}
+		case 'center': {
+			let baseX = Math.round(
+				(background.bitmap.width - image.bitmap.width) / 2
+			);
+			let baseY = Math.round(
+				(background.bitmap.height - image.bitmap.height) / 2
+			);
+			x += baseX;
+			y += baseY;
+			break;
+		}
+		default : {
+			return 'Alignment mode \'' + align + '\' is not a valid alignment mode';
+		}
+	}
+	return {
+		x,
+		y
+	}
+}
 async function alignImage(background, image, data, errorObject) {
 	let x = !isNaN(parseInt(data.x)) ? parseInt(data.x) : 0;
 	let y = !isNaN(parseInt(data.y)) ? parseInt(data.y) : 0;
@@ -629,86 +751,11 @@ async function alignImage(background, image, data, errorObject) {
 		mode = Jimp.BLEND_SOURCE_OVER;
 	};
 	if (align) {
-		switch (align.toLowerCase()) {
-			case 'top-left': {
-				break;
-			}
-			case 'top-middle': {
-				let baseX = Math.round(
-					(background.bitmap.width - image.bitmap.width) / 2
-				);
-				x += baseX;
-				break;
-			}
-			case 'top-right': {
-				let baseX = Math.round(background.bitmap.width - image.bitmap.width);
-				x += baseX;
-				break;
-			}
-			case 'left': {
-				let baseY = Math.round(
-					(background.bitmap.height - image.bitmap.height) / 2
-				);
-				y += baseY;
-				break;
-			}
-			case 'center': {
-				let baseX = Math.round(
-					(background.bitmap.width - image.bitmap.width) / 2
-				);
-				let baseY = Math.round(
-					(background.bitmap.height - image.bitmap.height) / 2
-				);
-				x += baseX;
-				y += baseY;
-				break;
-			}
-			case 'right': {
-				let baseX = Math.round(background.bitmap.width - image.bitmap.width);
-				let baseY = Math.round(
-					(background.bitmap.height - image.bitmap.height) / 2
-				);
-				x += baseX;
-				y += baseY;
-				break;
-			}
-			case 'bot-left': {
-				let baseY = Math.round(background.bitmap.height - image.bitmap.height);
-				y += baseY;
-				break;
-			}
-			case 'bot-middle': {
-				let baseX = Math.round(
-					(background.bitmap.width - image.bitmap.width) / 2
-				);
-				let baseY = Math.round(background.bitmap.height - image.bitmap.height);
-				x += baseX;
-				y += baseY;
-				break;
-			}
-			case 'bot-right': {
-				let baseX = Math.round(background.bitmap.width - image.bitmap.width);
-				let baseY = Math.round(background.bitmap.height - image.bitmap.height);
-				x += baseX;
-				y += baseY;
-				break;
-			}
-			case 'center': {
-				let baseX = Math.round(
-					(background.bitmap.width - image.bitmap.width) / 2
-				);
-				let baseY = Math.round(
-					(background.bitmap.height - image.bitmap.height) / 2
-				);
-				x += baseX;
-				y += baseY;
-				break;
-			}
-			default : {
-				errorObject.errors.push('Alignment mode \'' + align + '\' is not a valid alignment mode');
-				return false;
-			}
-		}
+		const alignResult = getAlignData(background, image, data, align);
+		if (typeof alignResult === 'string')
+			errorObject.errors.push(alignResult);
+		else
+			[x, y] = [alignResult.x, alignResult.y];
 	}
 	background.composite(image, x, y, {
 		mode,
@@ -793,10 +840,8 @@ router.use('*', (req, res, next) => {
 	next();
 })
 // ? For returning stored images
+
 router.get('/:image', async (req, res) => {
-	console.info('New image: ' + req.params.image);
-	console.info(fs.readdirSync(__dirname + '/temporary'));
-	console.info(`Cached: ${fs.existsSync(__dirname + '/cached/' + req.params.image)}\nPers: ${fs.existsSync(__dirname + '/persistent/' + req.params.image)}\nTemp: ${fs.existsSync(__dirname + '/temporary/' + req.params.image)}`)
 	try {
 		if (fs.existsSync(__dirname + '/cached/' + req.params.image)) {
 			res.sendFile(__dirname + '/cached/' + req.params.image);
@@ -811,7 +856,6 @@ router.get('/:image', async (req, res) => {
 		console.error(e);
 		res.send('An error occurred!');
 	}
-
 });
 
 // ! DEPRECATED
