@@ -1,0 +1,44 @@
+services:
+  docs:
+    build: ./docs
+    ports:
+      - ${DOCS_PORT}:8080
+  api:
+    depends_on:
+      - postgres
+    build: ./api
+    ports:
+      - ${API_PORT}:${API_PORT}
+    stdin_open: true # docker run -i
+    tty: true        # docker run -t
+    environment:
+    #  - POSTGRES_USER
+    # - POSTGRES_PASSWORD
+    #  - POSTGRES_DB
+      - DATABASE_URL
+      - PORT=${API_PORT}
+    volumes:
+      - ./data/prisma/migrations:/usr/src/app/prisma/migrations
+      - ./data/images:/usr/src/app/routes/sharp/storedImages
+    networks:
+      - nicelink
+    restart: unless-stopped
+
+  postgres:
+    image: postgres:14.1-alpine
+    restart: unless-stopped
+    environment:
+      - POSTGRES_USER
+      - POSTGRES_PASSWORD
+      - POSTGRES_DB
+    ports:
+      # Standard port for PostgreSQL databases
+      - ${POSTGRES_PORT}:5432
+    volumes:
+      - ./data/postgres:/var/lib/postgresql/data
+    networks:
+      - nicelink
+
+networks:
+  nicelink:
+    driver: bridge

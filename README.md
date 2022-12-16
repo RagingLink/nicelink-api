@@ -1,2 +1,2 @@
 # nicelink-api
-Api for nicelink.xyz
+api.nicelink.xyz

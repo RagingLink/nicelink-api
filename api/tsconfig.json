@@ -1,0 +1,26 @@
+{
+    "compilerOptions": {
+        "noImplicitAny": true,
+        "strict": true,
+        "module": "esnext",
+        "resolveJsonModule": true,
+        "esModuleInterop": true,
+        "target": "ES2021",
+        "strictNullChecks": true,
+        "sourceMap": true,
+        "noImplicitReturns": true,
+        "strictFunctionTypes": true,
+        "strictBindCallApply": true,
+        "strictPropertyInitialization": true,
+        "forceConsistentCasingInFileNames": true,
+        "alwaysStrict": true,
+        "noUnusedLocals": true,
+        "noUnusedParameters": true,
+        "allowUnreachableCode": false,
+        "allowUnusedLabels": false,
+        "moduleResolution": "NodeNext",
+        "types": [],
+        "lib": ["ES2021"],
+        "baseUrl": "./"
+    }
+}
