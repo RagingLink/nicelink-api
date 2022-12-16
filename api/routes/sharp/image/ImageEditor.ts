@@ -75,6 +75,8 @@ export class ImageEditor {
     public async editImage(image: Image, body: InputBody, meta: MetaBody, count: number): Promise<Image> {
         this.timer.start('edit' + count.toString());
         let resized = false;
+        const compositeOptions: OverlayOptions[] = [];
+
         //? If you don't make any changes to the image itself with sharp, you can keep the original Buffer
         //? This cuts out the time needed to go from sharp -> buffer (buffer -> sharp is negligible)
         for (const property of Object.keys(body)) {
@@ -101,11 +103,11 @@ export class ImageEditor {
                     break;
                 }
                 case 'text': {
-                    this.compositeImages(image, this.addTextImages(image, body.text!))
+                    compositeOptions.push(...this.addTextImages(image, body.text!))
                     break;
                 }
                 case 'images': {
-                    this.compositeImages(image, await this.addChildImages(image, body.images!, meta, count));
+                    compositeOptions.push(...await this.addChildImages(image, body.images!, meta, count));
                     break;
                 }
                 case 'shape': {
@@ -120,6 +122,9 @@ export class ImageEditor {
                     break;
                 }
             }
+        }
+        if (compositeOptions.length > 0) {
+            this.compositeImages(image, compositeOptions);
         }       
         if (image.edited) {
             void image.sharp.toBuffer().then((buffer) => {
@@ -217,7 +222,6 @@ export class ImageEditor {
     }
     private async addChildImages(image: Image, childObjects: ChildBody[], meta: MetaBody, count: number): Promise<OverlayOptions[]> {
         const childArray: Array<{ buffer: Buffer; body: ChildBody; }> = [];
-
         for (const childObject of childObjects) {
             meta.children[meta.children.length] = {
                 errors: [],
