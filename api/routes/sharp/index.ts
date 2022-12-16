@@ -64,7 +64,7 @@ export default class SharpRoute {
     private storeImage(req: Request, res: Response): void {
         void this.imageEditor.generateImage(<JObject>req.body).then(output => {
             void this.imageManager.saveImage(output.image, output.body).then(fileName => {
-                const root = process.env.NODE_ENV === 'prod' ? 'https://api.nicelink.xyz/sharp/' : 'localhost:' + process.env.PORT + '/sharp/'
+                const root = process.env.NODE_ENV !== 'dev' ? 'https://api.nicelink.xyz/sharp/' : 'localhost:' + process.env.PORT + '/sharp/'
                 res.type('json').send(JSON.stringify({
                     path: fileName,
                     root,
