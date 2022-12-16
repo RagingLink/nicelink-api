@@ -24,7 +24,9 @@ export default class SharpRoute {
         this.discord.on('ready', () => {
             logger.info('Discord client ready');
         });
-
+        this.discord.on('error', (err) => {
+            this.logger.error(err);
+        })
         void this.discord.connect();
         //* Endpoints
         this.router.get('/transparent.png', (_, res) => {

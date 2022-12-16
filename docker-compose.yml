@@ -21,6 +21,7 @@ services:
     volumes:
       - ./data/prisma/migrations:/usr/src/app/prisma/migrations
       - ./data/images:/usr/src/app/routes/sharp/storedImages
+      - ./data/legacyImages:/usr/src/app/routes/sharp/legacyImages
     networks:
       - nicelink
     restart: unless-stopped

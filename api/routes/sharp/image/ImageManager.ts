@@ -97,6 +97,9 @@ export class ImageManager {
     public hasFile(fileName: string): boolean {
         return fs.existsSync(path.join(this.storedImagesPath, fileName))
     }
+    public hasLegacyFile(fileName: string): boolean {
+        return fs.existsSync(path.join(this.storedImagesPath, '..', 'legacyImages', fileName));
+    }
     public writeFile(buffer: Buffer, fileName: string): void {
         fs.writeFile(path.join(this.storedImagesPath, fileName), buffer, (err) => {
             if (err !== null)
@@ -109,7 +112,6 @@ export class ImageManager {
     public async getImage(fileName: string): Promise<Buffer | void> {
         if (guard.hasProperty(this.awaitingSharpBuffer, fileName))
             await this.awaitingSharpBuffer[fileName];
-
         if (guard.hasProperty(this.cache, fileName)) {
             this.updateLastAccessed(fileName);
             return this.cache[fileName].buffer;
@@ -120,6 +122,8 @@ export class ImageManager {
                 time: Date.now()
             };
             return this.cache[fileName].buffer;
+        } else if (this.hasLegacyFile(fileName)) {
+            return fs.readFileSync(path.join(this.storedImagesPath, '..', 'legacyImages', fileName))
         } else {
             try {
                 const image = await this.prisma.image.findUnique({where: {
@@ -128,13 +132,14 @@ export class ImageManager {
                 if (image !== null) {
                     const body = JSON.parse(image.body) as JObject;
                     const output = (await this.editor.generateImage(body));
-                    this.saveImage(output.image, body);
+                    const buffer = output.image.edited ? await output.image.sharp.toBuffer() : output.image.buffer
+                    this.cache[fileName] = {
+                        buffer,
+                        time: Date.now()
+                    };
+                    this.writeFile(buffer, fileName);
                     this.updateLastAccessed(fileName);
-                    if (output.image.edited) {
-                        return output.image.sharp.toBuffer();
-                    } else {
-                        return output.image.buffer;
-                    }
+                    return buffer;
                 }
             } catch (e: unknown) { 
                 this.logger.error(e);
