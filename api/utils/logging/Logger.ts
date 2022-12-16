@@ -26,9 +26,9 @@ export function createLogger(): Logger {
 }
 
 const logLevels = [
-    { name: process.env.NODE_ENV === 'dev' ? ' ❌ ': 'error', color: CatLoggr._chalk.black.bgBlack, aliases: ['error'], isError: true },
-    { name: process.env.NODE_ENV === 'dev' ?' ⚠️ ' : 'warn', color: CatLoggr._chalk.black.bgYellow, aliases: ['warning'], isError: true },
-    { name: process.env.NODE_ENV === 'dev' ?' ✅ ' : 'info', color: CatLoggr._chalk.white.bgGreenBright, aliases: ['info'] },
-    { name: process.env.NODE_ENV === 'dev' ?' 💾 ' : 'prisma', color: CatLoggr._chalk.white.bgCyanBright, aliases: ['prisma', 'db']},
-    { name: process.env.NODE_ENV === 'dev' ?' ⌛ ' : 'time', color: CatLoggr._chalk.white.bgBlueBright, aliases: ['time', 'stopwatch', 'sw'] }
+    { name: ' ❌ ', color: CatLoggr._chalk.black.bgBlack, aliases: ['error'], isError: true },
+    { name: ' ⚠️ ', color: CatLoggr._chalk.black.bgYellow, aliases: ['warning'], isError: true },
+    { name: ' ✅ ', color: CatLoggr._chalk.white.bgGreenBright, aliases: ['info'] },
+    { name: ' 💾 ', color: CatLoggr._chalk.white.bgCyanBright, aliases: ['prisma', 'db']},
+    { name: ' ⌛ ', color: CatLoggr._chalk.white.bgBlueBright, aliases: ['time', 'stopwatch', 'sw'] }
 ] as const;
