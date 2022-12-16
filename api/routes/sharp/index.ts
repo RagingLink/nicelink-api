@@ -37,8 +37,10 @@ export default class SharpRoute {
         });
         this.router.get('/:image', (req, res) => this.getImage(req, res));
 
-        this.router.post('/', (_, __) => {
-            // no-op
+        this.router.post('/', (req, res) => {
+            this.imageEditor.generateImage(<JObject>req.body).then(output => {
+                res.type('json').send(JSON.stringify(output.meta, null, 2));
+            })
         });
         //? Process multiple images and return an array of objects with errors, path, root etc.
         this.router.post('/multiple', (req, res) => this.storeMultiple(req, res));
