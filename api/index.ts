@@ -19,7 +19,7 @@ class HttpException extends Error {
 }
 
 const app = express();
-app.get('/', (req, res) => {
+app.get('/', (_, res) => {
     res.redirect('https://api.nicelink.xyz/docs');
 })
 const server = http.createServer(app);
