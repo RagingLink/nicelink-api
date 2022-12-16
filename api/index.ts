@@ -19,7 +19,9 @@ class HttpException extends Error {
 }
 
 const app = express();
-
+app.get('/', (req, res) => {
+    res.redirect('https://api.nicelink.xyz/docs');
+})
 const server = http.createServer(app);
 app.set('trust proxy', 1);
 // parse application/x-www-form-urlencoded
