@@ -14,4 +14,4 @@ code_clipboard: true
 Just a simple API used for simple things.
 
 ## API List 
-- [sharp](https://api.nicelink.xyz/docs/sharp) (replacement of `/jimp`)
+- [sharp](/docs/sharp) (replacement of `/jimp`)

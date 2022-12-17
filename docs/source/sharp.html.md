@@ -73,7 +73,8 @@ curl -X POST -H "Content-Type: application/json" \
 
 `POST https://api.nicelink.xyz/jimp`
 
-**Request body is an [ImageObject](https://api.nicelink.xyz/docs/sharp#image-object)**
+**Request body is an [ImageObject](#image-object)**
+
 <aside class="notice">This doesn't take into account the various things that could go wrong when actually generating the image. This endpoint should be a treated as a way to confirm your input is valid</aside>
 
 ## Generate image
@@ -82,15 +83,19 @@ curl -X POST -H "Content-Type: application/json" \
 
 ```shell
 curl -X POST -H "Content-Type: application/json" \
-  -d {"background": "https://api.nicelink.xyz/sharp/transparent.png", "cacheDuration": 7, "text": [{"text": "Hello world!"}]} \
-  https://api.nicelink.xyz/sharp/store
+  -d {"background": "https://api.nicelink.xyz/sharp/transparent.png", "text": [{"text": "Hello world!"}], "crop": "auto"} \
+  https://api.nicelink.xyz/sharp/process
 ```
 
 ```powershell
 {set;~json;{json;{
-  "background": "https://api.nicelink.xyz/sharp/transparent.png", 
-  "cacheDuration": 7, 
-  "text": [{"text": "Hello world!"}]
+    "background": "https://api.nicelink.xyz/sharp/transparent.png",
+    "text": [
+        {
+            "text": "Hello world!"
+        }
+    ],
+    "crop": "auto"
 }}}
 {set;~response;{request;https://api.nicelink.xyz/sharp/store;{jset;;method;POST};{get;~json}}}
 
@@ -101,7 +106,7 @@ curl -X POST -H "Content-Type: application/json" \
 
 `POST https://api.nicelink.xyz/sharp/process`
 
-**Request body must be an [ImageObject](https://api.nicelink.xyz/docs/sharp#image-object)**
+**Request body must be an [ImageObject](#image-object)**
 
 This endpoints directly returns the generated image
 
@@ -111,7 +116,7 @@ This endpoints directly returns the generated image
 
 ```shell
 curl -X POST -H {"Content-Type: application/json"} \
-  -d {"background": "https://api.nicelink.xyz/sharp/transparent.png", "cacheDuration": 7, "text": [{"text": "Hello world!"}]} \
+  -d {"background": "https://api.nicelink.xyz/sharp/transparent.png", "cacheDuration": 7, "text": [{"text": "Hello world!"}], "crop": "auto"} \
   https://api.nicelink.xyz/sharp/store
 ```
 
@@ -119,7 +124,12 @@ curl -X POST -H {"Content-Type: application/json"} \
 {set;~json;{json;{
   "background": "https://api.nicelink.xyz/sharp/transparent.png", 
   "cacheDuration": 7, 
-  "text": [{"text": "Hello world!"}]
+  "text": [
+    {
+      "text": "Hello world!"
+    }
+  ],
+  "crop": "auto"
 }}}
 {set;~response;{request;https://api.nicelink.xyz/sharp/store;{jset;;method;POST};{get;~json}}}
 
@@ -131,8 +141,8 @@ curl -X POST -H {"Content-Type: application/json"} \
 ```json
 {
   "root" : "https://api.nicelink.xyz/sharp/",
-  "path" : "somerandompath.png",
-  "url" : "https://api.nicelink.xyz/sharp/somerandompath.png",
+  "path" : "d7596506-9ee8-4a42-8cea-b51670378920.png",
+  "url" : "https://api.nicelink.xyz/sharp/d7596506-9ee8-4a42-8cea-b51670378920.png",
   "errors" : [],
   "warnings" : [],
   "children" : []
@@ -141,7 +151,7 @@ curl -X POST -H {"Content-Type: application/json"} \
 
 `POST https://api.nicelink.xyz/sharp/store`
 
-**Request body must be an [ImageObject](https://api.nicelink.xyz/docs/sharp#image-object)**
+**Request body must be an [ImageObject](#image-object)**
 
 This endpoint allows you to store an image for a determined amount of time (`cacheDuration`). `GET`ting an image extends the duration it's stored for by `cacheDuration`.
 
@@ -158,6 +168,65 @@ After `cacheDuration` days have passed since the last access the image will be d
 # Input Bodies
 ## Image Object
 
+> Example JSONs
+
+> Replacing a colour:
+
+```json
+{
+  "bg": "https://api.nicelink.xyz/docs/images/logo.png",
+  "replaceColor": {
+    "target" : "#000000",
+    "replace" : "#00FF00",
+    "delta" : 50
+  }
+}
+```
+
+> [Response image](https://api.nicelink.xyz/sharp/aced174d-d4c6-413b-98c6-daf75edbe65d.png) 
+
+> Hello world:
+
+```json
+{
+    "background": "https://api.nicelink.xyz/sharp/transparent.png",
+    "text": [
+        {
+            "text": "Hello world!"
+        }
+    ],
+    "crop": "auto"
+}
+```
+
+> [Response image](https://api.nicelink.xyz/sharp/d7596506-9ee8-4a42-8cea-b51670378920.png)
+
+> Add some eyes to the logo:
+
+```json
+{
+    "bg": "https://api.nicelink.xyz/docs/images/logo.png",
+    "images": [
+        {
+            "bg": "https://api.nicelink.xyz/sharp/edcd1b62-911a-4b5b-804a-a82d72b90060.png",
+            "align": "center",
+            "x": -125,
+            "y": -50,
+            "width": 100
+        },
+        {
+            "bg": "https://api.nicelink.xyz/sharp/edcd1b62-911a-4b5b-804a-a82d72b90060.png",
+            "align": "center",
+            "x": 125,
+            "y": -50,
+            "width": 100
+        }
+    ]
+}
+```
+
+> [Response image](https://api.nicelink.xyz/sharp/4a003a05-3ae6-4f96-8922-a0ea353b5a26.png)
+
 <aside class="notice">
 If an alias is provided in combination with its main property, the alias is discarded
 </aside>
@@ -172,10 +241,10 @@ opacity|o|`number`|`100`|Opacity of the image ranging from 0-100
 rotate|r|`number`|`0`|Clockwise rotation of the image in degrees.
 shape|s|`string`|`undefined`|Shape of the image. Can be `circle`.
 flip||`number`|`undefined`|Flips the image horizontally or vertically. Accepted values are `1` (horizontal flip), `2` (vertical flip) and `3` (horizontal + vertical flip)
-images|children|`ChildObject[]`|`[]`|Array with [ChildObject](https://api.nicelink.xyz/docs/sharp#child-object)s.
-text|txt|[<code>TextObject&#124;TextObject[]</code>](https://api.nicelink.xyz/docs/sharp#text-object)|`undefined`|Renders text on the image
-crop||<code>[CropObject](https://api.nicelink.xyz/docs/sharp#crop-object)&#124;number&#124;"auto"</code>|`undefined`|Crops the image based on the parameters provided. Argument can be a number in which case it will crop from `x = 0` and `y = 0` until `x = number` and `y = number`. Or the argument can be a CropObject or `"auto"` which trims the transparent region around the image.
-replacecolor||[`ReplaceColorObject`](https://api.nicelink.xyz/docs/sharp#replace-color-object)|`undefined`|Replaces a certain colour with another colour
+images|children|`ChildObject[]`|`[]`|Array with [ChildObject](#child-object)s.
+text|txt|[<code>TextObject&#124;TextObject[]</code>](#text-object)|`undefined`|Renders text on the image
+crop||<code>[CropObject](#crop-object)&#124;number&#124;"auto"</code>|`undefined`|Crops the image based on the parameters provided. Argument can be a number in which case it will crop from `x = 0` and `y = 0` until `x = number` and `y = number`. Or the argument can be a CropObject or `"auto"` which trims the transparent region around the image.
+replacecolor||[`ReplaceColorObject`](#replace-color-object)|`undefined`|Replaces a certain colour with another colour
 
 ## Child Object
 
@@ -185,9 +254,9 @@ A `ChildObject` supports all the properties of `InputBody`, in addition to the f
 |-|-|-|-|-|
 x||`number`|`0`|Horizontal position of the image on the parent image.
 y||`number`|`0`|Vertical position of the image on the parent image.
-alignment|align|`string`|`undefined`|Alignment of the image on the parent image. Can be any of the modes listed under "[Supported alignment modes](https://api.nicelink.xyz/docs/sharp#supported-alignment-modes)". **If this property is provided in combination with `x` and/or `y`, `x` and `y` will be the offset.**
+alignment|align|`string`|`undefined`|Alignment of the image on the parent image. Can be any of the modes listed under "[Supported alignment modes](#supported-alignment-modes)". **If this property is provided in combination with `x` and/or `y`, `x` and `y` will be the offset.**
 size||`string`|`undefined`|Can be `contain`. `contain` scales the child image down so it fits inside the parent element.
-blendMode||`string`|`srcOver`|Blend mode to use when composting the child image on the parent image. A list of blend modes can be found below under [Blend modes](https://api.nicelink.xyz/docs/sharp#blend-modes)
+blendMode||`string`|`srcOver`|Blend mode to use when composting the child image on the parent image. A list of blend modes can be found below under [Blend modes](#blend-modes)
 blendOpacitySrc||`number`|`1`|Opacity of the src/child image.
 blendOpacityDest||`number`|`1`|Opacity of the destination/parent image.
 
@@ -197,7 +266,7 @@ Property|Alias|Type|Default|Description
 |-|-|-|-|-|
 x||`number`|`0`|x coordinate/offset of the text block.
 y||`number`|`0`|y coordinate/offset of the text block.
-align||`string`|`top-left`|Alignment mode of the text block. Alignment modes can be seen in the [Supported alignment modes](https://api.nicelink.xyz/docs/sharp#supported-alignment-modes) section
+align||`string`|`top-left`|Alignment mode of the text block. Alignment modes can be seen in the [Supported alignment modes](#supported-alignment-modes) section
 size||`number`|`30`|Pixel size of the text.
 font||`string`|`30px sans-serif`|Font must be of the format `SIZEpx FONT` where `SIZE` is the text size and `FONT` is the font you want to use. **This property DOES NOT returns errors if the font is invalid. In general this property should NOT be used.**
 textAlign||`string`|`left`|Alignment mode of the text inside the text block. This is **not** the same as the `align` property.
