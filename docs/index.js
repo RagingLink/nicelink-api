@@ -22,6 +22,6 @@ app.get("/docs/:page", async (req, res, next) => {
     res.render(req.params.page ?? 'index');
 });
 
-server.listen(8083, () => {
+server.listen(8080, () => {
     console.info("Docs server now listening");
 })
