@@ -67,7 +67,7 @@ export class ImageEditor {
 
             return new Image(buffer, this.cache.has(this.getBodyStr(inputBody)));
         } catch (e: unknown) {
-            meta.errors.push('Invalid image src');
+            meta.errors.push('Invalid background image');
             return new Image(this.imageFetcher.defaultImageBuffer)
         }
     }
