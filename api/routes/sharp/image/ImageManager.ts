@@ -75,14 +75,16 @@ export class ImageManager {
     }
     public async saveImageToDB(fileName: string, body?: InputBody, persist = false): Promise<void> {
         const cache_duration = (body?.cacheDuration ?? 7);
-        await this.prisma.image.create({data: {
-            id: fileName,
-            body: JSON.stringify(body),
-            created_at: new Date(),
-            last_accessed: new Date(),
-            cache_duration: ((cache_duration) <= 30 ? cache_duration : 30),
-            persisted: persist
-        }});
+        await this.prisma.image.create({
+            data: {
+                id: fileName,
+                body: JSON.stringify(body),
+                created_at: new Date(),
+                last_accessed: new Date(),
+                cache_duration: ((cache_duration) <= 30 ? cache_duration : 30),
+                persisted: persist
+            }
+        });
         this.logger.db('Saved image to DB' + (persist ? ' indefinitely' : ''));
     }
     public async saveBuffer(buffer: Buffer): Promise<string> {
@@ -127,9 +129,11 @@ export class ImageManager {
             return fs.readFileSync(path.join(this.storedImagesPath, '..', 'legacyImages', fileName))
         } else {
             try {
-                const image = await this.prisma.image.findUnique({where: {
-                    id: fileName
-                }});
+                const image = await this.prisma.image.findUnique({
+                    where: {
+                        id: fileName
+                    }
+                });
                 if (image !== null) {
                     const body = JSON.parse(image.body) as JObject;
                     const output = (await this.editor.generateImage(body));
@@ -142,7 +146,7 @@ export class ImageManager {
                     this.updateLastAccessed(fileName);
                     return buffer;
                 }
-            } catch (e: unknown) { 
+            } catch (e: unknown) {
                 this.logger.error(e);
             }
         }
@@ -157,13 +161,15 @@ export class ImageManager {
                 if (image === null)
                     this.saveImageToDB(fileName)
                 else
-                    this.prisma.image.update({where: {
-                        id: fileName
-                    }, data: {
-                        last_accessed: new Date()
-                    }})
+                    this.prisma.image.update({
+                        where: {
+                            id: fileName
+                        }, data: {
+                            last_accessed: new Date()
+                        }
+                    })
             })
-            
+
         } catch (e: unknown) {
             this.logger.error(`Failed to update last accessed for "${fileName}"`);
         }
@@ -173,17 +179,31 @@ export class ImageManager {
     public async startImageSweep() {
         setInterval(async () => {
             // Select images older than a day and filter out images that are still 'allowed' to be stored
-            const oldImages = (await this.prisma.image.findMany({where: {last_accessed: {
-                lte: new Date(Date.now() - 24 * 3600 *1000)
-            }}})).filter(image => {
+            const oldImages = (await this.prisma.image.findMany({
+                where: {
+                    last_accessed: {
+                        lte: new Date(Date.now() - 24 * 3600 * 1000)
+                    },
+                    persisted: {
+                        not: true
+                    }
+                }
+            })).filter(image => {
                 return Date.now() > image.last_accessed.getMilliseconds() + image.cache_duration * 24 * 3600 * 1000;
             });
             // Soft removal
             this.sweepImages(oldImages)
             // Select images older than 90 days and filter out images that are still 'allowed' to be stored
-            const veryOldImages = (await this.prisma.image.findMany({where: {last_accessed: {
-                lte: new Date(Date.now() - 90 * 24 * 3600 *1000)
-            }}})).filter(image => {
+            const veryOldImages = (await this.prisma.image.findMany({
+                where: {
+                    last_accessed: {
+                        lte: new Date(Date.now() - 90 * 24 * 3600 * 1000)
+                    },
+                    persisted: {
+                        not: true
+                    }
+                }
+            })).filter(image => {
                 return Date.now() > image.last_accessed.getMilliseconds() + (image.cache_duration * 24 * 3600 * 1000) + (90 * 86400 * 1000);
             });
             // Hard removal
@@ -192,7 +212,7 @@ export class ImageManager {
                 this.logger.db(`Sweeping ${oldImages.length} from filesystem and ${veryOldImages.length} from postgres`);
         }, 24 * 3600 * 1000);
     }
-    public async sweepImages(images: PrismaImage[], fromDB = false) {        
+    public async sweepImages(images: PrismaImage[], fromDB = false) {
         for (const image of images) {
             try {
                 if (!fromDB) {
@@ -201,7 +221,7 @@ export class ImageManager {
                         continue
                     this.deleteFile(image.id);
                 } else {
-                    this.prisma.image.delete({where: {id: image.id}});
+                    this.prisma.image.delete({ where: { id: image.id } });
                 }
             } catch (e: unknown) {
                 this.logger.error(`Failed to remove image from "${fromDB ? 'db' : 'fs'}"`);
