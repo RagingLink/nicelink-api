@@ -5,3 +5,4 @@ config.json
 storedImages*
 legacyImages*
 prisma/migrations*
+./build.sh
