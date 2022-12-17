@@ -4,7 +4,9 @@
   "main": "index.js",
   "license": "MIT",
   "scripts": {
-    "build": "./build.sh"
+    "build": "./build.sh",
+    "start": "node index.js",
+    "build:start": "yarn run build && yarn run start"
   },
   "dependencies": {
     "ejs": "^3.1.8",

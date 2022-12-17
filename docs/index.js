@@ -13,7 +13,7 @@ app.use('/docs', express.static(__dirname + '/pages'));
 app.get("/:path(docs)?", (req, res, next) => {
     res.render("index");
 });
-
+app.get('/docs/jimp', (_, res) => res.redirect('sharp'));
 app.get("/docs/:page", async (req, res, next) => {
     let dirs = await fs.readdirSync("./pages");
     dirs = dirs.filter((f) => f.endsWith(".html")).map((f) => f.split(".")[0]);
@@ -22,6 +22,6 @@ app.get("/docs/:page", async (req, res, next) => {
     res.render(req.params.page ?? 'index');
 });
 
-server.listen(8080, () => {
+server.listen(8083, () => {
     console.info("Docs server now listening");
 })

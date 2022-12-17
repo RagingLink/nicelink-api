@@ -29,6 +29,7 @@ under the License.
     <meta charset="utf-8">
     <meta content="IE=edge,chrome=1" http-equiv="X-UA-Compatible">
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <%= favicon_tag 'favicon.ico' %>
     <% if current_page.data.key?('meta') %>
       <% current_page.data.meta.each do |meta| %>
         <meta
@@ -115,23 +116,31 @@ under the License.
       <% end %>
     </div>
     <div class="page-wrapper">
-      <div class="dark-box"></div>
       <div class="content">
         <%= page_content %>
       </div>
-      <div class="dark-box">
-        <% if language_tabs.any? %>
-          <div class="lang-selector">
-            <% language_tabs.each do |lang| %>
-              <% if lang.is_a? Hash %>
-                <a href="#" data-language-name="<%= lang.keys.first %>"><%= lang.values.first %></a>
-              <% else %>
-                <a href="#" data-language-name="<%= lang %>"><%= lang %></a>
+      <% if language_tabs.any? %>
+        <div class="dark-box">
+          <% if language_tabs.any? %>
+            <div class="lang-selector">
+              <% language_tabs.each do |lang| %>
+                <% if lang.is_a? Hash %>
+                  <a href="#" data-language-name="<%= lang.keys.first %>"><%= lang.values.first %></a>
+                <% else %>
+                  <a href="#" data-language-name="<%= lang %>"><%= lang %></a>
+                <% end %>
               <% end %>
-            <% end %>
-          </div>
-        <% end %>
-      </div>
+            </div>
+          <% end %>
+        </div>
+      <% end %>
     </div>
   </body>
+  <% if !language_tabs.any? %>
+    <style>
+      .content>h1, .content>h2, .content>h3, .content>h4, .content>h5, .content>h6, .content>p, .content>table, .content>ul, .content>ol, .content>aside, .content>dl {
+        margin-right: 0px !important;
+      }
+    </style>
+  <% end %>
 </html>
