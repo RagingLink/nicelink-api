@@ -9,6 +9,7 @@ app.set('view engine', 'html');
 app.engine('html', require('ejs').renderFile);
 app.use(express.static(__dirname + '/pages'));
 app.use('/docs', express.static(__dirname + '/pages'));
+app.use('/docs/images', express.static(__dirname + '/images'));
 
 app.get("/:path(docs)?", (req, res, next) => {
     res.render("index");
