@@ -24,4 +24,4 @@ RUN yarn install --prod
 # Is this even necessary with docker-compose `ports:`?
 EXPOSE 8081
 # Entrypoint
-CMD ["yarn", "run", "start:setupPrisma"]
+CMD ["yarn", "run", "start"]
