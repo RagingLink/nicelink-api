@@ -18,4 +18,5 @@ model Image {
   created_at DateTime
   last_accessed DateTime
   cache_duration Int
+  persisted Boolean?
 }

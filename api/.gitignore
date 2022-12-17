@@ -4,3 +4,4 @@ node_modules*
 config.json
 storedImages*
 legacyImages*
+prisma/migrations*

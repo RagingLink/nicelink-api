@@ -80,7 +80,8 @@ export class ImageManager {
             body: JSON.stringify(body),
             created_at: new Date(),
             last_accessed: new Date(),
-            cache_duration: persist ? Infinity : ((cache_duration) <= 30 ? cache_duration : 30)
+            cache_duration: ((cache_duration) <= 30 ? cache_duration : 30),
+            persisted: persist
         }});
         this.logger.db('Saved image to DB' + (persist ? ' indefinitely' : ''));
     }
