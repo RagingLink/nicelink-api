@@ -103,11 +103,11 @@ export class ImageEditor {
                     break;
                 }
                 case 'text': {
-                    compositeOptions.push(...this.addTextImages(image, body.text!))
+                    image.sharp = sharp(await image.sharp.composite(this.addTextImages(image, body.text!)).toBuffer());
                     break;
                 }
                 case 'images': {
-                    compositeOptions.push(...await this.addChildImages(image, body.images!, meta, count));
+                    image.sharp = sharp(await image.sharp.composite(await this.addChildImages(image, body.images!, meta, count)).toBuffer())
                     break;
                 }
                 case 'shape': {
