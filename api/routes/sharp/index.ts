@@ -66,8 +66,9 @@ export default class SharpRoute {
     }
     // Store image
     private storeImage(req: Request, res: Response): void {
+        const shouldPersist = 'persistKey' in req.body && req.body['persistKey'] === config.persistKey;
         void this.imageEditor.generateImage(<JObject>req.body).then(output => {
-            void this.imageManager.saveImage(output.image, output.body).then(fileName => {
+            void this.imageManager.saveImage(output.image, output.body, shouldPersist).then(fileName => {
                 const root = process.env.NODE_ENV !== 'dev' ? 'https://api.nicelink.xyz/sharp/' : 'localhost:' + process.env.PORT + '/sharp/'
                 res.type('json').send(JSON.stringify({
                     path: fileName,

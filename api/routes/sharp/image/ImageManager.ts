@@ -45,7 +45,7 @@ export class ImageManager {
         };
         return fileName;
     }
-    public async saveImage(image: Image, body?: InputBody): Promise<string> {
+    public async saveImage(image: Image, body?: InputBody, persist = false): Promise<string> {
         let fileType: string;
         if (image.edited) {
             fileType = (await image.sharp.metadata()).format ?? 'png';
@@ -70,19 +70,19 @@ export class ImageManager {
             this.writeFile(image.buffer, fileName);
         }
         if (body !== undefined)
-            this.saveImageToDB(fileName, body);
+            this.saveImageToDB(fileName, body, persist);
         return fileName;
     }
-    public async saveImageToDB(fileName: string, body?: InputBody): Promise<void> {
+    public async saveImageToDB(fileName: string, body?: InputBody, persist = false): Promise<void> {
         const cache_duration = (body?.cacheDuration ?? 7);
         await this.prisma.image.create({data: {
             id: fileName,
             body: JSON.stringify(body),
             created_at: new Date(),
             last_accessed: new Date(),
-            cache_duration: (cache_duration) <= 30 ? cache_duration : 30
+            cache_duration: persist ? Infinity : ((cache_duration) <= 30 ? cache_duration : 30)
         }});
-        this.logger.db('Saved image to DB');
+        this.logger.db('Saved image to DB' + (persist ? ' indefinitely' : ''));
     }
     public async saveBuffer(buffer: Buffer): Promise<string> {
         const fileType = await fileTypeFromBuffer(buffer);
