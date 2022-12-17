@@ -12,8 +12,9 @@ export default async function replaceColor (image: Image, {target, replace, delt
     const targetColor = Color(target, 'hex').lab().array();
     const replaceColor = Color(replace, 'hex').rgb().array();
     const rgbImage = image.sharp.clone();
+    const clonedImage = image.sharp.clone();
 
-    const { data, info } = await image.sharp.toColorspace('lab')
+    const { data, info } = await clonedImage.toColorspace('lab')
         .raw()
         .toBuffer({resolveWithObject: true});
 
@@ -29,7 +30,7 @@ export default async function replaceColor (image: Image, {target, replace, delt
             cloneArray[i+2] = replaceColor[2];
         }
     }
-    image.sharp = sharp(cloneArray, {raw: {width, height, channels}}).png()
+    image.sharp = sharp(await sharp(cloneArray, {raw: {width, height, channels}}).png({force: true}).toBuffer());
 }
 
 function getDelta(lab1: number[], lab2: number[], formula: 'E00' | 'E76' | 'E94'): number {
