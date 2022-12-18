@@ -148,11 +148,12 @@ const text2png = (text : string, options : InputOptions = {}): Buffer => {
                 break;
         }
 
-        ctx.fillText(lineProp.line, x, y);
 
         if (parsedOptions.strokeWidth > 0 ) {
             ctx.strokeText(lineProp.line, x, y);
         }
+
+        ctx.fillText(lineProp.line, x, y);
 
         offsetY += lineHeight;
     });
