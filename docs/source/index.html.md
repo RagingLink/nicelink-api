@@ -1,5 +1,5 @@
 ---
-title: Main
+title: Nicelink Docs
 includes: []
 search: true
 highlight_theme: darkula
