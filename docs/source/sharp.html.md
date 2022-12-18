@@ -228,8 +228,12 @@ After `cacheDuration` days have passed since the last access the image will be d
 > [Response image](https://api.nicelink.xyz/sharp/4a003a05-3ae6-4f96-8922-a0ea353b5a26.png)
 
 <aside class="notice">
-If an alias is provided in combination with its main property, the alias is discarded
+  Properties are case-sensitive
 </aside>
+<aside class="notice">
+  If an alias is provided in combination with its main property, the alias is discarded
+</aside>
+
 
 Property      | Alias    | Type                                                            | Default                                                          | Description
 --------------|----------|-----------------------------------------------------------------|------------------------------------------------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -244,7 +248,7 @@ flip          |          | `number`                                             
 images        | children | `ChildObject[]`                                                 | `[]`                                                             | Array with [ChildObject](#child-object)s.
 text          | txt      | [<code>TextObject&#124;TextObject[]</code>](#text-object)       | `undefined`                                                      | Renders text on the image
 crop          |          | <code>[CropObject](#crop-object)&#124;number&#124;"auto"</code> | `undefined`                                                      | Crops the image based on the parameters provided. Argument can be a number in which case it will crop from `x = 0` and `y = 0` until `x = number` and `y = number`. Or the argument can be a CropObject or `"auto"` which trims the transparent region around the image.
-replacecolor  |          | [`ReplaceColorObject`](#replace-color-object)                   | `undefined`                                                      | Replaces a certain colour with another colour
+replaceColor  |          | [`ReplaceColorObject`](#replace-color-object)                   | `undefined`                                                      | Replaces a certain colour with another colour
 
 ## Child Object
 
@@ -302,32 +306,26 @@ blendMode |       | `string` | `srcOver`   | Blend mode to use when composting t
 
 > [Response image](https://api.nicelink.xyz/sharp/1f45f301-4779-4e96-81b4-49421ed92214.png)
 
-Property          | Alias       | Type     | Default               | Description
-------------------|-------------|----------|-----------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-x                 |             | `number` | `0`                   | x coordinate/offset of the text block.
-y                 |             | `number` | `0`                   | y coordinate/offset of the text block.
-align             |             | `string` | `top-left`            | Determines how the text is aligned on the parent image.. Can be any of the modes listed at **[Supported alignment modes](#supported-alignment-modes)**
-size              |             | `number` | `30`                  | Pixel size of the text.
-font              |             | `string` | `30px sans-serif`     | Font must be of the format `SIZEpx FONT` where `SIZE` is the text size and `FONT` is the font you want to use. **This property DOES NOT returns errors if the font is invalid. In general this property should NOT be used.**
-textAlign         |             | `string` | `left`                | Alignment mode of the text inside the text block. This is **not** the same as the `align` property.
-textColor         | color       | `string` | `black`               | Color of the text.
-backgroundColor   | bgColor     | `string` | `transparent`         | Color of the background.
-lineSpacing       |             | `number` | `0`                   | Amount of spacing between lines.
-maxWidth          |             | `number` | `width of parent - x` | Max width of the text block. Defaults to the width of the parent image minus the `x` offset.
-strokeWidth       |             | `number` | `0`                   | Width of the text stroke in pixels.
-strokeColor       |             | `string` | `white`               | Color of the text stroke.
-                  |             |          |                       | When using a stroke, the padding might need to be increased to avoid cutting off.
-paddingLeft       | padding     | `number` | `0`                   | Padding in pixels on the left side.
-paddingRight      | padding     | `number` | `0`                   | Padding in pixels on the right side.
-paddingTop        | padding     | `number` | `0`                   | Padding in pixels on the top side.
-paddingBottom     | padding     | `number` | `0`                   | Padding in pixels on the bottom side.
-                  |             |          |                       | The `padding` property is only used for a side if the side-specific property is not provided.
-borderLeftWidth   | borderWidth | `number` | `0`                   | Width of the border on the left side.
-borderRightWidth  | borderWidth | `number` | `0`                   | Width of the border on the right side.
-borderTopWidth    | borderWidth | `number` | `0`                   | Width of the border on the top side.
-borderBottomWidth | borderWidth | `number` | `0`                   | Width of the border on the bottom side.
-                  |             |          |                       | The `borderWidth` property is only used for a side if the side-specific property is not provided.
-borderColor       |             | `string` | `black`               | Color of the border.
+Property          | Alias   | Type     | Default               | Description
+------------------|---------|----------|-----------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+x                 |         | `number` | `0`                   | x coordinate/offset of the text block.
+y                 |         | `number` | `0`                   | y coordinate/offset of the text block.
+align             |         | `string` | `top-left`            | Determines how the text is aligned on the parent image.. Can be any of the modes listed at **[Supported alignment modes](#supported-alignment-modes)**
+size              |         | `number` | `30`                  | Pixel size of the text.
+font              |         | `string` | `30px sans-serif`     | Font must be of the format `SIZEpx FONT` where `SIZE` is the text size and `FONT` is the font you want to use. **This property DOES NOT returns errors if the font is invalid. In general this property should NOT be used.**
+textAlign         |         | `string` | `left`                | Alignment mode of the text inside the text block. This is **not** the same as the `align` property.
+textColor         | color   | `string` | `black`               | Color of the text.
+backgroundColor   | bgColor | `string` | `transparent`         | Color of the background.
+lineSpacing       |         | `number` | `0`                   | Amount of spacing between lines.
+maxWidth          |         | `number` | `width of parent - x` | Max width of the text block. Defaults to the width of the parent image minus the `x` offset.
+strokeWidth       |         | `number` | `0`                   | Width of the text stroke in pixels.
+strokeColor       |         | `string` | `white`               | Color of the text stroke.
+                  |         |          |                       | When using a stroke, the padding might need to be increased to avoid cutting off the stroke. Setting padding to the width of the stroke is usually enough.
+padding`{SIDE}`   |         | `number` | `0`                   | Padding in pixels on `{SIDE}`, where `{SIDE}` can be `left`, `right`, `top` and `bottom`. (`paddingLeft`, `paddingRight` etc.)
+padding           |         | `number` | `0`                   | The `padding` property is only used for a side if the side-specific property is not provided.
+border{SIDE}Width |         | `number` | `0`                   | Width of the border on `{SIDE}`. (`borderBottomWidth`, `borderLeftWidth` etc.)
+borderWidth       |         | `number` | `0`                   | The `borderWidth` property is only used for a side if the side-specific property is not provided.
+borderColor       |         | `string` | `black`               | Color of the border.
 
 ## Crop Object
 
