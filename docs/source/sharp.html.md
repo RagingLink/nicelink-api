@@ -272,13 +272,13 @@ replacecolor  |          | [`ReplaceColorObject`](#replace-color-object)        
 
 A `ChildObject` supports all the properties of `InputBody`, in addition to the following properties:
 
-Property         | Alias | Type     | Default     | Description
------------------|-------|----------|-------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-x                |       | `number` | `0`         | Horizontal position of the image on the parent image.
-y                |       | `number` | `0`         | Vertical position of the image on the parent image.
-alignment        | align | `string` | `undefined` | Alignment of the image on the parent image. Can be any of the modes listed under "[Supported alignment modes](#supported-alignment-modes)". **If this property is provided in combination with `x` and/or `y`, `x` and `y` will be the offset.**
-size             |       | `string` | `undefined` | Can be `contain`. `contain` scales the child image down so it fits inside the parent element.
-blendMode        |       | `string` | `srcOver`   | Blend mode to use when composting the child image on the parent image. A list of blend modes can be found below under [Blend modes](#blend-modes)
+Property  | Alias | Type     | Default     | Description
+----------|-------|----------|-------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+x         |       | `number` | `0`         | Horizontal position of the image on the parent image.
+y         |       | `number` | `0`         | Vertical position of the image on the parent image.
+alignment | align | `string` | `undefined` | Determines how the child image is aligned on the parent image. Can be any of the modes listed at **[Supported alignment modes](#supported-alignment-modes)**. **If this property is provided in combination with `x` and/or `y`, `x` and `y` will be the offset.**
+size      |       | `string` | `undefined` | Can be `contain`. `contain` scales the child image down so it fits inside the parent element.
+blendMode |       | `string` | `srcOver`   | Blend mode to use when composting the child image on the parent image. A list of blend modes can be found at **[Blend modes](#blend-modes)**
 
 ## Text Object
 
@@ -306,7 +306,7 @@ Property          | Alias       | Type     | Default               | Description
 ------------------|-------------|----------|-----------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 x                 |             | `number` | `0`                   | x coordinate/offset of the text block.
 y                 |             | `number` | `0`                   | y coordinate/offset of the text block.
-align             |             | `string` | `top-left`            | Alignment mode of the text block. Alignment modes can be seen in the [Supported alignment modes](#supported-alignment-modes) section
+align             |             | `string` | `top-left`            | Determines how the text is aligned on the parent image.. Can be any of the modes listed at **[Supported alignment modes](#supported-alignment-modes)**
 size              |             | `number` | `30`                  | Pixel size of the text.
 font              |             | `string` | `30px sans-serif`     | Font must be of the format `SIZEpx FONT` where `SIZE` is the text size and `FONT` is the font you want to use. **This property DOES NOT returns errors if the font is invalid. In general this property should NOT be used.**
 textAlign         |             | `string` | `left`                | Alignment mode of the text inside the text block. This is **not** the same as the `align` property.
