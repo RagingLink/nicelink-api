@@ -282,6 +282,26 @@ blendMode        |       | `string` | `srcOver`   | Blend mode to use when compo
 
 ## Text Object
 
+> Example actions:
+
+> Simple progressbar with percentage in it
+
+```json
+{
+    "bg": "https://api.nicelink.xyz/misc/progressbar?percentage=50&colour=lime",
+    "text": [{
+        "text" : "50%",
+        "color" : "white",
+        "strokeColor": "black",
+        "padding": 3,
+        "strokeWidth": 3,
+        "align": "center"
+    }]
+}
+```
+
+> [Response image](https://api.nicelink.xyz/sharp/1f45f301-4779-4e96-81b4-49421ed92214.png)
+
 Property          | Alias       | Type     | Default               | Description
 ------------------|-------------|----------|-----------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 x                 |             | `number` | `0`                   | x coordinate/offset of the text block.
