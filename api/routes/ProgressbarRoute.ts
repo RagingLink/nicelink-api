@@ -47,11 +47,10 @@ export default class ProgressBarRoute {
     private async generatePillImage(res: Response, percentage: number, colour: string): Promise<void> {
         try {
             const colouredImage = new Image(this.pillShape)
-            const pillColour = new Color(colour).hexa();
-            this.logger.info(pillColour);
+            const pillColour = new Color(colour).hex();
             await replaceColor(colouredImage.resize(992, 60), {
                 target: '#000000',
-                replace: colour,
+                replace: pillColour,
                 delta: 2.3
             });
             const colouredBuffer = await colouredImage.sharp.extract({ left: 0, top: 0, width: Math.round((colouredImage.width ?? 0) / 100 * percentage), height: colouredImage.height ?? 0 }).toBuffer();
