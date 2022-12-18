@@ -1,12 +1,13 @@
 import express, { Request, Response } from 'express';
 import path from 'path';
 import fs from 'fs';
-import { Sharp } from 'sharp';
 import * as url from 'url';
 
 import { Logger } from '../utils/logging/Logger.js';
 import replaceColor from '../modules/replaceColor.js';
 import Image from './sharp/image/Image.js';
+import Color from 'color';
+
 export default class ProgressBarRoute {
     public router = express.Router();
     #pillShapePath = path.join(url.fileURLToPath(new URL('.', import.meta.url)), '..', 'assets', 'pillshape.png');
@@ -19,7 +20,10 @@ export default class ProgressBarRoute {
     }
 
     public getProgressbar(req: Request, res: Response) {
-        const color = (req.query.c ?? req.query.color ?? req.query.colour ?? 'FFFFFF').toString();
+        let colour = (req.query.c ?? req.query.color ?? req.query.colour ?? '#FFFFFF').toString();
+        if (/^([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/.test(colour))
+            colour = '#' + colour;
+
         let percentage: number;
         if (typeof req.query.p === 'string')
             percentage = parseInt(req.query.p);
@@ -31,29 +35,36 @@ export default class ProgressBarRoute {
         if (percentage < 0 || percentage > 100)
             return res.send('Percentage out of range');
 
-        const pillID = color + percentage.toString();
+        const pillID = colour + percentage.toString();
         const cachedPill = this.cachedBars.get(pillID)
         if (cachedPill !== undefined) {
             res.set('Content-Type', 'image/png');
             return res.send(cachedPill.buffer);
         }
 
-        return void this.generatePillImage(percentage, '#' + color).then(pillImage => {
-            res.type('png');
-            pillImage.pipe(res);
-        });
+        return this.generatePillImage(res, percentage, colour);
     }
-    private async generatePillImage(percentage: number, colour = 'FFFFFF'): Promise<Sharp> {
-        const colouredImage = new Image(this.pillShape)
-        await replaceColor(colouredImage.resize(992, 60), {
-            target: '#000000',
-            replace: colour,
-            delta: 2.3
-        });
-        const colouredBuffer = await colouredImage.sharp.extract({ left: 0, top: 0, width: Math.round((colouredImage.width ?? 0) / 100 * percentage), height: colouredImage.height ?? 0 }).toBuffer();
-        const image = new Image(this.pillShape).resize(1000).sharp.ensureAlpha(0.5).composite([{ input: colouredBuffer, top: 4, left: 4 }]);
-
-        return image;
+    private async generatePillImage(res: Response, percentage: number, colour: string): Promise<void> {
+        try {
+            const colouredImage = new Image(this.pillShape)
+            const pillColour = new Color(colour).hexa();
+            this.logger.info(pillColour);
+            await replaceColor(colouredImage.resize(992, 60), {
+                target: '#000000',
+                replace: colour,
+                delta: 2.3
+            });
+            const colouredBuffer = await colouredImage.sharp.extract({ left: 0, top: 0, width: Math.round((colouredImage.width ?? 0) / 100 * percentage), height: colouredImage.height ?? 0 }).toBuffer();
+            const image = new Image(this.pillShape).resize(1000).sharp.ensureAlpha(0.5).composite([{ input: colouredBuffer, top: 4, left: 4 }]);
+            res.type('png')
+            image.pipe(res);
+        } catch (e: unknown) {
+            this.logger.error(e);
+            if (e instanceof Error)
+                res.send(e.message);
+            else
+                res.send('Unknown error during generation');
+        }
     }
     private startSweepInterval(hoursCached = 24) {
         setInterval(() => this.sweepBars(hoursCached), hoursCached * 3600 * 1000);
