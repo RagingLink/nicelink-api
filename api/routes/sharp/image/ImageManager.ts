@@ -10,7 +10,6 @@ import { InputBody } from '../../../types/PayloadTypes.js';
 import { ImageEditor } from './ImageEditor.js';
 import Prisma from '../Prisma.js';
 import Image from './Image.js';
-import { Image as PrismaImage } from '@prisma/client';
 import { PrismaClient } from '@prisma/client';
 
 interface CachedImages {
@@ -28,12 +27,7 @@ export class ImageManager {
     private readonly storedImagesPath = path.join(fileURLToPath(new URL('.', import.meta.url)), '..', 'storedImages');
     public constructor(public readonly editor: ImageEditor, public readonly logger: Logger) {
         this.prisma = new Prisma(logger).client;
-        this.prisma.image.count().then(prismaCount => {
-            fs.readdir(this.storedImagesPath, undefined, (_, files) => {
-                this.logger.db(`Currently storing ${files.length} images on disk and ${prismaCount} in Prisma`);
-            })
-        })
-        this.startImageSweep()
+        this.startImageSweep();
     }
 
     public async cacheImage(buffer: Buffer): Promise<string> {
@@ -176,62 +170,81 @@ export class ImageManager {
         if (fileName in this.cache)
             this.cache[fileName].time = Date.now();
     }
-    public async startImageSweep() {
-        setInterval(async () => {
-            // Select images older than a day and filter out images that are still 'allowed' to be stored
-            const oldImages = (await this.prisma.image.findMany({
-                where: {
-                    last_accessed: {
-                        lte: new Date(Date.now() - 24 * 3600 * 1000)
-                    },
-                    persisted: {
-                        not: true
-                    }
-                }
-            })).filter(image => {
-                return Date.now() > image.last_accessed.getMilliseconds() + image.cache_duration * 24 * 3600 * 1000;
-            });
-            // Soft removal
-            await this.sweepImages(oldImages)
-            // Select images older than 90 days and filter out images that are still 'allowed' to be stored
-            const veryOldImages = (await this.prisma.image.findMany({
-                where: {
-                    last_accessed: {
-                        lte: new Date(Date.now() - 90 * 24 * 3600 * 1000)
-                    },
-                    persisted: {
-                        not: true
-                    }
-                }
-            })).filter(image => {
-                return Date.now() > image.last_accessed.getMilliseconds() + (image.cache_duration * 24 * 3600 * 1000) + (90 * 86400 * 1000);
-            });
-            // Hard removal
-            await this.sweepImages(veryOldImages, true);
-            if (oldImages.length + veryOldImages.length > 0)
-                this.logger.db(`Sweeping ${oldImages.length} from filesystem and ${veryOldImages.length} from postgres`);
-
-            this.prisma.image.count().then(prismaCount => {
-                fs.readdir(this.storedImagesPath, undefined, (_, files) => {
-                    this.logger.db(`Currently storing ${files.length} images on disk and ${prismaCount} in Prisma`);
-                })
-            })
-        }, 24 * 3600 * 1000);
+    private async startImageSweep() {
+        setInterval(async () => this.sweepImages(), 24 * 3600 * 1000);
+        // Do an image sweep 1 minute after starting
+        setTimeout(() => this.sweepImages(), 60 * 1000);
     }
-    public async sweepImages(images: PrismaImage[], fromDB = false) {
-        for (const image of images) {
-            try {
-                if (!fromDB) {
-                    // Soft removal, only the file is removed.
-                    if (!this.hasFile(image.id))
-                        continue
-                    this.deleteFile(image.id);
-                } else {
-                    await this.prisma.image.delete({ where: { id: image.id } });
+
+    private async sweepImages(): Promise<void> {
+        const deletedCount = {
+            fs: await this.sweepFsImages(),
+            pg: await this.sweepPgImages()
+        };
+        const result: string[] = [];
+        if (deletedCount.fs > 0)
+            result.push(`eleted ${deletedCount.fs} images from FS`);
+        if (deletedCount.pg > 0)
+            result.push(`eleted ${deletedCount.pg} images from PG`);
+        if (result.length > 0)
+            this.logger.db('D' + result.join(' and d'))
+
+        this.prisma.image.count().then(prismaCount => {
+            fs.readdir(this.storedImagesPath, undefined, (_, files) => {
+                this.logger.db(`Currently storing ${files.length} images on disk and ${prismaCount} in Prisma`);
+            })
+        })
+    }
+
+    private async sweepFsImages(): Promise<number> {
+        let deletedN = 0;
+        const expiredImages = (await this.prisma.image.findMany({
+            where: {
+                last_accessed: {
+                    lte: new Date(Date.now() - 24 * 3600 * 1000)
+                },
+                persisted: {
+                    not: true
                 }
+            }
+        })).filter(image => {
+            return Date.now() > image.last_accessed.getMilliseconds() + image.cache_duration * 24 * 3600 * 1000;
+        });
+        for (const image of expiredImages) {
+            try {
+                if (!this.hasFile(image.id))
+                    continue
+                this.deleteFile(image.id);
+                deletedN++;
             } catch (e: unknown) {
-                this.logger.error(`Failed to remove image from "${fromDB ? 'db' : 'fs'}"`);
+                this.logger.error(e);
             }
         }
+        return deletedN;
+    }
+
+    private async sweepPgImages(): Promise<number> {
+        let deletedN = 0;
+        const expiredPgImages = (await this.prisma.image.findMany({
+            where: {
+                last_accessed: {
+                    lte: new Date(Date.now() - 90 * 24 * 3600 * 1000)
+                },
+                persisted: {
+                    not: true
+                }
+            }
+        })).filter(image => {
+            return Date.now() > image.last_accessed.getMilliseconds() + (image.cache_duration * 24 * 3600 * 1000) + (90 * 86400 * 1000);
+        });
+
+        for (const image of expiredPgImages) {
+            try {
+                await this.prisma.image.delete({ where: { id: image.id } });
+            } catch (e: unknown) {
+                this.logger.error(e);
+            }
+        }
+        return deletedN;
     }
 }
