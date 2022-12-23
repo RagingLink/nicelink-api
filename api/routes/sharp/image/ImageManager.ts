@@ -192,7 +192,7 @@ export class ImageManager {
                 return Date.now() > image.last_accessed.getMilliseconds() + image.cache_duration * 24 * 3600 * 1000;
             });
             // Soft removal
-            this.sweepImages(oldImages)
+            await this.sweepImages(oldImages)
             // Select images older than 90 days and filter out images that are still 'allowed' to be stored
             const veryOldImages = (await this.prisma.image.findMany({
                 where: {
@@ -207,9 +207,15 @@ export class ImageManager {
                 return Date.now() > image.last_accessed.getMilliseconds() + (image.cache_duration * 24 * 3600 * 1000) + (90 * 86400 * 1000);
             });
             // Hard removal
-            this.sweepImages(veryOldImages, true);
+            await this.sweepImages(veryOldImages, true);
             if (oldImages.length + veryOldImages.length > 0)
                 this.logger.db(`Sweeping ${oldImages.length} from filesystem and ${veryOldImages.length} from postgres`);
+
+            this.prisma.image.count().then(prismaCount => {
+                fs.readdir(this.storedImagesPath, undefined, (_, files) => {
+                    this.logger.db(`Currently storing ${files.length} images on disk and ${prismaCount} in Prisma`);
+                })
+            })
         }, 24 * 3600 * 1000);
     }
     public async sweepImages(images: PrismaImage[], fromDB = false) {
@@ -221,7 +227,7 @@ export class ImageManager {
                         continue
                     this.deleteFile(image.id);
                 } else {
-                    this.prisma.image.delete({ where: { id: image.id } });
+                    await this.prisma.image.delete({ where: { id: image.id } });
                 }
             } catch (e: unknown) {
                 this.logger.error(`Failed to remove image from "${fromDB ? 'db' : 'fs'}"`);
