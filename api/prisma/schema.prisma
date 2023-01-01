@@ -1,0 +1,22 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Image {
+  @@map(name: "images")
+  id String @id
+
+  body String
+  created_at DateTime
+  last_accessed DateTime
+  cache_duration Int
+  persisted Boolean?
+}

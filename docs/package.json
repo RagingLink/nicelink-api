@@ -1,0 +1,15 @@
+{
+  "name": "new_website",
+  "version": "1.0.0",
+  "main": "index.js",
+  "license": "MIT",
+  "scripts": {
+    "build": "./build.sh",
+    "start": "node index.js",
+    "build:start": "yarn run build && yarn run start"
+  },
+  "dependencies": {
+    "ejs": "^3.1.8",
+    "express": "^4.18.2"
+  }
+}

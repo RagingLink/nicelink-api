@@ -1,0 +1,506 @@
+import  { ChalkInstance, default as chalk } from 'chalk';
+import dayjs from 'dayjs';
+import { WriteStream } from 'tty';
+import * as util from 'util';
+
+export class LoggrConfig {
+    public shardId?: number | string;
+    public shardLength?: number;
+
+    public timestampFormat?: string;
+
+    public level?: string;
+    public levels?: LogLevel[];
+
+    public meta?: LogMeta;
+
+    public stdout?: WriteStream;
+    public stderr?: WriteStream;
+
+    public constructor({ shardId, shardLength, level, levels, meta, stdout, stderr, timestampFormat }: LoggrConfig) {
+        this.shardId = shardId;
+        this.shardLength = shardLength;
+        this.level = level;
+        this.levels = levels;
+        this.meta = meta;
+        this.stdout = stdout;
+        this.stderr = stderr;
+        this.timestampFormat = timestampFormat;
+    }
+}
+
+export class LogLevel {
+    public name: string;
+    public color: ChalkInstance;
+    public err = false;
+    public trace = false;
+    public aliases: string[] = [];
+    public position?: number;
+
+    public constructor(name: string, color: ChalkInstance) {
+        this.name = name;
+        this.color = color;
+    }
+
+    public setError(err = true): LogLevel {
+        this.err = err;
+        return this;
+    }
+
+    public setTrace(trace = true): LogLevel {
+        this.trace = trace;
+        return this;
+    }
+
+    public setAliases(...aliases: string[]): LogLevel {
+        this.aliases = aliases;
+        return this;
+    }
+}
+
+/**
+ * @typedef {Object} LogMeta
+ * @property {number} [metaObject.depth=1] The depth of objects to inspect
+ * @property {boolean} [metaObject.color=true] Whether to display colors
+ * @property {boolean} [metaObject.trace=false] Whether to generate a stacktrace
+ */
+export class LogMeta {
+    public depth?: number = 1;
+    public color?: boolean = true;
+    public trace?: boolean = false;
+    public shardId?: string | number = '';
+    public quote?: boolean = false;
+    public context?: object = {};
+
+    public constructor({ depth = 1, color = true, trace = false, shardId = '', quote = false, context = {} }: LogMeta) {
+        this.depth = depth;
+        this.color = color;
+        this.trace = trace;
+        this.shardId = shardId;
+        this.quote = quote;
+        this.context = context;
+    }
+}
+
+/**
+ * An argument hook callback function
+ *
+ * @callback ArgHookCallback
+ * @param {Object} params The params that are sent by the hook
+ * @param {*} [params.arg] The provided argument
+ * @param {Date} params.date The timestamp of execution
+ * @returns {string|null} The processed argument result, or `null` to continue executing
+ */
+export type ArgHookCallback = (params: { arg?: unknown; date: Date; }) => string | null;
+
+/**
+ * A post hook callback function
+ *
+ * @callback PostHookCallback
+ * @param {Object} params The params that are sent by the hook
+ * @param {string} params.level The level of the log
+ * @param {boolean} params.error A flag signifying that the log is an error
+ * @param {string} params.text The final formatted text
+ * @param {Date} params.date The timestamp of execution
+ * @param {string} params.timestamp The formatted timestamp
+ * @param {string} [params.shard] The shard ID
+ * @param {object} [params.context] Context passed through meta info
+ * @param {LogMeta} [params.meta] Raw meta info
+ * @returns {string|null} The processed result, or `null` to continue executing
+ */
+export type PostHookCallback = (params: {
+  level: string;
+  error: boolean;
+  text: string;
+  date: Date;
+  timestamp: string;
+  shard?: string;
+  context?: object;
+  meta: LogMeta;
+}) => string | null;
+
+/**
+ * A post hook callback function
+ *
+ * @callback PreHookCallback
+ * @param {Object} params The params that are sent by the hook
+ * @param {string} params.level The level of the log
+ * @param {boolean} params.error A flag signifying that the log is an error
+ * @param {any[]} params.args The args being logged
+ * @param {Date} params.date The timestamp of execution
+ * @param {string} params.timestamp The formatted timestamp
+ * @param {string} [params.shard] The shard ID
+ * @param {object} [params.context] Context passed through meta info
+ * @param {LogMeta} [params.meta] Raw meta info
+ * @returns {string|null} The processed result, or `null` to continue executing
+ */
+export type PreHookCallback = (params: {
+  level: string;
+  error: boolean;
+  args: unknown[];
+  date: Date;
+  timestamp: string;
+  shard?: string;
+  context?: object;
+  meta: LogMeta;
+}) => string | null;
+
+export class LogHooks {
+    public pre: PreHookCallback[] = [];
+    public arg: ArgHookCallback[] = [];
+    public post: PostHookCallback[] = [];
+}
+
+/**
+ * Class containing logging functionality
+ */
+export default class CatLoggr {
+    public static get defaultLevels(): LogLevel[] {
+        chalk.red.bgBlack;
+        return [
+            new LogLevel('fatal', chalk.red.bgBlack).setError(),
+            new LogLevel('error', chalk.black.bgRed).setError(),
+            new LogLevel('warn', chalk.black.bgYellow).setError(),
+            new LogLevel('trace', chalk.green.bgBlack).setTrace(),
+            new LogLevel('init', chalk.black.bgBlue),
+            new LogLevel('info', chalk.black.bgGreen),
+            new LogLevel('verbose', chalk.black.bgCyan),
+            new LogLevel('debug', chalk.magenta.bgBlack).setAliases('log', 'dir')
+        ];
+    }
+
+    private readonly _config: LoggrConfig;
+    private readonly _shard?: number | string;
+    private readonly _shardLength?: number;
+    private _levelName: string;
+    private _levels: LogLevel[];
+    private _levelMap: { [name: string]: LogLevel; };
+    private _meta: LogMeta;
+    private _defaultMeta?: LogMeta;
+    private readonly _stdout: WriteStream | NodeJS.WriteStream;
+    private readonly _stderr: WriteStream | NodeJS.WriteStream;
+    private _maxLength: number;
+    private readonly _hooks: LogHooks;
+
+  [key: string]: unknown;
+
+  /**
+   * Creates an instance of the logger.
+   * @param {LoggrConfig} [options] Configuration options
+   * @param {string|number} [options.shardId] The shard ID that the logger is on
+   * @param {string|number} [options.shardLength=4] The maximum number of characters that a shard can be
+   * @param {string} [options.level=info] The default log threshold
+   * @param {level[]} [options.levels] Custom level definitions
+   * @param {metaObject} [options.meta] The default meta configuration
+   * @param {WriteStream} [options.stdout] The output stream to use for general logs
+   * @param {WriteStream} [options.stderr] The output stream to use for error logs
+   */
+  public constructor(config?: LoggrConfig) {
+      this._levels = [];
+      this._levelMap = {};
+      this._levelName = 'log';
+      if (config === undefined) config = new LoggrConfig({});
+      this._config = config;
+      if (config.shardId !== undefined) {
+          this._shard = config.shardId;
+          this._shardLength = config.shardLength;
+      // if (typeof this._shard === 'number' && this._shard < 10) this._shard = '0' + this._shard;
+      }
+
+      this._stdout = config.stdout !== undefined ? config.stdout : process.stdout;
+      this._stderr = config.stderr !== undefined ? config.stderr : process.stderr;
+
+      this.setLevels(config.levels !== undefined ? config.levels : CatLoggr.defaultLevels);
+      this.setLevel(config.level ?? this._levels[this._levels.length - 1].name);
+
+      this.setDefaultMeta(config.meta !== undefined ? config.meta : {});
+      this._maxLength = 0;
+      this._meta = {};
+
+      this._hooks = new LogHooks();
+  }
+
+  /**
+   * A helper reference to the chalk library
+   */
+  public static get _chalk(): ChalkInstance {
+      return chalk;
+  }
+
+  /**
+   * Adds a pre-hook
+   * @param {ArgHookCallback} func The hook callback
+   * @returns {CatLoggr} Self for chaining
+   */
+  public addPreHook(func: ArgHookCallback): this {
+      this._hooks.pre.push(func);
+
+      return this;
+  }
+
+  /**
+   * Adds an arg-hook
+   * @param {ArgHookCallback} func The hook callback
+   * @returns {CatLoggr} Self for chaining
+   */
+  public addArgHook(func: ArgHookCallback): this {
+      this._hooks.arg.push(func);
+
+      return this;
+  }
+
+  /**
+   * Adds a post-hook
+   * @param {PostHookCallback} func
+   * @returns {CatLoggr} Self for chaining
+   */
+  public addPostHook(func: PostHookCallback): this {
+      this._hooks.post.push(func);
+
+      return this;
+  }
+
+  /**
+   * Sets the default meta object to use for all logs.
+   * @param {metaObject?} meta The default meta object to use
+   * @returns {CatLoggr?} Self for chaining
+   */
+  public setDefaultMeta(meta: LogMeta): this {
+      if (typeof meta !== 'object')
+          throw new TypeError('meta must be an object');
+
+      this._defaultMeta = new LogMeta(meta);
+
+      return this;
+  }
+
+  /**
+   * Sets the level threshold. Only logs on and above the threshold will be output.
+   * @param {string} level The level threshold
+   * @returns {CatLoggr} Self for chaining
+   */
+  public setLevel(level: string): this {
+      if (typeof level !== 'string')
+          throw new TypeError('level must be a string');
+
+      if (!(level in this._levelMap))
+          throw new Error(`the level '${level}' does not exist`);
+
+      this._levelName = level;
+      return this;
+  }
+
+  /**
+   * @typedef level
+   * @property {string} level.name The name of the level
+   * @property {Object} level.color The color of the level (using chalk)
+   * @property {string[]} level.aliases The alternate names that can be used to invoke the level
+   * @property {boolean} level.err A flag signifying that the level writes to stderr
+   * @property {boolean} level.trace A flag signifying that the level should generate a stacktrace
+   */
+
+  /**
+   * Overwrites the currently set levels with a custom set.
+   * @param {level[]} levels An array of levels, in order from high priority to low priority
+   * @returns {CatLoggr} Self for chaining
+   */
+  public setLevels(levels: LogLevel[]): this {
+      if (!Array.isArray(levels))
+          throw new TypeError('levels must be an array.');
+
+      this._levelMap = {};
+      this._levels = levels;
+      let max = 0;
+      this._levels = this._levels.map(l => {
+          l.position = levels.indexOf(l);
+          this._levelMap[l.name] = l;
+          const func = function (this: CatLoggr, ...args: unknown[]) {
+              return this._format(l, ...args);
+          }.bind(this);
+          this[l.name] = func;
+          if (Array.isArray(l.aliases))
+              for (const alias of l.aliases) this[alias] = func;
+          max = l.name.length > max ? l.name.length : max;
+          return l;
+      });
+
+      if (this._levelName in this._levelMap)
+          this._levelName = this._levels[this._levels.length - 1].name;
+
+      this._maxLength = max + 2;
+
+      return this;
+  }
+
+  /**
+   * Registers CatLoggr as the global `console` property.
+   * @returns {CatLoggr} Self for chaining
+   */
+  public setGlobal(): this {
+      Object.defineProperty.bind(this)(global, 'console', {
+          get: () => {
+              return this;
+          }
+      });
+      return this;
+  }
+
+  public get _level(): LogLevel {
+      return this._levelMap[this._levelName];
+  }
+
+  public get _timestamp(): {raw: Date; formatted: string; formattedRaw: string;} {
+      const ts = dayjs();
+      const formatted = ts.format(this._config.timestampFormat ?? 'MM/DD HH:mm:ss');
+      return {
+          raw: ts.toDate(),
+          formatted: chalk.black.bgWhite(` ${formatted} `),
+          formattedRaw: formatted
+      };
+  }
+
+  /**
+   * Center aligns text.
+   * @param {string} text The text to align
+   * @param {number} length The length that it should be padded to
+   * @returns {string} The padded text
+   */
+  public _centrePad(text: string, length: number): string {
+      if (text.length < length)
+          return ' '.repeat(Math.floor((length - text.length) / 2))
+        + text + ' '.repeat(Math.ceil((length - text.length) / 2));
+      return text;
+  }
+
+  /**
+   * Writes the log to the proper stream.
+   * @param {Level} level The level of the log
+   * @param {string} text The text to write
+   * @param {boolean} err A flag signifying whether to write to stderr
+   * @param {Object} [timestamp] An optional timestamp to use
+   * @param {string} timestamp.formatted The formatted timestamp
+   * @param {Date} timestamp.raw The raw timestamp
+   * @returns {CatLoggr} Self for chaining
+   */
+  public _write(level: LogLevel, text: string, err = false,
+      timestamp?: { formatted: string; raw: Date; formattedRaw: string; }): this {
+      if (timestamp === undefined) timestamp = this._timestamp;
+      const levelStr = level.color(this._centrePad(level.name, this._maxLength));
+      const stream = err ? this._stderr : this._stdout;
+      let shardText = '';
+      if (this._shard !== undefined)
+          shardText = chalk.black.bold.bgYellow(
+              this._centrePad(this._meta.shardId !== undefined ? this._meta.shardId.toString() : this._shard.toString(),
+                  this._shardLength ?? 0)
+          );
+
+      for (const hook of this._hooks.post) {
+          if (typeof hook === 'function') {
+              const res = hook({
+                  text,
+                  date: timestamp.raw,
+                  timestamp: timestamp.formattedRaw,
+                  shard: this._shard !== undefined ? this._shard.toString() : undefined,
+                  level: level.name,
+                  error: level.err,
+                  context: this._meta.context,
+                  meta: this._meta
+              });
+              if (res === null) continue;
+              else {
+                  text = res.toString();
+              }
+              break;
+          }
+      }
+
+      stream.write(`${shardText}${timestamp.formatted}${levelStr} ${text}\n`);
+
+      this._meta = {};
+      return this;
+  }
+
+  /**
+   * Sets the meta for the next log.
+   * @param {metaObject} meta - The meta object to set
+   * @returns {CatLoggr} Self for chaining
+   */
+  public meta(meta = {}): this {
+      const temp = {};
+      Object.assign(temp, this._defaultMeta, meta);
+      this._meta = temp;
+      return this;
+  }
+
+  /**
+   * Formats logs in preparation for writing.
+   * @param {string} level The level of the log
+   * @param {*} args The args that were directly passed to the function
+   * @returns {CatLoggr} Self for chaining
+   */
+  public _format(level: LogLevel, ...args: unknown[]): this {
+      const timestamp = this._timestamp;
+      if ((level.position ?? 0) > (this._level.position ?? 0)) return this;
+      let output = '';
+      const text = [];
+      if (typeof args[0] === 'string') {
+          const formats = args[0].match(/%[sdifjoO]/g);
+          if (formats !== null) {
+              const a = args.splice(1, formats.length);
+              args.unshift(util.format(args.shift(), ...a));
+          }
+      }
+
+      for (const hook of this._hooks.pre) {
+          hook({
+              args,
+              date: timestamp.raw,
+              timestamp: timestamp.formattedRaw,
+              shard: this._shard !== undefined ? this._shard.toString() : undefined,
+              level: level.name,
+              error: level.err,
+              context: this._meta.context,
+              meta: this._meta
+          });
+      }
+
+      for (const arg of args) {
+          let finished = false;
+          for (const hook of this._hooks.arg) {
+              if (typeof hook === 'function') {
+                  const res = hook({ arg, date: timestamp.raw });
+                  if (res === null) continue;
+                  else if (Array.isArray(res)) {
+                      text.push(...res);
+                  } else {
+                      text.push(res);
+                  }
+                  finished = true;
+                  break;
+              }
+          }
+          if (finished) continue;
+
+          if (typeof arg === 'string') {
+              text.push(chalk.magenta(this._meta.quote === undefined ? `'${arg}'` : arg));
+          } else if (typeof arg === 'number') {
+              text.push(chalk.cyan(arg.toString()));
+          } else if (typeof arg === 'object') {
+              text.push('\n');
+
+              if (arg instanceof Error) {
+                  text.push(chalk.red(arg.stack));
+              } else {
+                  text.push(util.inspect(arg, this._meta));
+              }
+          } else text.push(arg);
+      }
+
+      output += text.join(' ');
+      if (level.trace || (this._meta.trace ?? false)) {
+          output += '\n' + (new Error().stack ?? '').split('\n').slice(1).join('\n');
+      }
+      if (level.err) output = chalk.red(output);
+      return this._write(level, output, level.err).meta();
+  }
+}
