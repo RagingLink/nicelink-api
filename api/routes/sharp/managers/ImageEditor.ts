@@ -189,7 +189,7 @@ export class ImageEditor {
         const textArray: Array<{ buffer: Buffer; body: TextBody; }> = [];
         for (const textObject of textObjects) {
             const textObjectMaxWidth = { ...textObject, maxWidth: textObject.maxWidth ?? image.width };
-            const cachedBuffer = this.cache.get(this.getBodyStr(textObjectMaxWidth));
+            const cachedBuffer = this.cache.get(this.getBodyStr(textObjectMaxWidth, 'text'));
             const textBuffer = cachedBuffer?.buffer
                 ?? this.textManager.text2png(textObject.text ?? '', textObjectMaxWidth);
 
@@ -373,9 +373,17 @@ export class ImageEditor {
                 return 'over';
         }
     }
-    private getBodyStr(body: InputBody | TextBody): string {
+    private getBodyStr(body: InputBody | TextBody, type?: 'text'): string {
+        const ignoreProps = { cacheDuration: undefined, alignment: undefined, x: undefined, y: undefined, blendMode: undefined, size: undefined };
+        switch (type) {
+            case 'text':
+                delete ignoreProps.size;
+                break;
+            case undefined:
+                break;
+        }
         return getUuidByString(JSON.stringify(
-            Object.assign({ ...body }, { cacheDuration: undefined, alignment: undefined, x: undefined, y: undefined, blendMode: undefined, size: undefined })
+            Object.assign({ ...body }, ignoreProps)
         ));
     }
 
