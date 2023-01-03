@@ -1,7 +1,7 @@
-
+/* eslint-disable @typescript-eslint/naming-convention */
 import { cleanEnv, port, str } from 'envalid';
 
-const validateEnv = () => {
+const validateEnv = (): void => {
     cleanEnv(process.env, {
         PORT: port(),
         DATABASE_URL: str()

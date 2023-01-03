@@ -15,7 +15,7 @@
             "runtimeArgs": [
                 "--experimental-json-modules"
             ],
-            "program": "${workspaceFolder}/index.ts",
+            "program": "${workspaceFolder}/api/api.ts",
             "outFiles": [
                 "${workspaceFolder}/**/*.js"
             ]

@@ -1,16 +1,16 @@
+import { PrismaClient } from '@prisma/client';
 import { fileTypeFromBuffer } from 'file-type';
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { v4 as uuidv4 } from 'uuid';
 
-import { Logger } from '../../../utils/logging/Logger.js';
-import { guard } from '../../../utils/guard/index.js';
+import { Logger } from '../../../Logger.js';
 import { InputBody } from '../../../types/PayloadTypes.js';
-import { ImageEditor } from './ImageEditor.js';
+import { guard } from '../../../utils/guard/index.js';
 import Prisma from '../Prisma.js';
 import Image from './Image.js';
-import { PrismaClient } from '@prisma/client';
+import { ImageEditor } from './ImageEditor.js';
 
 interface CachedImages {
     [index: string]: {
@@ -24,7 +24,7 @@ export class ImageManager {
         [index: string]: Promise<void>;
     } = {};
     private readonly prisma: PrismaClient;
-    private readonly storedImagesPath = path.join(fileURLToPath(new URL('.', import.meta.url)), '..', 'storedImages');
+    private readonly storedImagesPath = path.join(fileURLToPath(new URL('.', import.meta.url)), '..', 'images', 'stored');
     public constructor(public readonly editor: ImageEditor, public readonly logger: Logger) {
         this.prisma = new Prisma(logger).client;
         this.startImageSweep();
@@ -64,22 +64,23 @@ export class ImageManager {
             this.writeFile(image.buffer, fileName);
         }
         if (body !== undefined)
-            this.saveImageToDB(fileName, body, persist);
+            this.saveImageToDB(fileName, body, persist).catch(err => {
+                this.logger.error(err);
+            });
         return fileName;
     }
     public async saveImageToDB(fileName: string, body?: InputBody, persist = false): Promise<void> {
-        const cache_duration = (body?.cacheDuration ?? 7);
+        const cache_duration = body?.cacheDuration ?? 7;
         await this.prisma.image.create({
             data: {
                 id: fileName,
                 body: JSON.stringify(body),
                 created_at: new Date(),
                 last_accessed: new Date(),
-                cache_duration: ((cache_duration) <= 30 ? cache_duration : 30),
+                cache_duration: cache_duration <= 30 ? cache_duration : 30,
                 persisted: persist
             }
         });
-        this.logger.db('Saved image to DB' + (persist ? ' indefinitely' : ''));
     }
     public async saveBuffer(buffer: Buffer): Promise<string> {
         const fileType = await fileTypeFromBuffer(buffer);
@@ -92,15 +93,15 @@ export class ImageManager {
         return fileName;
     }
     public hasFile(fileName: string): boolean {
-        return fs.existsSync(path.join(this.storedImagesPath, fileName))
+        return fs.existsSync(path.join(this.storedImagesPath, fileName));
     }
     public hasLegacyFile(fileName: string): boolean {
-        return fs.existsSync(path.join(this.storedImagesPath, '..', 'legacyImages', fileName));
+        return fs.existsSync(path.join(this.storedImagesPath, '..', 'images', 'legacy', fileName));
     }
     public writeFile(buffer: Buffer, fileName: string): void {
         fs.writeFile(path.join(this.storedImagesPath, fileName), buffer, (err) => {
             if (err !== null)
-                this.logger.error(err);
+                return this.logger.error(err);
         });
     }
     public deleteFile(fileName: string): void {
@@ -120,60 +121,61 @@ export class ImageManager {
             };
             return this.cache[fileName].buffer;
         } else if (this.hasLegacyFile(fileName)) {
-            return fs.readFileSync(path.join(this.storedImagesPath, '..', 'legacyImages', fileName))
-        } else {
-            try {
-                const image = await this.prisma.image.findUnique({
-                    where: {
-                        id: fileName
-                    }
-                });
-                if (image !== null) {
-                    const body = JSON.parse(image.body) as JObject;
-                    const output = (await this.editor.generateImage(body));
-                    const buffer = output.image.edited ? await output.image.sharp.toBuffer() : output.image.buffer
-                    this.cache[fileName] = {
-                        buffer,
-                        time: Date.now()
-                    };
-                    this.writeFile(buffer, fileName);
-                    this.updateLastAccessed(fileName);
-                    return buffer;
-                }
-            } catch (e: unknown) {
-                this.logger.error(e);
-            }
+            return fs.readFileSync(path.join(this.storedImagesPath, '..', 'images', 'legacy', fileName));
         }
-    }
-    public updateLastAccessed(fileName: string): void {
         try {
-            this.prisma.image.findUnique({
+            const image = await this.prisma.image.findUnique({
                 where: {
                     id: fileName
                 }
-            }).then(image => {
-                if (image === null)
-                    this.saveImageToDB(fileName)
-                else
-                    this.prisma.image.update({
-                        where: {
-                            id: fileName
-                        }, data: {
-                            last_accessed: new Date()
-                        }
-                    })
-            })
-
+            });
+            if (image !== null) {
+                const body = JSON.parse(image.body) as JObject;
+                const output = await this.editor.generateImage(body);
+                const buffer = output.image.edited ? await output.image.sharp.toBuffer() : output.image.buffer;
+                this.cache[fileName] = {
+                    buffer,
+                    time: Date.now()
+                };
+                this.writeFile(buffer, fileName);
+                this.updateLastAccessed(fileName);
+                return buffer;
+            }
         } catch (e: unknown) {
-            this.logger.error(`Failed to update last accessed for "${fileName}"`);
+            this.logger.error(e);
         }
+
+    }
+    public updateLastAccessed(fileName: string): void {
+        this.prisma.image.findUnique({
+            where: {
+                id: fileName
+            }
+        }).then(image => {
+            if (image === null)
+                this.saveImageToDB(fileName).then(() => {
+                    this.logger.db('Saved (legacy) image to DB');
+                }).catch(err => {
+                    this.logger.error(err);
+                });
+            else
+                void this.prisma.image.update({
+                    where: {
+                        id: fileName
+                    }, data: {
+                        last_accessed: new Date()
+                    }
+                });
+        }).catch(() => {
+            this.logger.error(`Failed to update last accessed for "${fileName}"`);
+        });
         if (fileName in this.cache)
             this.cache[fileName].time = Date.now();
     }
-    private async startImageSweep() {
-        setInterval(async () => this.sweepImages(), 24 * 3600 * 1000);
+    private startImageSweep(): void {
+        setInterval(() => void this.sweepImages(), 24 * 3600 * 1000);
         // Do an image sweep 1 minute after starting
-        setTimeout(() => this.sweepImages(), 60 * 1000);
+        setTimeout(() => void this.sweepImages(), 60 * 1000);
     }
 
     private async sweepImages(): Promise<void> {
@@ -187,13 +189,13 @@ export class ImageManager {
         if (deletedCount.pg > 0)
             result.push(`eleted ${deletedCount.pg} images from PG`);
         if (result.length > 0)
-            this.logger.db('D' + result.join(' and d'))
+            this.logger.db('D' + result.join(' and d'));
 
         this.prisma.image.count().then(prismaCount => {
             fs.readdir(this.storedImagesPath, undefined, (_, files) => {
                 this.logger.db(`Currently storing ${files.length} images on disk and ${prismaCount} in Prisma`);
-            })
-        })
+            });
+        }).catch(err => this.logger.error(err));
     }
 
     private async sweepFsImages(): Promise<number> {
@@ -213,7 +215,7 @@ export class ImageManager {
         for (const image of expiredImages) {
             try {
                 if (!this.hasFile(image.id))
-                    continue
+                    continue;
                 this.deleteFile(image.id);
                 deletedN++;
             } catch (e: unknown) {
@@ -224,7 +226,7 @@ export class ImageManager {
     }
 
     private async sweepPgImages(): Promise<number> {
-        let deletedN = 0;
+        const deletedN = 0;
         const expiredPgImages = (await this.prisma.image.findMany({
             where: {
                 last_accessed: {
@@ -235,7 +237,7 @@ export class ImageManager {
                 }
             }
         })).filter(image => {
-            return Date.now() > image.last_accessed.getMilliseconds() + (image.cache_duration * 24 * 3600 * 1000) + (90 * 86400 * 1000);
+            return Date.now() > image.last_accessed.getMilliseconds() + image.cache_duration * 24 * 3600 * 1000 + 90 * 86400 * 1000;
         });
 
         for (const image of expiredPgImages) {

@@ -1,4 +1,4 @@
-import Image from '../routes/sharp/image/Image.js';
+import Image from '../routes/sharp/managers/Image.js';
 import { InputBody } from './PayloadTypes.js';
 
 export interface MetaBody {

@@ -1,4 +1,5 @@
 import { Canvas, registerFont } from 'canvas';
+
 import { DefaultOptions, InputOptions } from '../types/PayloadTypes.js';
 
 /**
@@ -29,7 +30,7 @@ import { DefaultOptions, InputOptions } from '../types/PayloadTypes.js';
  * @param [options.output="buffer"] 'buffer', 'stream', 'dataURL', 'canvas's
  * @returns {string} png image buffer
  */
-const text2png = (text : string, options : InputOptions = {}): Buffer => {
+const text2png = (text: string, options: InputOptions = {}): Buffer => {
     //  Options
     const parsedOptions = parseOptions(options);
     //  Register a custom font
@@ -137,10 +138,10 @@ const text2png = (text : string, options : InputOptions = {}): Buffer => {
 
             case 'right':
                 x =
-              canvas.width -
-              lineProp.left -
-              parsedOptions.borderRightWidth -
-              parsedOptions.paddingRight;
+                    canvas.width -
+                    lineProp.left -
+                    parsedOptions.borderRightWidth -
+                    parsedOptions.paddingRight;
                 break;
 
             case 'center':
@@ -148,8 +149,7 @@ const text2png = (text : string, options : InputOptions = {}): Buffer => {
                 break;
         }
 
-
-        if (parsedOptions.strokeWidth > 0 ) {
+        if (parsedOptions.strokeWidth > 0) {
             ctx.strokeText(lineProp.line, x, y);
         }
 
@@ -163,7 +163,8 @@ const text2png = (text : string, options : InputOptions = {}): Buffer => {
 
 function parseOptions(options: InputOptions): DefaultOptions {
     return {
-        font: options.font ?? '30px sans-serif',
+        font: options.font ?? 'sans-serif',
+        size: options.size ?? '30px',
         textAlign: options.textAlign ?? 'left',
         textColor: options.textColor ?? options.color ?? 'black',
         backgroundColor: options.bgColor ?? options.backgroundColor,

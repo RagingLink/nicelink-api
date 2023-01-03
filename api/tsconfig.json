@@ -21,6 +21,7 @@
         "moduleResolution": "NodeNext",
         "types": [],
         "lib": ["ES2021"],
-        "baseUrl": "./"
+        "baseUrl": "./",
+        "skipLibCheck": true
     }
 }

@@ -3,16 +3,16 @@ import fetch from 'node-fetch';
 import path from 'path';
 import * as url from 'url';
 
-import { Logger } from '../../../utils/logging/Logger.js';
+import { Logger } from '../../../Logger.js';
 
-const assetsPath = path.join(url.fileURLToPath(new URL('.', import.meta.url)), '..', '..', '..', 'assets');
+const assetsPath = path.join(url.fileURLToPath(new URL('.', import.meta.url)), '..', '..', '..', 'assets', 'img');
 const transparentImagePath = path.join(assetsPath, 'transparent.png');
 const circleImagePath = path.join(assetsPath, 'circle-image.png');
 const blackImagePath = path.join(assetsPath, 'black.png');
 
 export class ImageFetcher {
     public readonly retention: number;
-    public readonly cache: Map<string, {buffer: Buffer; time: number; lastAccessed: number}>;
+    public readonly cache: Map<string, {buffer: Buffer; time: number; lastAccessed: number;}>;
 
     private readonly _defaultImageBuffer = fs.readFileSync(transparentImagePath);
     private readonly _circleImageBuffer = fs.readFileSync(circleImagePath);
@@ -33,8 +33,8 @@ export class ImageFetcher {
             this.cache.set(src, {
                 ...cachedImage,
                 lastAccessed: Date.now()
-            })
-            return cachedImage.buffer
+            });
+            return cachedImage.buffer;
         }
         const buffer = await this.load(src);
         this.store(src, buffer);
@@ -45,7 +45,7 @@ export class ImageFetcher {
             buffer,
             time: Date.now(),
             lastAccessed: Date.now()
-        })
+        });
     }
     public async load(src: string): Promise<Buffer> {
         try {
@@ -55,22 +55,24 @@ export class ImageFetcher {
             throw Error('Invalid image');
         }
     }
-    private async startSweepInterval() {
-        setInterval(() => this.sweepCache, 6 * 3600 * 1000);
+    private startSweepInterval(): void {
+        setInterval(() => this.sweepCache(), 6 * 3600 * 1000);
     }
-    private async sweepCache() {
+    private sweepCache(): void {
         for (const [src, value] of this.cache) {
             if (Date.now() - value.time > 24 * 3600 * 1000) {
                 if (Date.now() - value.lastAccessed > 24 * 3600 * 1000) {
                     this.cache.delete(src);
-                    continue
+                    continue;
                 }
                 this.load(src).then(buffer => {
                     this.cache.set(src, {
                         ...value,
                         buffer
-                    })
-                })
+                    });
+                }).catch(err => {
+                    this.logger.error(err);
+                });
             }
         }
     }
