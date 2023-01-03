@@ -189,7 +189,6 @@ After `cacheDuration` days have passed since the last access the image will be d
 
 ```json
 {
-    "background": "https://api.nicelink.xyz/sharp/transparent.png",
     "text": [
         {
             "text": "Hello world!"
@@ -272,42 +271,112 @@ replacecolor  |          | [`ReplaceColorObject`](#replace-color-object)        
 
 A `ChildObject` supports all the properties of `InputBody`, in addition to the following properties:
 
-Property         | Alias | Type     | Default     | Description
------------------|-------|----------|-------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-x                |       | `number` | `0`         | Horizontal position of the image on the parent image.
-y                |       | `number` | `0`         | Vertical position of the image on the parent image.
-alignment        | align | `string` | `undefined` | Alignment of the image on the parent image. Can be any of the modes listed under "[Supported alignment modes](#supported-alignment-modes)". **If this property is provided in combination with `x` and/or `y`, `x` and `y` will be the offset.**
-size             |       | `string` | `undefined` | Can be `contain`. `contain` scales the child image down so it fits inside the parent element.
-blendMode        |       | `string` | `srcOver`   | Blend mode to use when composting the child image on the parent image. A list of blend modes can be found below under [Blend modes](#blend-modes)
+Property  | Alias | Type     | Default     | Description
+----------|-------|----------|-------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+x         |       | `number` | `0`         | Horizontal position of the image on the parent image.
+y         |       | `number` | `0`         | Vertical position of the image on the parent image.
+alignment | align | `string` | `undefined` | Alignment of the image on the parent image. Can be any of the modes listed under "[Supported alignment modes](#supported-alignment-modes)". **If this property is provided in combination with `x` and/or `y`, `x` and `y` will be the offset.**
+size      |       | `string` | `undefined` | Can be `contain`. `contain` scales the child image down so it fits inside the parent element.
+blendMode |       | `string` | `srcOver`   | Blend mode to use when composting the child image on the parent image. A list of blend modes can be found below under [Blend modes](#blend-modes)
+
 
 ## Text Object
 
-Property          | Alias       | Type     | Default               | Description
-------------------|-------------|----------|-----------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-x                 |             | `number` | `0`                   | x coordinate/offset of the text block.
-y                 |             | `number` | `0`                   | y coordinate/offset of the text block.
-align             |             | `string` | `top-left`            | Alignment mode of the text block. Alignment modes can be seen in the [Supported alignment modes](#supported-alignment-modes) section
-size              |             | `number` | `30`                  | Pixel size of the text.
-font              |             | `string` | `30px sans-serif`     | Font must be of the format `SIZEpx FONT` where `SIZE` is the text size and `FONT` is the font you want to use. **This property DOES NOT returns errors if the font is invalid. In general this property should NOT be used.**
-textAlign         |             | `string` | `left`                | Alignment mode of the text inside the text block. This is **not** the same as the `align` property.
-textColor         | color       | `string` | `black`               | Color of the text.
-backgroundColor   | bgColor     | `string` | `transparent`         | Color of the background.
-lineSpacing       |             | `number` | `0`                   | Amount of spacing between lines.
-maxWidth          |             | `number` | `width of parent - x` | Max width of the text block. Defaults to the width of the parent image minus the `x` offset.
-strokeWidth       |             | `number` | `0`                   | Width of the text stroke in pixels.
-strokeColor       |             | `string` | `white`               | Color of the text stroke.
-                  |             |          |                       | When using a stroke, the padding might need to be increased to avoid cutting off.
-paddingLeft       | padding     | `number` | `0`                   | Padding in pixels on the left side.
-paddingRight      | padding     | `number` | `0`                   | Padding in pixels on the right side.
-paddingTop        | padding     | `number` | `0`                   | Padding in pixels on the top side.
-paddingBottom     | padding     | `number` | `0`                   | Padding in pixels on the bottom side.
-                  |             |          |                       | The `padding` property is only used for a side if the side-specific property is not provided.
-borderLeftWidth   | borderWidth | `number` | `0`                   | Width of the border on the left side.
-borderRightWidth  | borderWidth | `number` | `0`                   | Width of the border on the right side.
-borderTopWidth    | borderWidth | `number` | `0`                   | Width of the border on the top side.
-borderBottomWidth | borderWidth | `number` | `0`                   | Width of the border on the bottom side.
-                  |             |          |                       | The `borderWidth` property is only used for a side if the side-specific property is not provided.
-borderColor       |             | `string` | `black`               | Color of the border.
+> **Example actions:**
+
+> Hello world
+
+```json
+{
+    "text": [
+        {
+            "text": "Hello world!",
+            "color": "white",
+            "size": "100px"
+        }
+    ],
+    "crop": "auto"
+}
+```
+
+> [Example image]()
+
+> Hello world, but with a cool font
+
+```json
+{
+    "text": [
+        {
+            "text": "Hello world!",
+            "font": "DS Uncial Funny Hand",
+            "color": "white",
+            "size": "100px"
+        }
+    ],
+    "crop": "auto"
+}
+```
+
+> [Example image]()
+
+> Hello world in a box
+
+```json
+{
+    "text": [
+        {
+            "text": "Hello world!",
+            "color": "white",
+            "size": "100px",
+            "borderWidth": 10,
+            "padding": 5,
+            "borderColor": "green"
+        }
+    ],
+    "crop": "auto"
+}
+```
+
+> [Example image]()
+
+> Hello world, yellow background
+
+```json
+{
+    "text": [
+        {
+            "text": "Hello world!",
+            "color": "black",
+            "size": "100px",
+            "bgColor": "yellow",
+            "padding": 5
+        }
+    ],
+    "crop": "auto"
+}
+```
+
+> [Example image]()
+
+Property            | Alias       | Type        | Default               | Description
+--------------------|-------------|-------------|-----------------------|----------------------------------------------------------------------------------------------------------------------------------------------------
+x                   |             | `number`    | `0`                   | x coordinate/offset of the text block.
+y                   |             | `number`    | `0`                   | y coordinate/offset of the text block.
+align               |             | `string`    | `top-left`            | Alignment mode of the text block. Alignment modes can be seen in the [Supported alignment modes](#supported-alignment-modes) section
+size                |             | `number`    | `30`                  | Pixel size of the text.
+font                |             | `FONTSTYLE` | `sans-serif`          | Supported fonts are listed at [/sharp/fonts](https://api.nicelink.xyz/sharp/fonts). Each support font family has an array of supported font styles.
+textAlign           |             | `string`    | `left`                | Alignment mode of the text inside the text block. This is **not** the same as the `align` property.
+textColor           | color       | `string`    | `black`               | Color of the text.
+backgroundColor     | bgColor     | `string`    | `transparent`         | Color of the background.
+lineSpacing         |             | `number`    | `0`                   | Amount of spacing between lines.
+maxWidth            |             | `number`    | `width of parent - x` | Max width of the text block. Defaults to the width of the parent image minus the `x` offset.
+strokeWidth         |             | `number`    | `0`                   | Width of the text stroke in pixels.
+strokeColor         |             | `string`    | `white`               | Color of the text stroke.
+                    |             |             |                       | When using a stroke, the padding might need to be increased to avoid cutting off.
+padding`{Side}`     | padding     | `number`    | `0`                   | Padding in pixels on `{Side}`, where `{Side}` can be `Left`, `Right`, `Top`, `Bottom` or nothing for all sides
+                    |             |             |                       | `padding` property is only used for a side if the side-specific property is not provided.
+border`{Side}`Width | borderWidth | `number`    | `0`                   | Width of the border on `{Side}`. Uses same logic as `padding{Side}`
+borderColor         |             | `string`    | `black`               | Color of the border.
 
 ## Crop Object
 

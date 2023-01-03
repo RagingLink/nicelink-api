@@ -24,5 +24,5 @@ app.get("/docs/:page", async (req, res, next) => {
 });
 
 server.listen(8080, () => {
-    console.info("Docs server now listening");
+    console.info("Docs server listening on 8080");
 })
