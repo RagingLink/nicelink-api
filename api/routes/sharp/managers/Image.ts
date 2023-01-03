@@ -86,7 +86,7 @@ export default class Image {
             this.width = cropOptions;
             this.height = cropOptions;
         } else if (cropOptions === 'auto') {
-            this.sharp.trim();
+            this.sharp.trim({background: '#00000000'});
         } else {
             this.sharp.extract({
                 left: cropOptions.x ?? 0,
