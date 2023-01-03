@@ -1,25 +1,25 @@
 import sizeOf from 'buffer-image-size';
 import { fileTypeFromBuffer } from 'file-type';
 import sharp, { Sharp } from 'sharp';
-import replaceColor from '../../../modules/replaceColor.js';
 
+import replaceColor from '../../../modules/replaceColor.js';
 import { CropOption, InputBody, ReplaceColorBody } from '../../../types/index.js';
 
 export default class Image {
     #sharpImage?: Sharp;
     #width: number;
     #height: number;
-    public readonly operations: Array<{action: keyof InputBody; data: InputBody[keyof InputBody];}>;
-    public edited : boolean;
+    public readonly operations: Array<{ action: keyof InputBody; data: InputBody[keyof InputBody]; }>;
+    public edited: boolean;
     public constructor(public readonly buffer: Buffer, public readonly preEdited = false) {
-        const {width, height} = sizeOf(buffer);
+        const { width, height } = sizeOf(buffer);
         this.#width = width;
         this.#height = height;
         this.operations = [];
         this.edited = false;
     }
     public async format(): Promise<string> {
-        return (this.edited ? (await this.sharp.metadata()).format : (await fileTypeFromBuffer(this.buffer))?.ext)  ?? 'png' ;
+        return (this.edited ? (await this.sharp.metadata()).format : (await fileTypeFromBuffer(this.buffer))?.ext) ?? 'png';
     }
 
     //* Getters and setters
@@ -53,8 +53,8 @@ export default class Image {
         if (width !== undefined && height !== undefined) {
             this.width = width;
             this.height = height;
-            this.sharp.resize(this.width, this.height, {fit: 'fill'});
-            this.addAction('resize', {width: this.width, height: this.height});
+            this.sharp.resize(this.width, this.height, { fit: 'fill' });
+            this.addAction('resize', { width: this.width, height: this.height });
         } else {
             let scaledWidth: number;
             let scaledHeight: number;
@@ -68,11 +68,13 @@ export default class Image {
                 this.height = height;
             }
             this.sharp.resize(this.width, this.height);
-            this.addAction('resize', {width, height});
+            this.addAction('resize', { width, height });
         }
-        return this
+        return this;
     }
-    public crop(cropOptions: CropOption): void {
+    public crop(cropOptions?: CropOption): void {
+        if (cropOptions === undefined)
+            return;
         this.addAction('crop', cropOptions);
         if (typeof cropOptions === 'number') {
             this.sharp.extract({
@@ -101,10 +103,12 @@ export default class Image {
         this.addAction('opacity', opacity);
     }
     public rotate(rotate = 0): void {
-        this.sharp.rotate(rotate, {background: '#00000000'});
+        this.sharp.rotate(rotate, { background: '#00000000' });
         this.addAction('rotate', rotate);
     }
-    public flip(flip: 1 | 2 | 3): void {
+    public flip(flip?: 1 | 2 | 3): void {
+        if (flip === undefined)
+            return;
         switch (flip) {
             case 1:
                 this.sharp.flip();
@@ -113,15 +117,17 @@ export default class Image {
                 this.sharp.flop();
                 break;
             case 3:
-                this.sharp.flip().flop()
+                this.sharp.flip().flop();
                 break;
         }
     }
-    public async replaceColor(replaceOptions: ReplaceColorBody): Promise<this> {
+    public async replaceColor(replaceOptions?: ReplaceColorBody): Promise<this> {
+        if (replaceOptions === undefined)
+            return this;
         await replaceColor(this, replaceOptions);
         return this;
     }
-    private addAction <T extends keyof InputBody, K extends InputBody[T]>(action: T, data: K): void {
+    private addAction<T extends keyof InputBody, K extends InputBody[T]>(action: T, data: K): void {
         this.operations.push({
             action,
             data

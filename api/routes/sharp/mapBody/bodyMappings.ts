@@ -26,8 +26,9 @@ export const child = {
 };
 const textBody = {
     text: mapping.string.optional,
+    size: mapping.string.optional,
     font: mapping.string.optional,
-    textAlign : mapping.in('left', 'center', 'right').optional,
+    textAlign: mapping.in('left', 'center', 'right').optional,
     color: mapping.string.optional,
     textColor: mapping.string.optional,
     backgroundColor: mapping.string.optional,
@@ -52,20 +53,17 @@ const textBody = {
     output: mapping.in('buffer', 'stream', 'dataURL', 'canvas').optional
 };
 export const text = {
-    size: mapping.number.optional,
     x: mapping.number.optional,
     y: mapping.number.optional,
     alignment: mapping.in('top-left', 'top-middle', 'top-right', 'left', 'center', 'right', 'bot-left', 'bot-middle', 'bot-right').optional,
     ...textBody
 };
-
 export const crop = {
     width: mapping.number.optional,
     height: mapping.number.optional,
     x: mapping.number.optional,
     y: mapping.number.optional
 };
-
 export const resize = {
     width: mapping.number.optional,
     height: mapping.number.optional

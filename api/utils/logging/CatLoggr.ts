@@ -209,12 +209,12 @@ export default class CatLoggr {
 
       this._stdout = config.stdout !== undefined ? config.stdout : process.stdout;
       this._stderr = config.stderr !== undefined ? config.stderr : process.stderr;
+      this._maxLength = 0;
 
       this.setLevels(config.levels !== undefined ? config.levels : CatLoggr.defaultLevels);
       this.setLevel(config.level ?? this._levels[this._levels.length - 1].name);
 
       this.setDefaultMeta(config.meta !== undefined ? config.meta : {});
-      this._maxLength = 0;
       this._meta = {};
 
       this._hooks = new LogHooks();

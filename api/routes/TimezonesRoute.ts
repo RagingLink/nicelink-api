@@ -1,6 +1,6 @@
 import express, { Request, Response } from 'express';
 
-import timezones from './timezones.json' assert {type: 'json'};
+import timezones from '../assets/data/timezones.json' assert {type: 'json'};
 
 export default class TimezonesRoute {
     public readonly router = express.Router();
@@ -12,21 +12,21 @@ export default class TimezonesRoute {
                 acc.push(...item.utc);
                 return acc;
             }, []).filter((item, index, self) => self.indexOf(item) === index);
-        
+
         this.router.get('/', (req, res) => this.getTimezone(req, res));
         this.router.get('/simple', (_, res) => res.type('json').send(JSON.stringify(this.simpleTimezones, null, 2)));
     }
 
-    private getTimezone (req: Request, res: Response) {
+    private getTimezone (req: Request, res: Response): void {
         if (req.query.q === undefined) {
-            return res.type('json').send(JSON.stringify(timezones, null, 2));
+            return void res.type('json').send(JSON.stringify(timezones, null, 2));
         }
         const query = req.query.q.toString().toLowerCase();
         const timeCodes = this.simpleTimezones.filter((item) => {
             return item.toLowerCase().includes(query);
         });
         if (timeCodes.length === 1) {
-            return res.send(timeCodes[0]);
+            return void res.send(timeCodes[0]);
         }
         const timeTexts = timezones.filter((item) => {
             const match = item.text.match(/\(UTC.*\)/);
@@ -34,11 +34,11 @@ export default class TimezonesRoute {
         });
         if (timeTexts.length > 0) {
             if (timeTexts.length === 1) {
-                return res.type('json').send(JSON.stringify(timeTexts[0], null, 2));
+                return void res.type('json').send(JSON.stringify(timeTexts[0], null, 2));
             }
-            return res.type('json').send(JSON.stringify(timeTexts, null, 2));
+            return void res.type('json').send(JSON.stringify(timeTexts, null, 2));
         }
-    
+
         const matches = timezones.filter((item) => {
             if (item.value.toLowerCase().includes(query)) return true;
             if (item.abbr.toLowerCase().includes(query)) return true;
@@ -46,6 +46,6 @@ export default class TimezonesRoute {
             if (item.utc.join(',').toLowerCase().includes(query)) return true;
             return false;
         });
-        return res.type('json').send(JSON.stringify(matches, null, 2));
+        return void res.type('json').send(JSON.stringify(matches, null, 2));
     }
 }

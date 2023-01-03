@@ -20,8 +20,8 @@ services:
       - NODE_ENV
     volumes:
       - ./data/prisma/migrations:/usr/src/app/prisma/migrations
-      - ./data/images:/usr/src/app/routes/sharp/storedImages
-      - ./data/legacyImages:/usr/src/app/routes/sharp/legacyImages
+      - ./data/images:/usr/src/app/routes/sharp/images/stored
+      - ./data/legacyImages:/usr/src/app/routes/sharp/images/legacy
     networks:
       - nicelink
     restart: unless-stopped

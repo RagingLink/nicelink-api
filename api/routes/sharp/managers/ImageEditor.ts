@@ -1,44 +1,41 @@
 import sizeOf from 'buffer-image-size';
+import chalk from 'chalk';
 import sharp, { Blend, OverlayOptions } from 'sharp';
 import getUuidByString from 'uuid-by-string';
 
+import { Logger } from '../../../Logger.js';
 import { AlignmentModes, ChildBody, InputBody, MetaBody, OutputBody, TextBody } from '../../../types/index.js';
-import { Logger } from '../../../utils/logging/Logger.js';
-import txt2png from '../../../modules/text2png.js';
 import mapBody from '../mapBody/index.js';
 import Image from './Image.js';
 import { ImageFetcher } from './ImageFetcher.js';
-import OperationTimer from './OperationTimer.js';
+import TextManager from './TextManager.js';
+import Timer from './Timer.js';
 
 export class ImageEditor {
     private readonly imageFetcher: ImageFetcher;
-    private readonly timer: OperationTimer;
-    private imageCount = 0;
     private readonly cache: Map<string, {
         buffer: Buffer;
         time: number;
         lastAccessed: number;
         inputBody?: InputBody;
-        meta?: MetaBody
-    }> = new Map()
+        meta?: MetaBody;
+    }> = new Map();
 
-    public constructor(public readonly logger: Logger) {
+    public constructor(public readonly logger: Logger, public readonly textManager: TextManager) {
         this.imageFetcher = new ImageFetcher(logger, 100000);
-        this.timer = new OperationTimer(logger);
 
         this.startSweepInterval();
     }
 
     public async generateImage(inputBody: JObject): Promise<OutputBody> {
-        const count = this.imageCount++
-        this.timer.start('generation' + count.toString());
+        const timer = new Timer();
         const meta: MetaBody = {
             errors: [],
             warnings: [],
             children: []
         };
         const body = mapBody(inputBody, meta);
-        const fetchedImage = await this.fetchImage(body.background, body, meta)
+        const fetchedImage = await this.fetchImage(body.background, body, meta);
         if (fetchedImage.preEdited)
             return {
                 image: fetchedImage,
@@ -46,7 +43,7 @@ export class ImageEditor {
                 body
             };
         try {
-            await this.editImage(fetchedImage, body, meta, this.imageCount++);
+            await this.editImage(fetchedImage, body, meta, timer);
         } catch (e: unknown) {
             this.logger.error(e);
             meta.errors.push('Unexpected error during image editing');
@@ -55,7 +52,7 @@ export class ImageEditor {
         return {
             image: fetchedImage,
             meta,
-            body,
+            body
         };
     }
 
@@ -68,12 +65,11 @@ export class ImageEditor {
             return new Image(buffer, this.cache.has(this.getBodyStr(inputBody)));
         } catch (e: unknown) {
             meta.errors.push('Invalid background image');
-            return new Image(this.imageFetcher.defaultImageBuffer)
+            return new Image(this.imageFetcher.defaultImageBuffer);
         }
     }
 
-    public async editImage(image: Image, body: InputBody, meta: MetaBody, count: number): Promise<Image> {
-        this.timer.start('edit' + count.toString());
+    public async editImage(image: Image, body: InputBody, meta: MetaBody, timer?: Timer): Promise<Image> {
         let resized = false;
         const compositeOptions: OverlayOptions[] = [];
 
@@ -96,18 +92,20 @@ export class ImageEditor {
                     image.rotate(body.rotate);
                     break;
                 case 'flip':
-                    image.flip(body.flip!);
+                    image.flip(body.flip);
                     break;
                 case 'crop': {
-                    image.crop(body.crop!);
+                    image.crop(body.crop);
                     break;
                 }
                 case 'text': {
-                    image.sharp = sharp(await image.sharp.composite(this.addTextImages(image, body.text!)).toBuffer());
+                    if (body.text !== undefined)
+                        image.sharp = sharp(await image.sharp.composite(this.addTextImages(image, body.text)).toBuffer());
                     break;
                 }
                 case 'images': {
-                    image.sharp = sharp(await image.sharp.composite(await this.addChildImages(image, body.images!, meta, count)).toBuffer())
+                    if (body.images !== undefined)
+                        image.sharp = sharp(await image.sharp.composite(await this.addChildImages(image, body.images, meta)).toBuffer());
                     break;
                 }
                 case 'shape': {
@@ -118,34 +116,36 @@ export class ImageEditor {
                     break;
                 }
                 case 'replaceColor': {
-                    await image.replaceColor(body.replaceColor!);
+                    await image.replaceColor(body.replaceColor);
                     break;
                 }
             }
         }
         if (compositeOptions.length > 0) {
             this.compositeImages(image, compositeOptions);
-        }       
+        }
         if (image.edited) {
             void image.sharp.toBuffer().then((buffer) => {
-                this.logger.stopwatch(`Image generation: ${this.timer.stop('edit' + count.toString(), true)}ms`);
+                if (timer !== undefined)
+                    this.logger.image(chalk.greenBright('Editor'), 'Generated image', timer.elapsedBlueStr);
                 this.cache.set(this.getBodyStr(body), {
                     buffer,
                     time: Date.now(),
                     lastAccessed: Date.now(),
                     inputBody: body,
                     meta
-                })
+                });
             });
         } else {
-            this.logger.stopwatch(`Image generation: ${this.timer.stop('edit' + count.toString(), true)}ms`);
+            if (timer !== undefined)
+                this.logger.image(chalk.greenBright('Editor'), 'Generated image', timer.elapsedBlueStr);
             this.cache.set(this.getBodyStr(body), {
                 buffer: image.buffer,
                 time: Date.now(),
                 lastAccessed: Date.now(),
                 inputBody: body,
                 meta
-            })
+            });
         }
         return image;
     }
@@ -155,7 +155,7 @@ export class ImageEditor {
         const smallest = width > height ? height : width;
         let circleBuffer: Buffer;
 
-        let cachedCircleImage = this.cache.get(this.getBodyStr({ background: 'circleImage', width: smallest, height: smallest }));
+        const cachedCircleImage = this.cache.get(this.getBodyStr({ background: 'circleImage', width: smallest, height: smallest }));
         if (cachedCircleImage === undefined) {
             const circleImage = sharp(this.imageFetcher.circleMaskImage);
             circleImage.resize(smallest, smallest);
@@ -164,7 +164,7 @@ export class ImageEditor {
                 buffer: circleBuffer,
                 time: Date.now(),
                 lastAccessed: Date.now()
-            })
+            });
         } else {
             circleBuffer = cachedCircleImage.buffer;
             this.cache.set(this.getBodyStr({ background: 'circleImage', width: smallest, height: smallest }), {
@@ -189,18 +189,18 @@ export class ImageEditor {
         const textArray: Array<{ buffer: Buffer; body: TextBody; }> = [];
         for (const textObject of textObjects) {
             const textObjectMaxWidth = { ...textObject, maxWidth: textObject.maxWidth ?? image.width };
-            const cachedBuffer = this.cache.get(this.getBodyStr(textObject));
+            const cachedBuffer = this.cache.get(this.getBodyStr(textObjectMaxWidth));
             const textBuffer = cachedBuffer?.buffer
-                ?? txt2png(textObject.text ?? '', textObjectMaxWidth);
+                ?? this.textManager.text2png(textObject.text ?? '', textObjectMaxWidth);
 
-            this.cache.set(this.getBodyStr(textObject), {
+            this.cache.set(this.getBodyStr(textObjectMaxWidth), {
                 buffer: textBuffer,
                 time: cachedBuffer?.time ?? Date.now(),
                 lastAccessed: Date.now()
-            })
+            });
             textArray.push({
                 buffer: textBuffer,
-                body: textObject
+                body: textObjectMaxWidth
             });
 
         }
@@ -220,7 +220,7 @@ export class ImageEditor {
         });
         return compositeOptions;
     }
-    private async addChildImages(image: Image, childObjects: ChildBody[], meta: MetaBody, count: number): Promise<OverlayOptions[]> {
+    private async addChildImages(image: Image, childObjects: ChildBody[], meta: MetaBody): Promise<OverlayOptions[]> {
         const childArray: Array<{ buffer: Buffer; body: ChildBody; }> = [];
         for (const childObject of childObjects) {
             meta.children[meta.children.length] = {
@@ -231,7 +231,7 @@ export class ImageEditor {
             const childImage = await this.fetchImage(childObject.background, childObject, meta.children[meta.children.length - 1]);
             try {
                 if (!childImage.preEdited)
-                    await this.editImage(childImage, childObject, meta.children[meta.children.length - 1], count);
+                    await this.editImage(childImage, childObject, meta.children[meta.children.length - 1]);
             } catch (e: unknown) {
                 this.logger.error(e);
                 meta.errors.push('Unexpected error during image generation');
@@ -379,15 +379,15 @@ export class ImageEditor {
         ));
     }
 
-    private startSweepInterval() {
+    private startSweepInterval(): void {
         setInterval(() => this.sweepCache(), 6 * 3600 * 1000);
     }
-    private sweepCache() {
+    private sweepCache(): void {
         for (const [bodyStr, value] of this.cache) {
             if (Date.now() - value.time > 25 * 3600 * 1000) {
                 if (Date.now() - value.lastAccessed > 25 * 3600 * 1000) {
                     this.cache.delete(bodyStr);
-                    continue
+                    continue;
                 }
                 this.cache.delete(bodyStr);
                 const body = value.inputBody;
@@ -396,11 +396,12 @@ export class ImageEditor {
                     errors: [],
                     warnings: [],
                     children: []
-                }
+                };
                 try {
-                   this.fetchImage(body.background, body, meta).then(image => {
-                        this.editImage(image, body, meta, this.imageCount++).then(() => {
-                            this.logger.info('Refreshed edited image')
+                    const timer = new Timer();
+                    void this.fetchImage(body.background, body, meta).then(image => {
+                        void this.editImage(image, body, meta).then(() => {
+                            this.logger.image(chalk.greenBright('Cache'), 'Refreshed edited image', timer.elapsedBlueStr);
                         });
                     });
                 } catch (e: unknown) {

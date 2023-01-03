@@ -1,11 +1,11 @@
 import express, { NextFunction, Request, Response } from 'express';
 import http from 'http';
-import env from './utils/env/createEnv.js'
 
-import { createLogger } from './utils/logging/Logger.js';
-import SharpRouter from './routes/sharp/index.js';
-import TimezonesRoute from './routes/timezones/index.js';
+import { createLogger } from './Logger.js';
 import ProgressBarRoute from './routes/ProgressbarRoute.js';
+import SharpRouter from './routes/SharpRoute.js';
+import TimezonesRoute from './routes/TimezonesRoute.js';
+import env from './utils/env/createEnv.js';
 
 class HttpException extends Error {
     public status: number;
@@ -21,7 +21,7 @@ class HttpException extends Error {
 const app = express();
 app.get('/', (_, res) => {
     res.redirect('https://api.nicelink.xyz/docs');
-})
+});
 const server = http.createServer(app);
 app.set('trust proxy', 1);
 // parse application/x-www-form-urlencoded
@@ -37,8 +37,6 @@ app.use('/jimp', sharpRoute.router);
 app.use('/misc/progressbar', new ProgressBarRoute(logger).router);
 app.use('/timezones', new TimezonesRoute().router);
 
-
-
 app.use((err: HttpException, _: Request, res: Response, next: NextFunction): void => {
     if (err.status === 400 && 'body' in err) {
         logger.error(err);
@@ -47,5 +45,5 @@ app.use((err: HttpException, _: Request, res: Response, next: NextFunction): voi
     next();
 });
 server.listen(env.PORT, () => {
-    logger.info('API now listening on port ' + env.PORT);
+    logger.info('API now listening on port ' + (env.PORT ?? ''));
 });

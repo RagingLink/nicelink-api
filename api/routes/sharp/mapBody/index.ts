@@ -14,7 +14,7 @@ const propertyAliases = {
     children: 'images'
 };
 
-export default function mapBody (inputBody: JObject, meta: MetaBody, isChild = false): InputBody {
+export default function mapBody(inputBody: JObject, meta: MetaBody, isChild = false): InputBody {
     const mappedBody: InputBody = {};
     inputBody = convertAliases(inputBody);
 
@@ -77,9 +77,8 @@ export default function mapBody (inputBody: JObject, meta: MetaBody, isChild = f
     }
     return mappedBody;
 }
-
 // Custom bodies
-function mapTextBody (textArray: JObject | JArray, meta: MetaBody): TextBody[] {
+function mapTextBody(textArray: JObject | JArray, meta: MetaBody): TextBody[] {
     if (!Array.isArray(textArray))
         textArray = [textArray];
     const mappedBody: TextBody[] = [];
@@ -120,7 +119,7 @@ function mapTextBody (textArray: JObject | JArray, meta: MetaBody): TextBody[] {
     });
     return mappedBody;
 }
-function mapCropBody (cropOption: JToken, meta: MetaBody): CropOption | undefined {
+function mapCropBody(cropOption: JToken, meta: MetaBody): CropOption | undefined {
     let mappedCropOption: CropOption | undefined = undefined;
     if (cropOption === 'auto')
         mappedCropOption = 'auto';
@@ -166,7 +165,7 @@ function mapCropBody (cropOption: JToken, meta: MetaBody): CropOption | undefine
     }
     return mappedCropOption;
 }
-function mapImagesBody (imagesArray: JArray, meta: MetaBody): ChildBody[] {
+function mapImagesBody(imagesArray: JArray, meta: MetaBody): ChildBody[] {
     const mappedBody: ChildBody[] = [];
 
     imagesArray.forEach((imageObject, i) => {
@@ -184,7 +183,7 @@ function mapImagesBody (imagesArray: JArray, meta: MetaBody): ChildBody[] {
     });
     return mappedBody;
 }
-function mapResizeBody (resizeOption: JToken, meta: MetaBody): ResizeOption | undefined {
+function mapResizeBody(resizeOption: JToken, meta: MetaBody): ResizeOption | undefined {
     if (typeof resizeOption !== 'object' || Array.isArray(resizeOption) || resizeOption === null)
         return;
     const mappedObject: ResizeOption = {};
@@ -215,10 +214,10 @@ function mapResizeBody (resizeOption: JToken, meta: MetaBody): ResizeOption | un
     }
     return mappedObject;
 }
-function createProperty <B, K extends keyof B, V extends B[K]>(mappedObject: B, key: K, value: V ): void {
+function createProperty<B, K extends keyof B, V extends B[K]>(mappedObject: B, key: K, value: V): void {
     mappedObject[key] = value;
 }
-function convertAliases (inputBody: JObject): JObject {
+function convertAliases(inputBody: JObject): JObject {
     const newInputBody: JObject = {};
     const keys = Object.keys(inputBody);
     for (const key of keys) {

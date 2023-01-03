@@ -13,7 +13,7 @@ export interface ReplaceColorBody {
 }
 export interface TextBody extends InputOptions {
     text?: string;
-    size?: number;
+    size?: string;
     x?: number;
     y?: number;
     alignment?: AlignmentModes;
@@ -52,6 +52,7 @@ export interface InputBody {
 
 export interface InputOptions {
     font?: string;
+    size?: string;
     textAlign? : 'left' | 'center' | 'right';
     color?: string;
     textColor?: string;
@@ -103,7 +104,8 @@ font: options.font ?? '30px sans-serif',
         output: or(options.output, 'buffer')
 */
 export interface DefaultOptions {
-    font: string | '30px sans-serif';
+    font: string | 'sans-serif';
+    size: string | '30px';
     textAlign : 'left' | 'center' | 'right';
     textColor: string;
     backgroundColor?: string;

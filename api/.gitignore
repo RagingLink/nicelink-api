@@ -1,8 +1,9 @@
 *.js
 *js.map
-node_modules*
+node_modules
 config.json
-storedImages*
-legacyImages*
+routes/sharp/images*
 prisma/migrations*
 ./build.sh
+assets/fonts/google
+tmp
