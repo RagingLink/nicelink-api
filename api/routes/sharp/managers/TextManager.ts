@@ -274,38 +274,43 @@ export default class TextManager {
             errors: 0
         };
         const fullDir = this.FONTS_ASSETS_DIR + dir;
-
-        const fontDirs = await fs.promises.readdir(fullDir);
-        for (const fontDir of fontDirs) {
-            const stats = await fs.promises.stat(fullDir + fontDir);
-            if (!stats.isDirectory())
-                continue;
-            try {
-                const metaFile = await fs.promises.readFile(fullDir + fontDir + '/' + 'METADATA.pb', 'utf-8');
-                const parsedMeta = parse(metaFile);
-                if ('error' in parsedMeta) { //TODO More info with regards to error
-                    responseData.errors += 1;
+        try {
+            const fontDirs = await fs.promises.readdir(fullDir);
+            for (const fontDir of fontDirs) {
+                const stats = await fs.promises.stat(fullDir + fontDir);
+                if (!stats.isDirectory())
                     continue;
-                }
-                const fonts = this.validateMetadata(parsedMeta);
-                for (const font of fonts) {
-                    this.fonts.set(font.name, {
-                        name: font.name,
-                        path: fullDir + fontDir + '/' + font.file,
-                        family: font.family
-                    });
-                    responseData.loaded.push(font.name);
-                }
-            } catch (err: unknown) {
-                if (isErrnoException(err)) {
-                    if (err.code === 'ENOENT')
-                        responseData.missingMeta.push(dir + fontDir);
+                try {
+                    const metaFile = await fs.promises.readFile(fullDir + fontDir + '/' + 'METADATA.pb', 'utf-8');
+                    const parsedMeta = parse(metaFile);
+                    if ('error' in parsedMeta) { //TODO More info with regards to error
+                        responseData.errors += 1;
+                        continue;
+                    }
+                    const fonts = this.validateMetadata(parsedMeta);
+                    for (const font of fonts) {
+                        this.fonts.set(font.name, {
+                            name: font.name,
+                            path: fullDir + fontDir + '/' + font.file,
+                            family: font.family
+                        });
+                        responseData.loaded.push(font.name);
+                    }
+                } catch (err: unknown) {
+                    if (isErrnoException(err)) {
+                        if (err.code === 'ENOENT')
+                            responseData.missingMeta.push(dir + fontDir);
+                    }
                 }
             }
+            return responseData;
+        } catch (err: unknown) {
+            this.logger.error(err);
+            responseData.errors += 1;
+            return responseData;
         }
-        return responseData;
     }
-    private validateMetadata(input: JObject): Array<{name: string; file: string; family: string;}> {
+    private validateMetadata(input: JObject): Array<{ name: string; file: string; family: string; }> {
         const fonts = [];
         if ('name' in input && typeof input.name === 'string' && 'fonts' in input) {
             if (!Array.isArray(input.fonts))

@@ -24,14 +24,13 @@ export function createLogger(): Logger {
 
     return <Logger>logger;
 }
-
 // A ZWS character is used to fix cases where there is too much padding
 const logLevels = [
-    { name: '📢', color: CatLoggr._chalk.black.bgBlack, aliases: ['error'], isError: true },
-    { name: '❓\u200b', color: CatLoggr._chalk.black.bgYellow, aliases: ['warning'], isError: true },
-    { name: '✅\u200b', color: CatLoggr._chalk.bgGreenBright, aliases: ['info'] },
+    { name: '📢', color: CatLoggr._chalk.black.bgRed, aliases: ['error'], isError: true },
+    { name: '❓', color: CatLoggr._chalk.black.bgYellow, aliases: ['warning'], isError: true },
+    { name: '✅', color: CatLoggr._chalk.bgGreenBright, aliases: ['info'] },
     { name: '📸', color: CatLoggr._chalk.bgCyan, aliases: ['image']},
     { name: '💾', color: CatLoggr._chalk.white.bgCyanBright, aliases: ['prisma', 'db']},
-    { name: '⌛\u200b', color: CatLoggr._chalk.white.bgBlueBright, aliases: ['time', 'stopwatch', 'sw'] },
+    { name: '⌛', color: CatLoggr._chalk.white.bgBlueBright, aliases: ['time', 'stopwatch', 'sw'] },
     { name: '📬', color: CatLoggr._chalk.white.bgMagenta, aliases: ['endpoint']}
 ] as const;
