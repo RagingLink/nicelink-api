@@ -19,6 +19,7 @@ services:
       - PORT=${API_PORT}
       - NODE_ENV
     volumes:
+      - ./api/assets:/usr/src/app/assets
       - ./data/prisma/migrations:/usr/src/app/prisma/migrations
       - ./data/images:/usr/src/app/routes/sharp/images/stored
       - ./data/legacyImages:/usr/src/app/routes/sharp/images/legacy
