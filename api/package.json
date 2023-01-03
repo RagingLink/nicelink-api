@@ -54,7 +54,7 @@
   },
   "homepage": "https://github.com/RagingLink/nicelink-api#readme",
   "devDependencies": {
-    "@types/bent": "^7.3.2",
+    "@types/bent": "^7.3.3",
     "@types/chalk": "^2.2.0",
     "@types/color": "^3.0.3",
     "@types/color-convert": "^2.0.0",
