@@ -299,7 +299,7 @@ blendMode |       | `string` | `srcOver`   | Blend mode to use when composting t
 }
 ```
 
-> [Example image]()
+> [Response image](https://api.nicelink.xyz/sharp/f3de04e7-e89a-4a66-85a2-f29c408060bd.png)
 
 > Hello world, but with a cool font
 
@@ -317,7 +317,7 @@ blendMode |       | `string` | `srcOver`   | Blend mode to use when composting t
 }
 ```
 
-> [Example image]()
+> [Response image](https://api.nicelink.xyz/sharp/de879c7f-9188-4523-804d-9a26e815afd8.png)
 
 > Hello world in a box
 
@@ -337,7 +337,7 @@ blendMode |       | `string` | `srcOver`   | Blend mode to use when composting t
 }
 ```
 
-> [Example image]()
+> [Response image](https://api.nicelink.xyz/sharp/cbf2bc60-40da-4376-98a8-f1b27e7205c1.png)
 
 > Hello world, yellow background
 
@@ -356,7 +356,7 @@ blendMode |       | `string` | `srcOver`   | Blend mode to use when composting t
 }
 ```
 
-> [Example image]()
+> [Response image](https://api.nicelink.xyz/sharp/2a6f19f5-c0ac-4e04-8196-03c21d2fe372.png)
 
 Property            | Alias       | Type        | Default               | Description
 --------------------|-------------|-------------|-----------------------|----------------------------------------------------------------------------------------------------------------------------------------------------
