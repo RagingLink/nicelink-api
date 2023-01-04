@@ -1,4 +1,5 @@
 import can, { Canvas, CanvasRenderingContext2D } from 'canvas';
+import chalk from 'chalk';
 import fs from 'fs';
 import { parse } from 'pb-text-format-to-json';
 import { fileURLToPath } from 'url';
@@ -36,9 +37,10 @@ export default class TextManager {
         this.fonts = new Map();
         const fontTimer = new Timer();
         this.loadFonts().then(responseData => {
-            this.logger.log('info', 'TextManager', `Loaded ${responseData.loaded.length} fonts`, fontTimer.elapsedBlueStr);
+            const result: unknown[] = ['Loaded', responseData.loaded.length, 'fonts.'];
             if (responseData.missingMeta.length > 0)
-                this.logger.log('warning', 'TextManager', `${responseData.missingMeta.length} fonts are missing METADATA.pb`);
+                result.push(responseData.missingMeta.length, chalk.yellow('fonts don\'t have METADATA.pb'));
+            this.logger.log('info', 'TextManager', ...result, fontTimer.elapsedBlueStr);
             if (responseData.errors > 0)
                 this.logger.log('error', 'TextManager', `Encountered ${responseData.errors} errors while loading fonts`);
         }).catch(err => {

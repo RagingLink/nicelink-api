@@ -39,11 +39,14 @@ app.use('/timezones', new TimezonesRoute().router);
 
 app.use((err: HttpException, _: Request, res: Response, next: NextFunction): void => {
     if (err.status === 400 && 'body' in err) {
-        logger.log('error', err);
+        if (err instanceof SyntaxError) {
+            logger.log('error', 'API', `${err.name}: ${err.message}`);
+        } else
+            logger.log('error', err);
         return void res.status(400).send({status: 400, message: err.message});
     }
     next();
 });
 server.listen(env.PORT, () => {
-    logger.log('info', 'API', 'Listening on port ' + (env.PORT ?? ''));
+    logger.log('info', 'API', 'Listening on port', +(env.PORT ?? ''));
 });

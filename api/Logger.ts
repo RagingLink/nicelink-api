@@ -22,16 +22,7 @@ export function createLogger(): Logger {
                 level.err = l.isError;
             return level;
         })
-    }).meta().addArgHook(({ arg, level }) => {
-        switch (level.replace(/\u200b/, '')) {
-            case '📢':
-                return chalk.red(arg);
-            case '❓':
-                return chalk.yellow(arg);
-            default:
-                return chalk.magenta(arg);
-        }
-    });
+    }).meta();
 
     return <Logger>logger;
 }
@@ -44,17 +35,21 @@ export class NiceLogger {
     public log(level: LogTypes, str: unknown): void;
     public log(level: LogTypes, scope: string, ...args: unknown[]): void;
     public log(level: LogTypes, ...args: unknown[]): void {
-        if (args.length === 1)
-            this.logger[level](...args);
+        const scope = args.length !== 1 && (args[0] ?? '') !== ''
+            ? chalk.bold.hex('#6E00FF')(args.shift()) : undefined;
+        if (level === 'warning')
+            args = args.map(i => chalk.yellow(i));
+        if (scope !== undefined)
+            this.logger[level](scope, ...args);
         else
-            this.logger[level](chalk.bold.hex('#6E00FF')(args[0]), ...args.slice(1));
+            this.logger[level](...args);
     }
 
 }
 
 // A ZWS character is used to fix cases where there is too much padding
 const logLevels = [
-    { name: '📢', color: CatLoggr._chalk.black.bgBlack, aliases: ['error'], isError: true },
+    { name: '❌', color: CatLoggr._chalk.black.bgBlack, aliases: ['error'], isError: true },
     { name: '❓', color: CatLoggr._chalk.black.bgYellow, aliases: ['warning'], isError: true },
     { name: '✅', color: CatLoggr._chalk.bgGreenBright, aliases: ['info'] },
     { name: '📸', color: CatLoggr._chalk.bgCyan, aliases: ['image'] },

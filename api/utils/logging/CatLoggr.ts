@@ -490,16 +490,15 @@ export default class CatLoggr {
             }
             if (finished) continue;
 
-            if (typeof arg === 'string') {
+            if (typeof arg === 'string' && !level.err) {
                 text.push(chalk.magenta(this._meta.quote === undefined ? `'${arg}'` : arg));
             } else if (typeof arg === 'number') {
                 text.push(chalk.cyan(arg.toString()));
             } else if (typeof arg === 'object') {
-                text.push('\n');
-
                 if (arg instanceof Error) {
-                    text.push(chalk.red(arg.stack));
+                    text.push(chalk.bold.red(arg.stack));
                 } else {
+                    text.push('\n');
                     text.push(util.inspect(arg, this._meta));
                 }
             } else text.push(arg);
@@ -509,7 +508,7 @@ export default class CatLoggr {
         if (level.trace || (this._meta.trace ?? false)) {
             output += '\n' + (new Error().stack ?? '').split('\n').slice(1).join('\n');
         }
-        if (level.err) output = chalk.red(output);
+        if (level.err) output = chalk.bold.red(output);
         return this._write(level, output, level.err).meta();
     }
 }
