@@ -92,7 +92,7 @@ export class LogMeta {
  * @param {Date} params.date The timestamp of execution
  * @returns {string|null} The processed argument result, or `null` to continue executing
  */
-export type ArgHookCallback = (params: { arg?: unknown; date: Date; }) => string | null;
+export type ArgHookCallback = (params: { arg?: unknown; date: Date; level: string; }) => string | null;
 
 /**
  * A post hook callback function
@@ -477,7 +477,7 @@ export default class CatLoggr {
             let finished = false;
             for (const hook of this._hooks.arg) {
                 if (typeof hook === 'function') {
-                    const res = hook({ arg, date: timestamp.raw });
+                    const res = hook({ arg, date: timestamp.raw, level: level.name });
                     if (res === null) continue;
                     else if (Array.isArray(res)) {
                         text.push(...res);

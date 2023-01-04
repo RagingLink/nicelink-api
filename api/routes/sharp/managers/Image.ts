@@ -72,9 +72,9 @@ export default class Image {
         }
         return this;
     }
-    public crop(cropOptions?: CropOption): void {
+    public crop(cropOptions?: CropOption): this {
         if (cropOptions === undefined)
-            return;
+            return this;
         this.addAction('crop', cropOptions);
         if (typeof cropOptions === 'number') {
             this.sharp.extract({
@@ -97,6 +97,7 @@ export default class Image {
             this.height = (cropOptions.y ?? 0) + (cropOptions.height ?? this.height);
             this.width = (cropOptions.x ?? 0) + (cropOptions.width ?? this.width);
         }
+        return this;
     }
     public opacity(opacity = 0): void {
         this.sharp.removeAlpha().ensureAlpha(opacity > 1 ? opacity / 100 : opacity);

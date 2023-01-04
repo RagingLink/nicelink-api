@@ -3,7 +3,7 @@ import fetch from 'node-fetch';
 import path from 'path';
 import * as url from 'url';
 
-import { Logger } from '../../../Logger.js';
+import { NiceLogger } from '../../../Logger.js';
 
 const assetsPath = path.join(url.fileURLToPath(new URL('.', import.meta.url)), '..', '..', '..', 'assets', 'img');
 const transparentImagePath = path.join(assetsPath, 'transparent.png');
@@ -18,7 +18,7 @@ export class ImageFetcher {
     private readonly _circleImageBuffer = fs.readFileSync(circleImagePath);
     private readonly _blackImageBuffer = fs.readFileSync(blackImagePath);
 
-    public constructor (public readonly logger: Logger, retention = 3600) {
+    public constructor (public readonly logger: NiceLogger, retention = 3600) {
         this.retention = retention;
         this.cache = new Map();
         this.startSweepInterval();
@@ -71,7 +71,7 @@ export class ImageFetcher {
                         buffer
                     });
                 }).catch(err => {
-                    this.logger.error(err);
+                    this.logger.log('error', 'ImageFetcher', err);
                 });
             }
         }

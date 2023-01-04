@@ -3,7 +3,7 @@ import Eris from 'eris';
 import express, { Request, Response, Router } from 'express';
 
 import config from '../config.json' assert {type: 'json'};
-import { Logger } from '../Logger.js';
+import { NiceLogger } from '../Logger.js';
 import { ImageEditor } from './sharp/managers/ImageEditor.js';
 import { ImageManager } from './sharp/managers/ImageManager.js';
 import TextManager from './sharp/managers/TextManager.js';
@@ -15,8 +15,9 @@ export default class SharpRoute {
     private readonly imageManager: ImageManager;
     private readonly discord: Eris.Client;
     private discordLastDisconnect = 0;
+    private getRequestCount = 0;
     public readonly router: Router;
-    public constructor(public readonly logger: Logger, public readonly env: NodeJS.ProcessEnv) {
+    public constructor(public readonly logger: NiceLogger, public readonly env: NodeJS.ProcessEnv) {
         this.textManager = new TextManager(logger);
         this.imageEditor = new ImageEditor(logger, this.textManager);
         this.imageManager = new ImageManager(this.imageEditor, logger);
@@ -26,16 +27,32 @@ export default class SharpRoute {
         // Discord events
         this.discord.on('ready', () => {
             if (Date.now() - this.discordLastDisconnect > 60000)
-                logger.info('Discord client ready');
+                logger.log('info', 'Discord', 'Client ready');
         });
         this.discord.on('disconnect', () => {
             this.discordLastDisconnect = Date.now();
         });
         this.discord.on('error', (err) => {
-            this.logger.error(err);
+            this.logger.log('error', 'Discord', err);
         });
         void this.discord.connect();
-
+        this.router.get('*', (_, __, next) => {
+            this.getRequestCount++;
+            next();
+        });
+        setInterval(() => {
+            if (this.getRequestCount === 0)
+                return;
+            this.logger.log('endpoint', 'GET', chalk.whiteBright('/sharp'), `${this.getRequestCount} request last hour`);
+            this.getRequestCount = 0;
+        }, 3600 * 1000);
+        this.router.post('*', (req, res, next) => {
+            const timer = new Timer();
+            res.once('close', () => {
+                this.logger.log('endpoint', 'POST', chalk.whiteBright('/sharp' + req.path), timer.elapsedBlueStr);
+            });
+            next();
+        });
         //* Endpoints
         this.router.get('/transparent.png', (_, res) => {
             void this.imageEditor.generateImage({}).then(output => {
@@ -76,10 +93,6 @@ export default class SharpRoute {
     }
     // Store image
     private storeImage(req: Request, res: Response): void {
-        const timer = new Timer();
-        res.once('close', () => {
-            this.logger.endpoint(chalk.greenBright('/sharp/store'), 'Stored image', timer.elapsedBlueStr);
-        });
         const body = <JObject>req.body;
         const permanent = 'persistKey' in body && body['persistKey'] === config.persistKey;
 
@@ -96,10 +109,6 @@ export default class SharpRoute {
         });
     }
     private async storeMultiple(req: Request, res: Response): Promise<void> {
-        const timer = new Timer();
-        res.once('close', () => {
-            this.logger.endpoint(chalk.greenBright('/sharp/multiple'), 'Stored multiple images', timer.elapsedBlueStr);
-        });
         if (!Array.isArray(req.body))
             return void res.status(400).send(JSON.stringify({
                 status: 400,
@@ -119,7 +128,6 @@ export default class SharpRoute {
     }
     // Send image
     private processImage(req: Request, res: Response): void {
-        const timer = new Timer();
         void this.imageEditor.generateImage(<JObject>req.body).then(output => {
             if (output.image.edited) {
                 output.image.sharp.pipe(res);
@@ -129,9 +137,6 @@ export default class SharpRoute {
                     res.send(output.image.buffer);
                 });
             }
-            res.once('close', () => {
-                this.logger.endpoint(chalk.greenBright('/sharp/process'), 'Processed image', timer.elapsedBlueStr);
-            });
         });
     }
 }
