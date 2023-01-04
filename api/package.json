@@ -11,7 +11,7 @@
     "generate": "npx prisma generate",
     "dbpush": "npx prisma db push",
     "setupPrisma": "yarn run migrate && yarn run dbpush",
-    "clean": "del-cli \"**/*.js\" \"**/*.js.map\" \"**/*.mjs\" \"**/*.mjs.map\" \"**/*.cjs\" \"**/*.cjs.map\" \"!routes\" \"!node_modules\"",
+    "clean": "del-cli \"**/*.js\" \"**/*.js.map\" \"**/*.mjs\" \"**/*.mjs.map\" \"**/*.cjs\" \"**/*.cjs.map\" \"!node_modules\"",
     "build": "tsc",
     "watch": "tsc --watch",
     "rebuild": "yarn run clean && yarn run build",
