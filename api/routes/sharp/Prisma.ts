@@ -1,13 +1,13 @@
 import { PrismaClient } from '@prisma/client';
 
-import { Logger } from '../../Logger.js';
+import { NiceLogger } from '../../Logger.js';
 
 export default class Prisma {
     public readonly client: PrismaClient;
-    public constructor(public readonly logger: Logger) {
+    public constructor(public readonly logger: NiceLogger) {
         this.client = new PrismaClient();
         this.client.$connect().then(() => {
-            this.logger.prisma('Connected to Postgres');
-        }).catch(e => logger.error(e));
+            this.logger.log('prisma', 'Prisma', 'Connected to Postgres');
+        }).catch(e => logger.log('error', 'Prisma', e));
     }
 }

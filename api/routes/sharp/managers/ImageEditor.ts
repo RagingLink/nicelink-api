@@ -3,7 +3,7 @@ import chalk from 'chalk';
 import sharp, { Blend, OverlayOptions } from 'sharp';
 import getUuidByString from 'uuid-by-string';
 
-import { Logger } from '../../../Logger.js';
+import { NiceLogger } from '../../../Logger.js';
 import { AlignmentModes, ChildBody, InputBody, MetaBody, OutputBody, TextBody } from '../../../types/index.js';
 import mapBody from '../mapBody/index.js';
 import Image from './Image.js';
@@ -11,6 +11,14 @@ import { ImageFetcher } from './ImageFetcher.js';
 import TextManager from './TextManager.js';
 import Timer from './Timer.js';
 
+interface SizeObject {
+    width: number;
+    height: number;
+}
+interface Coords {
+    x: number;
+    y: number;
+}
 export class ImageEditor {
     private readonly imageFetcher: ImageFetcher;
     private readonly cache: Map<string, {
@@ -20,8 +28,7 @@ export class ImageEditor {
         inputBody?: InputBody;
         meta?: MetaBody;
     }> = new Map();
-
-    public constructor(public readonly logger: Logger, public readonly textManager: TextManager) {
+    public constructor(public readonly logger: NiceLogger, public readonly textManager: TextManager) {
         this.imageFetcher = new ImageFetcher(logger, 100000);
 
         this.startSweepInterval();
@@ -45,7 +52,7 @@ export class ImageEditor {
         try {
             await this.editImage(fetchedImage, body, meta, timer);
         } catch (e: unknown) {
-            this.logger.error(e);
+            this.logger.log('error', 'Editor', e);
             meta.errors.push('Unexpected error during image editing');
             fetchedImage.sharp = sharp(this.imageFetcher.defaultImageBuffer);
         }
@@ -61,7 +68,6 @@ export class ImageEditor {
             const cachedBuffer = this.cache.get(this.getBodyStr(inputBody));
             const buffer = cachedBuffer?.buffer
                 ?? await this.imageFetcher.get(src);
-
             return new Image(buffer, this.cache.has(this.getBodyStr(inputBody)));
         } catch (e: unknown) {
             meta.errors.push('Invalid background image');
@@ -76,6 +82,7 @@ export class ImageEditor {
         //? If you don't make any changes to the image itself with sharp, you can keep the original Buffer
         //? This cuts out the time needed to go from sharp -> buffer (buffer -> sharp is negligible)
         for (const property of Object.keys(body)) {
+            const operationTimer = new Timer();
             switch (property) {
                 case 'width':
                 case 'height':
@@ -100,12 +107,12 @@ export class ImageEditor {
                 }
                 case 'text': {
                     if (body.text !== undefined)
-                        image.sharp = sharp(await image.sharp.composite(this.addTextImages(image, body.text)).toBuffer());
+                        image.sharp.composite(await this.addTextImages(image, body.text));
                     break;
                 }
                 case 'images': {
                     if (body.images !== undefined)
-                        image.sharp = sharp(await image.sharp.composite(await this.addChildImages(image, body.images, meta)).toBuffer());
+                        image.sharp.composite(await this.addChildImages(image, body.images, meta));
                     break;
                 }
                 case 'shape': {
@@ -120,6 +127,9 @@ export class ImageEditor {
                     break;
                 }
             }
+            image.sharp = sharp(await image.sharp.toBuffer());
+            if (operationTimer.elapsedMS > 500 && property !== 'images')
+                this.logger.log('image', 'EditOperation', chalk.white(property), operationTimer.elapsedBlueStr);
         }
         if (compositeOptions.length > 0) {
             this.compositeImages(image, compositeOptions);
@@ -127,7 +137,7 @@ export class ImageEditor {
         if (image.edited) {
             void image.sharp.toBuffer().then((buffer) => {
                 if (timer !== undefined)
-                    this.logger.image(chalk.greenBright('Editor'), 'Generated image', timer.elapsedBlueStr);
+                    this.logger.log('image', 'Editor', 'Generated image', timer.elapsedBlueStr);
                 this.cache.set(this.getBodyStr(body), {
                     buffer,
                     time: Date.now(),
@@ -138,7 +148,7 @@ export class ImageEditor {
             });
         } else {
             if (timer !== undefined)
-                this.logger.image(chalk.greenBright('Editor'), 'Generated image', timer.elapsedBlueStr);
+                this.logger.log('image', 'Editor', 'Generated image', timer.elapsedBlueStr);
             this.cache.set(this.getBodyStr(body), {
                 buffer: image.buffer,
                 time: Date.now(),
@@ -185,7 +195,7 @@ export class ImageEditor {
             blend: 'dest-in'
         }]);
     }
-    private addTextImages(image: Image, textObjects: TextBody[]): OverlayOptions[] {
+    private async addTextImages(image: Image, textObjects: TextBody[]): Promise<sharp.OverlayOptions[]> {
         const textArray: Array<{ buffer: Buffer; body: TextBody; }> = [];
         for (const textObject of textObjects) {
             const textObjectMaxWidth = { ...textObject, maxWidth: textObject.maxWidth ?? image.width };
@@ -204,24 +214,35 @@ export class ImageEditor {
             });
 
         }
-        const compositeOptions = textArray.map(text => {
-            let [x, y] = [text.body.x ?? 0, text.body.y ?? 0];
-            if (text.body.alignment !== undefined) {
-                const { width, height } = sizeOf(text.buffer);
-                const alignCoords = this.getAlignCoords({ width: image.width, height: image.height }, { width, height }, text.body.alignment);
-                x += alignCoords.x;
-                y += alignCoords.y;
-            }
-            return {
+        const overlayOptions = await Promise.all(textArray.map(async text => {
+            const overlayOption = {
                 input: text.buffer,
-                left: x,
-                top: y
+                left: 0,
+                top: 0
             };
-        });
-        return compositeOptions;
+            const { width, height } = sizeOf(text.buffer);
+            const alignCoords = this.getAlignCoords(image, { width, height }, text.body.alignment ?? 'top-left');
+            const coords = { x: text.body.x ?? 0, y: text.body.y ?? 0 };
+            const [leftOffset, topOffset] = [alignCoords.x + coords.x, alignCoords.y + coords.y];
+            const parentDimensions = { width: image.width, height: image.height };
+            const textDimensions = { width, height };
+
+            if (!this.canImageFit(parentDimensions, textDimensions)) {
+                text.buffer = await this.fitImage(parentDimensions, new Image(text.buffer), coords, alignCoords).sharp.toBuffer();
+                if (leftOffset > 0)
+                    overlayOption.left += leftOffset;
+                if (topOffset > 0)
+                    overlayOption.top += topOffset;
+            } else {
+                overlayOption.left = leftOffset;
+                overlayOption.top = topOffset;
+            }
+            return overlayOption;
+        }));
+        return overlayOptions;
     }
     private async addChildImages(image: Image, childObjects: ChildBody[], meta: MetaBody): Promise<OverlayOptions[]> {
-        const childArray: Array<{ buffer: Buffer; body: ChildBody; }> = [];
+        const childArray: OverlayOptions[] = [];
         for (const childObject of childObjects) {
             meta.children[meta.children.length] = {
                 errors: [],
@@ -233,7 +254,7 @@ export class ImageEditor {
                 if (!childImage.preEdited)
                     await this.editImage(childImage, childObject, meta.children[meta.children.length - 1]);
             } catch (e: unknown) {
-                this.logger.error(e);
+                this.logger.log('error', 'Editor', e);
                 meta.errors.push('Unexpected error during image generation');
                 childImage.sharp = sharp(this.imageFetcher.defaultImageBuffer);
             }
@@ -246,39 +267,34 @@ export class ImageEditor {
                     }
                     break;
                 }
-                default:
-                    if (childImage.width > image.width || childImage.height > image.height) {
-                        childImage.crop({
-                            width: childImage.width > image.width ? image.width : childImage.width,
-                            height: childImage.height > image.height ? image.height : childImage.height
-                        });
-                    }
             }
+            const childDimensions = { width: childImage.width, height: childImage.height };
+            const parentDimensions = { width: image.width, height: image.height };
+            const alignCoords = this.getAlignCoords(image, childDimensions, childObject.alignment ?? 'top-left');
+            const coords = { x: childObject.x ?? 0, y: childObject.y ?? 0 };
+
+            let leftOffset = coords.x + alignCoords.x;
+            let topOffset = coords.y + alignCoords.y;
+            if (!this.canImageFit(parentDimensions, childDimensions)) {
+                this.fitImage(parentDimensions, childImage, coords, alignCoords);
+                leftOffset = leftOffset > 0 ? leftOffset : 0;
+                topOffset = topOffset > 0 ? topOffset : 0;
+            }
+
             childArray.push({
-                buffer: childImage.edited ? await childImage.sharp.toBuffer() : childImage.buffer,
-                body: childObject
+                input: childImage.edited ? await childImage.sharp.toBuffer() : childImage.buffer,
+                blend: this.getBlendMode(childObject.blendMode),
+                top: topOffset,
+                left: leftOffset
             });
         }
-        return childArray.map(({ buffer, body: childBody }) => {
-            let [x, y] = [childBody.x ?? 0, childBody.y ?? 0];
-            if (childBody.alignment !== undefined) {
-                const { width, height } = sizeOf(buffer);
-                const alignCoords = this.getAlignCoords({ width: image.width, height: image.height }, { width, height }, childBody.alignment);
-                x += alignCoords.x;
-                y += alignCoords.y;
-            }
-            return {
-                input: buffer,
-                top: y,
-                left: x,
-                blend: this.getBlendMode(childBody.blendMode)
-            };
-        });
+        return childArray;
     }
     private compositeImages(image: Image, compositeOptions: OverlayOptions[]): void {
         image.sharp.composite(compositeOptions);
     }
-    private getAlignCoords(parentSize: { width: number; height: number; }, childSize: { width: number; height: number; }, alignment: AlignmentModes): { x: number; y: number; } {
+
+    private getAlignCoords(parentImage: Image, childSize: SizeObject, alignment: AlignmentModes): Coords {
         const alignCoords = {
             x: 0,
             y: 0
@@ -287,35 +303,63 @@ export class ImageEditor {
             case 'top-left':
                 break;
             case 'top-middle':
-                alignCoords.x = Math.round(parentSize.width / 2 - childSize.width / 2);
+                alignCoords.x = Math.round(parentImage.width / 2 - childSize.width / 2);
                 break;
             case 'top-right':
-                alignCoords.x = parentSize.width - childSize.width;
+                alignCoords.x = parentImage.width - childSize.width;
                 break;
             case 'left':
-                alignCoords.y = Math.round(parentSize.height / 2 - childSize.height / 2);
+                alignCoords.y = Math.round(parentImage.height / 2 - childSize.height / 2);
                 break;
             case 'center':
-                alignCoords.x = Math.round(parentSize.width / 2 - childSize.width / 2);
-                alignCoords.y = Math.round(parentSize.height / 2 - childSize.height / 2);
+                alignCoords.x = Math.round(parentImage.width / 2 - childSize.width / 2);
+                alignCoords.y = Math.round(parentImage.height / 2 - childSize.height / 2);
                 break;
             case 'right':
-                alignCoords.x = parentSize.width - childSize.width;
-                alignCoords.y = Math.round(parentSize.height / 2 - childSize.height / 2);
+                alignCoords.x = parentImage.width - childSize.width;
+                alignCoords.y = Math.round(parentImage.height / 2 - childSize.height / 2);
                 break;
             case 'bot-left':
-                alignCoords.y = parentSize.height - childSize.height;
+                alignCoords.y = parentImage.height - childSize.height;
                 break;
             case 'bot-middle':
-                alignCoords.x = Math.round(parentSize.width / 2 - childSize.width / 2);
-                alignCoords.y = parentSize.height - childSize.height;
+                alignCoords.x = Math.round(parentImage.width / 2 - childSize.width / 2);
+                alignCoords.y = parentImage.height - childSize.height;
                 break;
             case 'bot-right':
-                alignCoords.x = parentSize.width - childSize.width;
-                alignCoords.y = parentSize.height - childSize.height;
+                alignCoords.x = parentImage.width - childSize.width;
+                alignCoords.y = parentImage.height - childSize.height;
                 break;
         }
         return alignCoords;
+    }
+    // can fit without the child image being outside the parent in any way
+    private canImageFit(parentDimensions: SizeObject, childDimensions: SizeObject): boolean {
+        if (childDimensions.width > parentDimensions.width)
+            return false;
+        if (childDimensions.height > parentDimensions.height)
+            return false;
+        return true;
+    }
+    private fitImage(fitDimensions: SizeObject, image: Image, offset: Coords, alignOffset: Coords): Image {
+        const [left, top] = [alignOffset.x + offset.x, alignOffset.y + offset.y];
+        const cropRegion = {
+            width: image.width,
+            height: image.height,
+            x: 0,
+            y: 0
+        };
+        if (image.width > fitDimensions.width) {
+            cropRegion.width = Math.min(fitDimensions.width, image.width - Math.abs(left));
+            if (left < 0)
+                cropRegion.x = -left;
+        }
+        if (image.height > fitDimensions.height) {
+            cropRegion.height = Math.min(fitDimensions.height, image.height - Math.abs(top));
+            if (top < 0)
+                cropRegion.y = -top;
+        }
+        return image.crop(cropRegion);
     }
     private getBlendMode(blendMode?: string): Blend {
         /* SHARP
@@ -325,9 +369,9 @@ export class ImageEditor {
         */
 
         /* JIMP
-            'srcOver' | 'dstOver' | 'multiply' | 'add' | 'screen' | 'overlay' | 'darken' | 'lighten' |
-            'hardLight' | 'difference' | 'exclusion'
-        */
+        'srcOver' | 'dstOver' | 'multiply' | 'add' | 'screen' | 'overlay' | 'darken' | 'lighten' |
+        'hardLight' | 'difference' | 'exclusion'
+    */
         switch (blendMode) {
             case 'add':
             case 'screen':
@@ -409,11 +453,11 @@ export class ImageEditor {
                     const timer = new Timer();
                     void this.fetchImage(body.background, body, meta).then(image => {
                         void this.editImage(image, body, meta).then(() => {
-                            this.logger.image(chalk.greenBright('Cache'), 'Refreshed edited image', timer.elapsedBlueStr);
+                            this.logger.log('image', 'EditorCache', 'Refreshed edited image', timer.elapsedBlueStr);
                         });
                     });
                 } catch (e: unknown) {
-                    this.logger.error(e);
+                    this.logger.log('error', 'EditorCache', e);
                 }
             }
         }

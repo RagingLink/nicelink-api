@@ -4,7 +4,7 @@ import fs from 'fs';
 import path from 'path';
 import * as url from 'url';
 
-import { Logger } from '../Logger.js';
+import { NiceLogger } from '../Logger.js';
 import replaceColor from '../modules/replaceColor.js';
 import Image from './sharp/managers/Image.js';
 
@@ -14,7 +14,7 @@ export default class ProgressBarRoute {
     private readonly pillShape = fs.readFileSync(this.#pillShapePath);
     private readonly cachedBars: Map<string, { time: number; buffer: Buffer; }> = new Map();
 
-    public constructor(public readonly logger: Logger) {
+    public constructor(public readonly logger: NiceLogger) {
         this.router.get('/', (req, res) => void this.getProgressbar(req, res));
         this.startSweepInterval(48);
     }
@@ -58,7 +58,7 @@ export default class ProgressBarRoute {
             res.type('png');
             image.pipe(res);
         } catch (e: unknown) {
-            this.logger.error(e);
+            this.logger.log('error', 'Progressbar', e);
             if (e instanceof Error)
                 res.send(e.message);
             else
@@ -77,6 +77,6 @@ export default class ProgressBarRoute {
             }
         }
         if (deletedAmount > 0)
-            this.logger.info(`Removed ${deletedAmount} cached bars`);
+            this.logger.log('info', 'Progressbar', `Removed ${deletedAmount} cached bars`);
     }
 }

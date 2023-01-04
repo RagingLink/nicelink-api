@@ -5,7 +5,7 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import { v4 as uuidv4 } from 'uuid';
 
-import { Logger } from '../../../Logger.js';
+import { NiceLogger } from '../../../Logger.js';
 import { InputBody } from '../../../types/PayloadTypes.js';
 import { guard } from '../../../utils/guard/index.js';
 import Prisma from '../Prisma.js';
@@ -25,7 +25,7 @@ export class ImageManager {
     } = {};
     private readonly prisma: PrismaClient;
     private readonly storedImagesPath = path.join(fileURLToPath(new URL('.', import.meta.url)), '..', 'images', 'stored');
-    public constructor(public readonly editor: ImageEditor, public readonly logger: Logger) {
+    public constructor(public readonly editor: ImageEditor, public readonly logger: NiceLogger) {
         this.prisma = new Prisma(logger).client;
         this.startImageSweep();
     }
@@ -65,7 +65,7 @@ export class ImageManager {
         }
         if (body !== undefined)
             this.saveImageToDB(fileName, body, persist).catch(err => {
-                this.logger.error(err);
+                this.logger.log('error', 'ImageManager', err);
             });
         return fileName;
     }
@@ -101,7 +101,7 @@ export class ImageManager {
     public writeFile(buffer: Buffer, fileName: string): void {
         fs.writeFile(path.join(this.storedImagesPath, fileName), buffer, (err) => {
             if (err !== null)
-                return this.logger.error(err);
+                return this.logger.log('error', 'ImageManager', err);
         });
     }
     public deleteFile(fileName: string): void {
@@ -142,7 +142,7 @@ export class ImageManager {
                 return buffer;
             }
         } catch (e: unknown) {
-            this.logger.error(e);
+            this.logger.log('error', 'ImageManager', e);
         }
 
     }
@@ -154,9 +154,9 @@ export class ImageManager {
         }).then(image => {
             if (image === null)
                 this.saveImageToDB(fileName).then(() => {
-                    this.logger.db('Saved (legacy) image to DB');
+                    this.logger.log('db', 'Prisma', 'Saved (legacy) image to DB');
                 }).catch(err => {
-                    this.logger.error(err);
+                    this.logger.log('db', 'Prisma', err);
                 });
             else
                 void this.prisma.image.update({
@@ -167,7 +167,7 @@ export class ImageManager {
                     }
                 });
         }).catch(() => {
-            this.logger.error(`Failed to update last accessed for "${fileName}"`);
+            this.logger.log('error', 'Prisma', `Failed to update last accessed for "${fileName}"`);
         });
         if (fileName in this.cache)
             this.cache[fileName].time = Date.now();
@@ -189,13 +189,13 @@ export class ImageManager {
         if (deletedCount.pg > 0)
             result.push(`eleted ${deletedCount.pg} images from PG`);
         if (result.length > 0)
-            this.logger.db('D' + result.join(' and d'));
+            this.logger.log('db', 'Prisma', 'D' + result.join(' and d'));
 
         this.prisma.image.count().then(prismaCount => {
             fs.readdir(this.storedImagesPath, undefined, (_, files) => {
-                this.logger.db(`Currently storing ${files.length} images on disk and ${prismaCount} in Prisma`);
+                this.logger.log('db', 'Prisma', `Currently storing ${files.length} images on disk and ${prismaCount} in Prisma`);
             });
-        }).catch(err => this.logger.error(err));
+        }).catch(err => this.logger.log('error', 'ImageManager', err));
     }
 
     private async sweepFsImages(): Promise<number> {
@@ -219,7 +219,7 @@ export class ImageManager {
                 this.deleteFile(image.id);
                 deletedN++;
             } catch (e: unknown) {
-                this.logger.error(e);
+                this.logger.log('error', 'ImageManager', e);
             }
         }
         return deletedN;
@@ -244,7 +244,7 @@ export class ImageManager {
             try {
                 await this.prisma.image.delete({ where: { id: image.id } });
             } catch (e: unknown) {
-                this.logger.error(e);
+                this.logger.log('error', 'ImageManager', e);
             }
         }
         return deletedN;

@@ -3,7 +3,7 @@ import Eris from 'eris';
 import express, { Request, Response, Router } from 'express';
 
 import config from '../config.json' assert {type: 'json'};
-import { Logger } from '../Logger.js';
+import { NiceLogger } from '../Logger.js';
 import { ImageEditor } from './sharp/managers/ImageEditor.js';
 import { ImageManager } from './sharp/managers/ImageManager.js';
 import TextManager from './sharp/managers/TextManager.js';
@@ -17,7 +17,7 @@ export default class SharpRoute {
     private discordLastDisconnect = 0;
     private getRequestCount = 0;
     public readonly router: Router;
-    public constructor(public readonly logger: Logger, public readonly env: NodeJS.ProcessEnv) {
+    public constructor(public readonly logger: NiceLogger, public readonly env: NodeJS.ProcessEnv) {
         this.textManager = new TextManager(logger);
         this.imageEditor = new ImageEditor(logger, this.textManager);
         this.imageManager = new ImageManager(this.imageEditor, logger);
@@ -27,13 +27,13 @@ export default class SharpRoute {
         // Discord events
         this.discord.on('ready', () => {
             if (Date.now() - this.discordLastDisconnect > 60000)
-                logger.info('Discord client ready');
+                logger.log('info', 'Discord', 'Client ready');
         });
         this.discord.on('disconnect', () => {
             this.discordLastDisconnect = Date.now();
         });
         this.discord.on('error', (err) => {
-            this.logger.error(err);
+            this.logger.log('error', 'Discord', err);
         });
         void this.discord.connect();
         this.router.get('*', (_, __, next) => {
@@ -43,13 +43,13 @@ export default class SharpRoute {
         setInterval(() => {
             if (this.getRequestCount === 0)
                 return;
-            this.logger.endpoint(chalk.greenBright('GET /sharp'), `${this.getRequestCount} request last hour`);
+            this.logger.log('endpoint', 'GET', chalk.whiteBright('/sharp'), `${this.getRequestCount} request last hour`);
             this.getRequestCount = 0;
         }, 3600 * 1000);
         this.router.post('*', (req, res, next) => {
             const timer = new Timer();
             res.once('close', () => {
-                this.logger.endpoint(chalk.green.greenBright('POST /sharp' + req.path), timer.elapsedBlueStr);
+                this.logger.log('endpoint', 'POST', chalk.whiteBright('/sharp' + req.path), timer.elapsedBlueStr);
             });
             next();
         });
