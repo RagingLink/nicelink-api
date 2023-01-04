@@ -17,7 +17,7 @@ export default class Timer {
         return this;
     }
     public reset(): this {
-        this.stopTime = 0;
+        this.stopTime = undefined;
         this.start();
         return this;
     }
@@ -25,6 +25,6 @@ export default class Timer {
         return (this.stopTime ?? Date.now()) - (this.startTime ?? 0);
     }
     public get elapsedBlueStr(): string {
-        return chalk.blue(`(${this.elapsedMS}ms)`);
+        return chalk.hex('#00F9FF')(`(${this.elapsedMS}ms)`);
     }
 }
