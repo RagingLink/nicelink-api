@@ -30,9 +30,9 @@ export default async function replaceColor(image: Image, { target, replace, delt
 }
 const deltaCache: Record<string, boolean> = {};
 function isSmallerDelta(rgb: number[], lab2: number[], delta: number, formula: 'E00' | 'E76' | 'E94'): boolean {
-    const rgbStr = rgb.toString();
-    if (rgbStr in deltaCache)
-        return deltaCache[rgbStr];
+    const cacheStr = rgb.toString() + delta.toString() + lab2.toString();
+    if (cacheStr in deltaCache)
+        return deltaCache[cacheStr];
 
     const lab1 = rgbToLab(rgb);
     const labArray = [
@@ -55,7 +55,7 @@ function isSmallerDelta(rgb: number[], lab2: number[], delta: number, formula: '
         default:
             isSmaller = false;
     }
-    return deltaCache[rgbStr] = isSmaller;
+    return deltaCache[cacheStr] = isSmaller;
 }
 const LAB_FT = Math.pow(6 / 29, 3);
 function rgbToLab(rgb: number[]): number[] {
