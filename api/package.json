@@ -36,7 +36,7 @@
     "file-type": "^18.0.0",
     "mathjs": "^11.3.3",
     "mime-types": "^2.1.35",
-    "moment-timezone": "^0.5.39",
+    "moment-timezone": "^0.5.40",
     "node-fetch": "^3.3.0",
     "pb-text-format-to-json": "^1.1.1",
     "pg": "^8.8.0",
