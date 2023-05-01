@@ -2,8 +2,8 @@ import sizeOf from 'buffer-image-size';
 import { fileTypeFromBuffer } from 'file-type';
 import sharp, { Sharp } from 'sharp';
 
-import replaceColor from '../../../modules/replaceColor.js';
 import { CropOption, InputBody, ReplaceColorBody } from '../../../types/index.js';
+import replaceColor from '../replaceColor.js';
 
 export default class Image {
     #sharpImage?: Sharp;
@@ -86,7 +86,7 @@ export default class Image {
             this.width = cropOptions;
             this.height = cropOptions;
         } else if (cropOptions === 'auto') {
-            this.sharp.trim({background: '#00000000'});
+            this.sharp.trim({ background: '#00000000' });
         } else {
             this.sharp.extract({
                 left: cropOptions.x ?? 0,

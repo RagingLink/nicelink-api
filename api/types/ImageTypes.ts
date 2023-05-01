@@ -1,3 +1,5 @@
+import sharp from 'sharp';
+
 import Image from '../routes/sharp/managers/Image.js';
 import { InputBody } from './PayloadTypes.js';
 
@@ -18,3 +20,5 @@ export interface ImageOutput {
     warnings: string[];
     children: string[];
 }
+
+export interface SharpBufferResponse { data: Buffer; info: sharp.OutputInfo; }

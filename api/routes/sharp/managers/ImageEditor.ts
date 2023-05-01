@@ -6,6 +6,7 @@ import getUuidByString from 'uuid-by-string';
 import { NiceLogger } from '../../../Logger.js';
 import { AlignmentModes, ChildBody, InputBody, MetaBody, OutputBody, TextBody } from '../../../types/index.js';
 import mapBody from '../mapBody/index.js';
+import CacheManager from './CacheManager.js';
 import Image from './Image.js';
 import { ImageFetcher } from './ImageFetcher.js';
 import TextManager from './TextManager.js';
@@ -21,17 +22,15 @@ interface Coords {
 }
 export class ImageEditor {
     private readonly imageFetcher: ImageFetcher;
-    private readonly cache: Map<string, {
+    private readonly cache: CacheManager<{
         buffer: Buffer;
-        time: number;
-        lastAccessed: number;
         inputBody?: InputBody;
         meta?: MetaBody;
-    }> = new Map();
+    }>;
     public constructor(public readonly logger: NiceLogger, public readonly textManager: TextManager) {
         this.imageFetcher = new ImageFetcher(logger, 100000);
-
-        this.startSweepInterval();
+        //? Refresh every half hour and keep edited images cached for 6 hours
+        this.cache = new CacheManager({hours: 6, refresh: 0.5});
     }
 
     public async generateImage(inputBody: JObject): Promise<OutputBody> {
@@ -68,7 +67,7 @@ export class ImageEditor {
             const cachedBuffer = this.cache.get(this.getBodyStr(inputBody));
             const buffer = cachedBuffer?.buffer
                 ?? await this.imageFetcher.get(src);
-            return new Image(buffer, this.cache.has(this.getBodyStr(inputBody)));
+            return new Image(buffer, this.cache.get(this.getBodyStr(inputBody)) !== undefined);
         } catch (e: unknown) {
             meta.errors.push('Invalid background image');
             return new Image(this.imageFetcher.defaultImageBuffer);
@@ -140,8 +139,6 @@ export class ImageEditor {
                     this.logger.log('image', 'Editor', 'Generated image', timer.elapsedBlueStr);
                 this.cache.set(this.getBodyStr(body), {
                     buffer,
-                    time: Date.now(),
-                    lastAccessed: Date.now(),
                     inputBody: body,
                     meta
                 });
@@ -151,8 +148,6 @@ export class ImageEditor {
                 this.logger.log('image', 'Editor', 'Generated image', timer.elapsedBlueStr);
             this.cache.set(this.getBodyStr(body), {
                 buffer: image.buffer,
-                time: Date.now(),
-                lastAccessed: Date.now(),
                 inputBody: body,
                 meta
             });
@@ -171,15 +166,12 @@ export class ImageEditor {
             circleImage.resize(smallest, smallest);
             circleBuffer = await circleImage.toBuffer();
             this.cache.set(this.getBodyStr({ background: 'circleImage', width: smallest, height: smallest }), {
-                buffer: circleBuffer,
-                time: Date.now(),
-                lastAccessed: Date.now()
+                buffer: circleBuffer
             });
         } else {
             circleBuffer = cachedCircleImage.buffer;
             this.cache.set(this.getBodyStr({ background: 'circleImage', width: smallest, height: smallest }), {
-                ...cachedCircleImage,
-                lastAccessed: Date.now()
+                ...cachedCircleImage
             });
         }
 
@@ -204,9 +196,7 @@ export class ImageEditor {
                 ?? this.textManager.text2png(textObject.text ?? '', textObjectMaxWidth);
 
             this.cache.set(this.getBodyStr(textObjectMaxWidth), {
-                buffer: textBuffer,
-                time: cachedBuffer?.time ?? Date.now(),
-                lastAccessed: Date.now()
+                buffer: textBuffer
             });
             textArray.push({
                 buffer: textBuffer,
@@ -431,35 +421,4 @@ export class ImageEditor {
         ));
     }
 
-    private startSweepInterval(): void {
-        setInterval(() => this.sweepCache(), 6 * 3600 * 1000);
-    }
-    private sweepCache(): void {
-        for (const [bodyStr, value] of this.cache) {
-            if (Date.now() - value.time > 25 * 3600 * 1000) {
-                if (Date.now() - value.lastAccessed > 25 * 3600 * 1000) {
-                    this.cache.delete(bodyStr);
-                    continue;
-                }
-                this.cache.delete(bodyStr);
-                const body = value.inputBody;
-                if (body === undefined) continue;
-                const meta = value.meta ?? {
-                    errors: [],
-                    warnings: [],
-                    children: []
-                };
-                try {
-                    const timer = new Timer();
-                    void this.fetchImage(body.background, body, meta).then(image => {
-                        void this.editImage(image, body, meta).then(() => {
-                            this.logger.log('image', 'EditorCache', 'Refreshed edited image', timer.elapsedBlueStr);
-                        });
-                    });
-                } catch (e: unknown) {
-                    this.logger.log('error', 'EditorCache', e);
-                }
-            }
-        }
-    }
 }

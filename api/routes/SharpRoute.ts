@@ -1,5 +1,4 @@
 import chalk from 'chalk';
-import Eris from 'eris';
 import express, { Request, Response, Router } from 'express';
 
 import config from '../config.json' assert {type: 'json'};
@@ -8,34 +7,22 @@ import { ImageEditor } from './sharp/managers/ImageEditor.js';
 import { ImageManager } from './sharp/managers/ImageManager.js';
 import TextManager from './sharp/managers/TextManager.js';
 import Timer from './sharp/managers/Timer.js';
+import { SharpDiscord } from './sharp/SharpDiscord.js';
 
 export default class SharpRoute {
     private readonly textManager: TextManager;
     private readonly imageEditor: ImageEditor;
     private readonly imageManager: ImageManager;
-    private readonly discord: Eris.Client;
-    private discordLastDisconnect = 0;
     private getRequestCount = 0;
     public readonly router: Router;
     public constructor(public readonly logger: NiceLogger, public readonly env: NodeJS.ProcessEnv) {
+        this.router = express.Router();
+
         this.textManager = new TextManager(logger);
         this.imageEditor = new ImageEditor(logger, this.textManager);
         this.imageManager = new ImageManager(this.imageEditor, logger);
-        this.router = express.Router();
-        this.discord = Eris(config.discord.token);
+        new SharpDiscord(logger);
 
-        // Discord events
-        this.discord.on('ready', () => {
-            if (Date.now() - this.discordLastDisconnect > 60000)
-                logger.log('info', 'Discord', 'Client ready');
-        });
-        this.discord.on('disconnect', () => {
-            this.discordLastDisconnect = Date.now();
-        });
-        this.discord.on('error', (err) => {
-            this.logger.log('error', 'Discord', err);
-        });
-        void this.discord.connect();
         this.router.get('*', (_, __, next) => {
             this.getRequestCount++;
             next();
