@@ -2,21 +2,28 @@ import Color from 'color';
 import express, { Request, Response } from 'express';
 import fs from 'fs';
 import path from 'path';
+import sharp from 'sharp';
 import * as url from 'url';
 
 import { NiceLogger } from '../Logger.js';
-import replaceColor from '../modules/replaceColor.js';
-import Image from './sharp/managers/Image.js';
+import CacheManager from './sharp/managers/CacheManager.js';
 
 export default class ProgressBarRoute {
     public router = express.Router();
-    #pillShapePath = path.join(url.fileURLToPath(new URL('.', import.meta.url)), '..', 'assets', 'img', 'pillshape.png');
-    private readonly pillShape = fs.readFileSync(this.#pillShapePath);
-    private readonly cachedBars: Map<string, { time: number; buffer: Buffer; }> = new Map();
+    #assetsPath = path.join(url.fileURLToPath(new URL('.', import.meta.url)), '..', 'assets', 'img');
+    private readonly pillBg = fs.readFileSync(this.#assetsPath + '/1000x64_pillshape.png');
+    private readonly pillShape = fs.readFileSync(this.#assetsPath + '/996x60_pillshape.png');
+    private readonly cache: CacheManager<{buffer: Buffer;}>;
 
     public constructor(public readonly logger: NiceLogger) {
+        this.cache = new CacheManager({refresh: 6, hours: 24 * 2});
+
         this.router.get('/', (req, res) => void this.getProgressbar(req, res));
-        this.startSweepInterval(48);
+        this.cache.registerMultipleSweepHandler((items) => {
+            if (items.length === 0 )
+                return;
+            this.logger.log('info', 'ProgressbarRoute', `Deleted ${items.length} cached bars`);
+        });
     }
 
     public getProgressbar(req: Request, res: Response): void {
@@ -36,7 +43,7 @@ export default class ProgressBarRoute {
             return void res.send('Percentage out of range');
 
         const pillID = colour + percentage.toString();
-        const cachedPill = this.cachedBars.get(pillID);
+        const cachedPill = this.cache.get(pillID);
         if (cachedPill !== undefined) {
             res.set('Content-Type', 'image/png');
             return void res.send(cachedPill.buffer);
@@ -44,19 +51,30 @@ export default class ProgressBarRoute {
 
         return void this.generatePillImage(res, percentage, colour);
     }
-    private async generatePillImage(res: Response, percentage: number, colour: string): Promise<void> {
+    private generatePillImage(res: Response, percentage: number, colour: string): void {
         try {
-            const colouredImage = new Image(this.pillShape);
-            const pillColour = new Color(colour).hex();
-            await replaceColor(colouredImage.resize(992, 60), {
-                target: '#000000',
-                replace: pillColour,
-                delta: 2.3
-            });
-            const colouredBuffer = await colouredImage.sharp.extract({ left: 0, top: 0, width: Math.round(colouredImage.width / 100 * percentage), height: colouredImage.height }).toBuffer();
-            const image = new Image(this.pillShape).resize(1000).sharp.ensureAlpha(0.5).composite([{ input: colouredBuffer, top: 4, left: 4 }]);
             res.type('png');
-            image.pipe(res);
+            const rgb = new Color(colour).rgb().array();
+            void sharp({
+                create: {
+                    width: 996,
+                    height: 60,
+                    channels: 4,
+                    background: {
+                        r: rgb[0],
+                        g: rgb[1],
+                        b: rgb[2]
+                    }
+                }
+            }).composite([{ input: this.pillShape, blend: 'dest-in' }]).png().toBuffer().then(data => {
+                void sharp(data).extract({ top: 0, left: 0, height: 60, width: Math.round(996 / 100 * percentage) }).png().toBuffer().then(pillBuffer => {
+                    void sharp(this.pillBg).composite([{ input: pillBuffer, top: 2, left: 2 }]).toBuffer().then(buffer => {
+                        this.cache.set( colour + percentage.toString(), {buffer});
+                        res.set('Content-Type', 'image/png');
+                        res.send(buffer);
+                    });
+                });
+            });
         } catch (e: unknown) {
             this.logger.log('error', 'Progressbar', e);
             if (e instanceof Error)
@@ -64,19 +82,5 @@ export default class ProgressBarRoute {
             else
                 res.send('Unknown error during generation');
         }
-    }
-    private startSweepInterval(hoursCached = 24): void {
-        setInterval(() => this.sweepBars(hoursCached), hoursCached * 3600 * 1000);
-    }
-    private sweepBars(hoursCached: number): void {
-        let deletedAmount = 0;
-        for (const [key, value] of this.cachedBars) {
-            if (value.time + hoursCached * 3600 * 1000 < Date.now()) {
-                this.cachedBars.delete(key);
-                deletedAmount++;
-            }
-        }
-        if (deletedAmount > 0)
-            this.logger.log('info', 'Progressbar', `Removed ${deletedAmount} cached bars`);
     }
 }

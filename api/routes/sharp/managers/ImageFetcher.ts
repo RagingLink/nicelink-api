@@ -4,6 +4,7 @@ import path from 'path';
 import * as url from 'url';
 
 import { NiceLogger } from '../../../Logger.js';
+import CacheManager from './CacheManager.js';
 
 const assetsPath = path.join(url.fileURLToPath(new URL('.', import.meta.url)), '..', '..', '..', 'assets', 'img');
 const transparentImagePath = path.join(assetsPath, 'transparent.png');
@@ -12,16 +13,15 @@ const blackImagePath = path.join(assetsPath, 'black.png');
 
 export class ImageFetcher {
     public readonly retention: number;
-    public readonly cache: Map<string, {buffer: Buffer; time: number; lastAccessed: number;}>;
+    public readonly cache: CacheManager<{ buffer: Buffer; }>;
 
     private readonly _defaultImageBuffer = fs.readFileSync(transparentImagePath);
     private readonly _circleImageBuffer = fs.readFileSync(circleImagePath);
     private readonly _blackImageBuffer = fs.readFileSync(blackImagePath);
 
-    public constructor (public readonly logger: NiceLogger, retention = 3600) {
+    public constructor(public readonly logger: NiceLogger, retention = 3600) {
         this.retention = retention;
-        this.cache = new Map();
-        this.startSweepInterval();
+        this.cache = new CacheManager({});
     }
 
     public async get(src?: string): Promise<Buffer> {
@@ -30,10 +30,7 @@ export class ImageFetcher {
         }
         const cachedImage = this.cache.get(src);
         if (cachedImage !== undefined) {
-            this.cache.set(src, {
-                ...cachedImage,
-                lastAccessed: Date.now()
-            });
+            this.cache.refreshTimestamp(src);
             return cachedImage.buffer;
         }
         const buffer = await this.load(src);
@@ -41,11 +38,7 @@ export class ImageFetcher {
         return buffer;
     }
     private store(src: string, buffer: Buffer): void {
-        this.cache.set(src, {
-            buffer,
-            time: Date.now(),
-            lastAccessed: Date.now()
-        });
+        this.cache.set(src, { buffer });
     }
     public async load(src: string): Promise<Buffer> {
         try {
@@ -53,27 +46,6 @@ export class ImageFetcher {
             return Buffer.from(arrayBuffer);
         } catch (e: unknown) {
             throw Error('Invalid image');
-        }
-    }
-    private startSweepInterval(): void {
-        setInterval(() => this.sweepCache(), 6 * 3600 * 1000);
-    }
-    private sweepCache(): void {
-        for (const [src, value] of this.cache) {
-            if (Date.now() - value.time > 24 * 3600 * 1000) {
-                if (Date.now() - value.lastAccessed > 24 * 3600 * 1000) {
-                    this.cache.delete(src);
-                    continue;
-                }
-                this.load(src).then(buffer => {
-                    this.cache.set(src, {
-                        ...value,
-                        buffer
-                    });
-                }).catch(err => {
-                    this.logger.log('error', 'ImageFetcher', err);
-                });
-            }
         }
     }
     public get defaultImageBuffer(): Buffer {

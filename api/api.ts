@@ -3,7 +3,7 @@ import http from 'http';
 
 import { NiceLogger } from './Logger.js';
 import ProgressBarRoute from './routes/ProgressbarRoute.js';
-import SharpRouter from './routes/SharpRoute.js';
+import SharpRoute from './routes/SharpRoute.js';
 import TimezonesRoute from './routes/TimezonesRoute.js';
 import env from './utils/env/createEnv.js';
 
@@ -23,13 +23,14 @@ app.get('/', (_, res) => {
     res.redirect('https://api.nicelink.xyz/docs');
 });
 const server = http.createServer(app);
+
 app.set('trust proxy', 1);
-// parse application/x-www-form-urlencoded
+
 app.use(express.urlencoded({ extended: false }));
-app.use(express.json({strict: false}));
+app.use(express.json({ strict: false }));
 
 const logger = new NiceLogger();
-const sharpRoute = new SharpRouter(logger, env);
+const sharpRoute = new SharpRoute(logger, env);
 //* Alias
 app.use('/sharp', sharpRoute.router);
 app.use('/jimp', sharpRoute.router);
@@ -43,7 +44,7 @@ app.use((err: HttpException, _: Request, res: Response, next: NextFunction): voi
             logger.log('error', 'API', `${err.name}: ${err.message}`);
         } else
             logger.log('error', err);
-        return void res.status(400).send({status: 400, message: err.message});
+        return void res.status(400).send({ status: 400, message: err.message });
     }
     next();
 });

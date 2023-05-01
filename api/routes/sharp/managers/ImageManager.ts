@@ -9,17 +9,13 @@ import { NiceLogger } from '../../../Logger.js';
 import { InputBody } from '../../../types/PayloadTypes.js';
 import { guard } from '../../../utils/guard/index.js';
 import Prisma from '../Prisma.js';
+import CacheManager from './CacheManager.js';
 import Image from './Image.js';
 import { ImageEditor } from './ImageEditor.js';
 
-interface CachedImages {
-    [index: string]: {
-        buffer: Buffer;
-        time: number;
-    };
-}
 export class ImageManager {
-    private readonly cache: CachedImages = {};
+    private readonly cache: CacheManager<{ buffer: Buffer; }>;
+    //private readonly cache: CachedImages = {};
     private readonly awaitingSharpBuffer: {
         [index: string]: Promise<void>;
     } = {};
@@ -27,16 +23,15 @@ export class ImageManager {
     private readonly storedImagesPath = path.join(fileURLToPath(new URL('.', import.meta.url)), '..', 'images', 'stored');
     public constructor(public readonly editor: ImageEditor, public readonly logger: NiceLogger) {
         this.prisma = new Prisma(logger).client;
+        this.cache = new CacheManager({refresh: 6, hours: 48});
         this.startImageSweep();
     }
 
     public async cacheImage(buffer: Buffer): Promise<string> {
         const fileType = await fileTypeFromBuffer(buffer);
         const fileName = uuidv4() + '.' + (fileType?.ext ?? 'png');
-        this.cache[fileName] = {
-            buffer,
-            time: Date.now()
-        };
+        this.cache.set(fileName, { buffer });
+
         return fileName;
     }
     public async saveImage(image: Image, body?: InputBody, persist = false): Promise<string> {
@@ -49,18 +44,13 @@ export class ImageManager {
         const fileName = uuidv4() + '.' + fileType;
         if (image.edited) {
             this.awaitingSharpBuffer[fileName] = image.sharp.toBuffer().then((buffer) => {
-                this.cache[fileName] = {
-                    buffer,
-                    time: Date.now()
-                };
+                this.cache.set(fileName, { buffer });
+
                 delete this.awaitingSharpBuffer[fileName];
                 this.writeFile(buffer, fileName);
             });
         } else {
-            this.cache[fileName] = {
-                buffer: image.buffer,
-                time: Date.now()
-            };
+            this.cache.set(fileName, { buffer: image.buffer });
             this.writeFile(image.buffer, fileName);
         }
         if (body !== undefined)
@@ -85,10 +75,7 @@ export class ImageManager {
     public async saveBuffer(buffer: Buffer): Promise<string> {
         const fileType = await fileTypeFromBuffer(buffer);
         const fileName = uuidv4() + '.' + (fileType?.ext ?? 'png');
-        this.cache[fileName] = {
-            buffer,
-            time: Date.now()
-        };
+        this.cache.set(fileName, { buffer });
         this.writeFile(buffer, fileName);
         return fileName;
     }
@@ -110,16 +97,15 @@ export class ImageManager {
     public async getImage(fileName: string): Promise<Buffer | void> {
         if (guard.hasProperty(this.awaitingSharpBuffer, fileName))
             await this.awaitingSharpBuffer[fileName];
-        if (guard.hasProperty(this.cache, fileName)) {
+        const cachedObj = this.cache.get(fileName);
+        if (cachedObj !== undefined) {
             this.updateLastAccessed(fileName);
-            return this.cache[fileName].buffer;
+            return cachedObj.buffer;
         } else if (this.hasFile(fileName)) {
             this.updateLastAccessed(fileName);
-            this.cache[fileName] = {
-                buffer: fs.readFileSync(path.join(this.storedImagesPath, fileName)),
-                time: Date.now()
-            };
-            return this.cache[fileName].buffer;
+            this.cache.set(fileName, { buffer: fs.readFileSync(path.join(this.storedImagesPath, fileName)) });
+
+            return this.cache.get(fileName)?.buffer;
         } else if (this.hasLegacyFile(fileName)) {
             return fs.readFileSync(path.join(this.storedImagesPath, '..', 'images', 'legacy', fileName));
         }
@@ -133,10 +119,7 @@ export class ImageManager {
                 const body = JSON.parse(image.body) as JObject;
                 const output = await this.editor.generateImage(body);
                 const buffer = output.image.edited ? await output.image.sharp.toBuffer() : output.image.buffer;
-                this.cache[fileName] = {
-                    buffer,
-                    time: Date.now()
-                };
+                this.cache.set(fileName, { buffer });
                 this.writeFile(buffer, fileName);
                 this.updateLastAccessed(fileName);
                 return buffer;
@@ -169,8 +152,7 @@ export class ImageManager {
         }).catch(() => {
             this.logger.log('error', 'Prisma', `Failed to update last accessed for "${fileName}"`);
         });
-        if (fileName in this.cache)
-            this.cache[fileName].time = Date.now();
+        this.cache.refreshTimestamp(fileName);
     }
     private startImageSweep(): void {
         setInterval(() => void this.sweepImages(), 24 * 3600 * 1000);

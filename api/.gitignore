@@ -2,7 +2,7 @@
 *js.map
 node_modules
 config.json
-routes/sharp/images*
+routes/sharp/images/*
 prisma/migrations*
 ./build.sh
 assets/fonts/google
