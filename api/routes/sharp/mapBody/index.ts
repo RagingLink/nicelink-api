@@ -137,6 +137,7 @@ function mapCropBody(cropOption: JToken, meta: MetaBody): CropOption | undefined
         }
     } else if (typeof cropOption === 'object' && !Array.isArray(cropOption) && cropOption !== null) {
         mappedCropOption = {};
+        cropOption = convertAliases(cropOption);
         for (const key of Object.keys(cropOption)) {
             if (!guard.hasProperty(propertyMapping.crop, key))
                 continue;
@@ -187,6 +188,7 @@ function mapResizeBody(resizeOption: JToken, meta: MetaBody): ResizeOption | und
     if (typeof resizeOption !== 'object' || Array.isArray(resizeOption) || resizeOption === null)
         return;
     const mappedObject: ResizeOption = {};
+    resizeOption = convertAliases(resizeOption);
     for (const key of Object.keys(resizeOption)) {
         let value = resizeOption[key];
         if (!guard.hasProperty(propertyMapping.resize, key)) {
