@@ -1,4 +1,4 @@
-import can, { Canvas, CanvasRenderingContext2D } from 'canvas';
+import can, { Canvas, CanvasRenderingContext2D, TextMetrics } from 'canvas';
 import chalk from 'chalk';
 import fs from 'fs';
 import { parse } from 'pb-text-format-to-json';
