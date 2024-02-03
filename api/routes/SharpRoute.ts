@@ -116,14 +116,15 @@ export default class SharpRoute {
     // Send image
     private processImage(req: Request, res: Response): void {
         void this.imageEditor.generateImage(<JObject>req.body).then(output => {
-            if (output.image.edited) {
-                output.image.sharp.pipe(res);
-            } else {
-                void output.image.format().then(format => {
-                    res.type(format);
+            void output.image.format().then(format => {
+                res.type(format);
+                if (output.image.edited) {
+                    output.image.sharp.pipe(res);
+                } else {
                     res.send(output.image.buffer);
-                });
-            }
+                }
+            });
+
         });
     }
 }
