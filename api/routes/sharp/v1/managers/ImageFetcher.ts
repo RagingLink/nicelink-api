@@ -3,10 +3,10 @@ import fetch from 'node-fetch';
 import path from 'path';
 import * as url from 'url';
 
-import { NiceLogger } from '../../../Logger.js';
-import CacheManager from './CacheManager.js';
+import CacheManager from '../../../../utils/CacheManager.js';
+import { NiceLogger } from '../../../../utils/logging/NiceLogger.js';
 
-const assetsPath = path.join(url.fileURLToPath(new URL('.', import.meta.url)), '..', '..', '..', 'assets', 'img');
+const assetsPath = path.join(url.fileURLToPath(new URL('.', import.meta.url)), '..', '..', '..', '..', 'assets', 'img');
 const transparentImagePath = path.join(assetsPath, 'transparent.png');
 const circleImagePath = path.join(assetsPath, 'circle-image.png');
 const blackImagePath = path.join(assetsPath, 'black.png');
@@ -37,9 +37,11 @@ export class ImageFetcher {
         this.store(src, buffer);
         return buffer;
     }
+
     private store(src: string, buffer: Buffer): void {
         this.cache.set(src, { buffer });
     }
+
     public async load(src: string): Promise<Buffer> {
         try {
             const arrayBuffer = await (await fetch(src)).arrayBuffer();
@@ -48,12 +50,15 @@ export class ImageFetcher {
             throw Error('Invalid image');
         }
     }
+
     public get defaultImageBuffer(): Buffer {
         return this._defaultImageBuffer;
     }
+
     public get circleMaskImage(): Buffer {
         return this._circleImageBuffer;
     }
+
     public get blackImage(): Buffer {
         return this._blackImageBuffer;
     }

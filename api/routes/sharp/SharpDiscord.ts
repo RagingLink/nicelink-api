@@ -1,7 +1,7 @@
 import Eris, { Client } from 'eris';
 
 import config from '../../config.json' assert {type: 'json'};
-import { NiceLogger } from '../../Logger.js';
+import { NiceLogger } from '../../utils/logging/NiceLogger.js';
 
 export class SharpDiscord {
     private readonly client: Client;

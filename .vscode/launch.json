@@ -18,7 +18,8 @@
             "program": "${workspaceFolder}/api/api.ts",
             "outFiles": [
                 "${workspaceFolder}/**/*.js"
-            ]
+            ],
+            "envFile": "${workspaceFolder}/api/.env"
         }
     ]
 }

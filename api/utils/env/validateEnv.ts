@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/naming-convention */
 import { cleanEnv, port, str } from 'envalid';
 
 const validateEnv = (): void => {

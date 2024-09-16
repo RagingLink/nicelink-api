@@ -1,9 +1,19 @@
+# Ignore JS files
 *.js
 *js.map
+
+# NPM and yarn
 node_modules
+yarn-error.log
+
+# Config files
 config.json
+.env
+
+# Ignore assets
 routes/sharp/images/*
 prisma/migrations*
 ./build.sh
 assets/fonts/google
+
 tmp

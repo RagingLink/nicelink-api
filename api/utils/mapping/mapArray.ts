@@ -3,7 +3,7 @@ import { result } from './result.js';
 import { TypeMapping, TypeMappingImpl } from './types.js';
 
 export function mapArray<T>(mapping: TypeMappingImpl<T, [index: number]>): TypeMapping<T[]> {
-    return createMapping(value => {
+    return createMapping((value) => {
         if (!Array.isArray(value))
             return result.failed;
 

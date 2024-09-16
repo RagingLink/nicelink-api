@@ -1,5 +1,5 @@
-import { ChildBody, CropOption, InputBody, MetaBody, ResizeOption, TextBody } from '../../../types/index.js';
-import { guard } from '../../../utils/guard/index.js';
+import { ChildBody, CropOption, InputBody, MetaBody, ResizeOption, TextBody } from '../../../../types/index.js';
+import { guard } from '../../../../utils/guard/index.js';
 import * as propertyMapping from './bodyMappings.js';
 
 const propertyAliases = {
@@ -137,7 +137,6 @@ function mapCropBody(cropOption: JToken, meta: MetaBody): CropOption | undefined
         }
     } else if (typeof cropOption === 'object' && !Array.isArray(cropOption) && cropOption !== null) {
         mappedCropOption = {};
-        cropOption = convertAliases(cropOption);
         for (const key of Object.keys(cropOption)) {
             if (!guard.hasProperty(propertyMapping.crop, key))
                 continue;
@@ -188,7 +187,6 @@ function mapResizeBody(resizeOption: JToken, meta: MetaBody): ResizeOption | und
     if (typeof resizeOption !== 'object' || Array.isArray(resizeOption) || resizeOption === null)
         return;
     const mappedObject: ResizeOption = {};
-    resizeOption = convertAliases(resizeOption);
     for (const key of Object.keys(resizeOption)) {
         let value = resizeOption[key];
         if (!guard.hasProperty(propertyMapping.resize, key)) {

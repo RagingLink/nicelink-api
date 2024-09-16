@@ -3,11 +3,11 @@ import { result } from './result.js';
 import { TypeMapping, TypeMappingImpl, TypeMappings } from './types.js';
 
 export function mapObject<T>(mappings: TypeMappings<T>, options?: { initial?: () => Partial<T>; strict: boolean; }): TypeMapping<T> {
-    return createMapping(value => {
+    return createMapping((value) => {
         if (value === undefined || typeof value !== 'object' || value === null)
             return result.failed;
 
-        const objValue = <Record<PropertyKey, unknown>>value;
+        const objValue = value as Record<PropertyKey, unknown>;
         const mapped: Partial<T> = options?.initial?.() ?? {};
         const remainingKeys = new Set<PropertyKey>(Object.keys(objValue));
 
@@ -18,21 +18,21 @@ export function mapObject<T>(mappings: TypeMappings<T>, options?: { initial?: ()
             const mappedProp = mapping(val);
             if (!mappedProp.valid)
                 return false;
-            if (<unknown>mappedProp.value !== undefined)
+            if (mappedProp.value as unknown !== undefined)
                 mapped[resultKey] = mappedProp.value;
             return true;
         }
 
         for (const resultKey of Object.keys(mappings)) {
             const mapping = mappings[resultKey];
-            if (!checkKey(resultKey, ...splitMapping(<keyof T>resultKey, mapping)))
+            if (!checkKey(resultKey, ...splitMapping((resultKey as keyof T), mapping)))
                 return result.failed;
         }
 
         if (options?.strict !== false && remainingKeys.size > 0)
             return result.failed;
 
-        return result.success(<T>mapped);
+        return result.success((mapped as T));
     });
 }
 

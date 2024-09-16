@@ -1,4 +1,4 @@
-import { mapping } from '../../../utils/mapping/index.js';
+import { mapping } from '../../../../utils/mapping/index.js';
 
 export const body = {
     cacheDuration: mapping.number.optional,
@@ -20,7 +20,7 @@ export const child = {
     mask: mapping.boolean.optional,
     x: mapping.number.optional,
     y: mapping.number.optional,
-    alignment: mapping.in('top-left', 'top-middle', 'top-right', 'left', 'center', 'right', 'bot-left', 'bot-middle', 'bot-right').optional,
+    alignment: mapping.choice(mapping.in('top-left', 'top-middle', 'top-right', 'left', 'center', 'right', 'bot-left', 'bot-middle', 'bot-right')).optional,
     blendMode: mapping.string.optional,
     ...body
 };

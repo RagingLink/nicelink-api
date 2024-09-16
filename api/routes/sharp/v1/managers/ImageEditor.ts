@@ -3,14 +3,14 @@ import chalk from 'chalk';
 import sharp, { Blend, OverlayOptions } from 'sharp';
 import getUuidByString from 'uuid-by-string';
 
-import { NiceLogger } from '../../../Logger.js';
-import { AlignmentModes, ChildBody, InputBody, MetaBody, OutputBody, TextBody } from '../../../types/index.js';
+import { AlignmentModes, ChildBody, InputBody, MetaBody, OutputBody, TextBody } from '../../../../types/index.js';
+import CacheManager from '../../../../utils/CacheManager.js';
+import { NiceLogger } from '../../../../utils/logging/NiceLogger.js';
+import Timer from '../../../../utils/Timer.js';
 import mapBody from '../mapBody/index.js';
-import CacheManager from './CacheManager.js';
 import Image from './Image.js';
 import { ImageFetcher } from './ImageFetcher.js';
 import TextManager from './TextManager.js';
-import Timer from './Timer.js';
 
 interface SizeObject {
     width: number;
@@ -27,10 +27,11 @@ export class ImageEditor {
         inputBody?: InputBody;
         meta?: MetaBody;
     }>;
+
     public constructor(public readonly logger: NiceLogger, public readonly textManager: TextManager) {
         this.imageFetcher = new ImageFetcher(logger, 100000);
         //? Refresh every half hour and keep edited images cached for 6 hours
-        this.cache = new CacheManager({hours: 6, refresh: 0.5});
+        this.cache = new CacheManager({ hours: 6, refresh: 0.5 });
     }
 
     public async generateImage(inputBody: JObject): Promise<OutputBody> {
@@ -65,8 +66,8 @@ export class ImageEditor {
     public async fetchImage(src = '', inputBody: InputBody, meta: MetaBody): Promise<Image> {
         try {
             const cachedBuffer = this.cache.get(this.getBodyStr(inputBody));
-            const buffer = cachedBuffer?.buffer
-                ?? await this.imageFetcher.get(src);
+            const buffer = cachedBuffer?.buffer ??
+                await this.imageFetcher.get(src);
             return new Image(buffer, this.cache.get(this.getBodyStr(inputBody)) !== undefined);
         } catch (e: unknown) {
             meta.errors.push('Invalid background image');
@@ -154,6 +155,7 @@ export class ImageEditor {
         }
         return image;
     }
+
     //* Operations
     private async cropCircle(image: Image): Promise<void> {
         const { width, height } = image;
@@ -187,13 +189,14 @@ export class ImageEditor {
             blend: 'dest-in'
         }]);
     }
+
     private async addTextImages(image: Image, textObjects: TextBody[]): Promise<sharp.OverlayOptions[]> {
-        const textArray: Array<{ buffer: Buffer; body: TextBody; }> = [];
+        const textArray: { buffer: Buffer; body: TextBody; }[] = [];
         for (const textObject of textObjects) {
             const textObjectMaxWidth = { ...textObject, maxWidth: textObject.maxWidth ?? image.width };
             const cachedBuffer = this.cache.get(this.getBodyStr(textObjectMaxWidth, 'text'));
-            const textBuffer = cachedBuffer?.buffer
-                ?? this.textManager.text2png(textObject.text ?? '', textObjectMaxWidth);
+            const textBuffer = cachedBuffer?.buffer ??
+                this.textManager.text2png(textObject.text ?? '', textObjectMaxWidth);
 
             this.cache.set(this.getBodyStr(textObjectMaxWidth), {
                 buffer: textBuffer
@@ -204,7 +207,7 @@ export class ImageEditor {
             });
 
         }
-        const overlayOptions = await Promise.all(textArray.map(async text => {
+        const overlayOptions = await Promise.all(textArray.map(async (text) => {
             const overlayOption = {
                 input: text.buffer,
                 left: 0,
@@ -231,6 +234,7 @@ export class ImageEditor {
         }));
         return overlayOptions;
     }
+
     private async addChildImages(image: Image, childObjects: ChildBody[], meta: MetaBody): Promise<OverlayOptions[]> {
         const childArray: OverlayOptions[] = [];
         for (const childObject of childObjects) {
@@ -280,6 +284,7 @@ export class ImageEditor {
         }
         return childArray;
     }
+
     private compositeImages(image: Image, compositeOptions: OverlayOptions[]): void {
         image.sharp.composite(compositeOptions);
     }
@@ -323,6 +328,7 @@ export class ImageEditor {
         }
         return alignCoords;
     }
+
     // can fit without the child image being outside the parent in any way
     private canImageFit(parentDimensions: SizeObject, childDimensions: SizeObject): boolean {
         if (childDimensions.width > parentDimensions.width)
@@ -331,6 +337,7 @@ export class ImageEditor {
             return false;
         return true;
     }
+
     private fitImage(fitDimensions: SizeObject, image: Image, offset: Coords, alignOffset: Coords): Image {
         const [left, top] = [alignOffset.x + offset.x, alignOffset.y + offset.y];
         const cropRegion = {
@@ -351,6 +358,7 @@ export class ImageEditor {
         }
         return image.crop(cropRegion);
     }
+
     private getBlendMode(blendMode?: string): Blend {
         /* SHARP
             clear, source, over, in, out, atop, dest, dest-over, dest-in, dest-out,
@@ -407,6 +415,7 @@ export class ImageEditor {
                 return 'over';
         }
     }
+
     private getBodyStr(body: InputBody | TextBody, type?: 'text'): string {
         const ignoreProps = { cacheDuration: undefined, alignment: undefined, x: undefined, y: undefined, blendMode: undefined, size: undefined };
         switch (type) {
@@ -420,5 +429,4 @@ export class ImageEditor {
             Object.assign({ ...body }, ignoreProps)
         ));
     }
-
 }

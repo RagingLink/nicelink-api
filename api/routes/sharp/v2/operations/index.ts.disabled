@@ -1,0 +1,25 @@
+// feels hacky, but I don't know anything else
+// import CropOperation from './Crop.js';
+// import FillOperation from './Fill.js';
+// import FlipOperation from './Flip.js';
+// import OpacityOperation from './Opacity.js';
+// import ResizeOperation from './Resize.js';
+// import RotateOperation from './Rotate.js';
+// import TextOperation from './Text.js';
+
+// export type AnyOperationClass = CropOperation | OpacityOperation | FlipOperation | RotateOperation | ResizeOperation | TextOperation | FillOperation
+
+// export const operationObject = {
+//     crop: CropOperation,
+//     opacity: OpacityOperation,
+//     flip: FlipOperation,
+//     rotate: RotateOperation,
+//     resize: ResizeOperation,
+//     text: TextOperation,
+//     fill: FillOperation
+// };
+
+// export interface GenericOperation<T extends string, D> {
+//     type: T;
+//     data: D;
+// }

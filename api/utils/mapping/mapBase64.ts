@@ -3,7 +3,7 @@ import { result } from './result.js';
 import { TypeMapping, TypeMappingImpl } from './types.js';
 
 export function mapBase64<T>(mapping: TypeMappingImpl<T>): TypeMapping<T> {
-    return createMapping(value => {
+    return createMapping((value) => {
         if (typeof value !== 'string')
             return result.failed;
         try {

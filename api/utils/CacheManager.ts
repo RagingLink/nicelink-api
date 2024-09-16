@@ -5,10 +5,10 @@ interface TimeInfo {
     duration: number;
 }
 
-type CacheManagerArgument =  {
+interface CacheManagerArgument {
     hours?: number;
     refresh?: number;
-};
+}
 
 interface CacheDurations {
     hours: number;
@@ -19,15 +19,16 @@ export default class CacheManager<DataObj> {
     private readonly durations: CacheDurations;
     private readonly cache: Map<string, DataObj & TimeInfo>;
     private singleSweepHandler: ((id: string, obj: (DataObj & TimeInfo)) => void) | undefined;
-    private multipleSweepHandler: ((items: Array<[string, (DataObj & TimeInfo)]>) => void) | undefined;
+    private multipleSweepHandler: ((items: [string, (DataObj & TimeInfo)][]) => void) | undefined;
     public constructor(inputObj: CacheManagerArgument = {}) {
-        this.durations = Object.assign({hours: 24, refresh: 6}, inputObj);
+        this.durations = Object.assign({ hours: 24, refresh: 6 }, inputObj);
         this.cache = new Map();
 
         setInterval(() => this.sweepData(), this.durations.refresh * MS_IN_HOUR);
     }
 
     public get(id: string): (DataObj & TimeInfo) | undefined {
+        this.refreshTimestamp(id);
         return this.cache.get(id);
     }
 
@@ -56,7 +57,7 @@ export default class CacheManager<DataObj> {
     }
 
     private sweepData(): void {
-        const deletedItems: Array<[string, (DataObj & TimeInfo)]> = [];
+        const deletedItems: [string, (DataObj & TimeInfo)][] = [];
         for (const [id, value] of this.cache) {
             if ((Date.now() - value.timestamp) / MS_IN_HOUR > value.duration) {
                 const deletedObj = this.delete(id);
@@ -76,7 +77,8 @@ export default class CacheManager<DataObj> {
     public registerSingleSweepHandler(handler: (id: string, obj: (DataObj & TimeInfo)) => void): void {
         this.singleSweepHandler = handler;
     }
-    public registerMultipleSweepHandler(handler: (items: Array<[string, (DataObj & TimeInfo)]>) => void): void {
+
+    public registerMultipleSweepHandler(handler: (items: [string, (DataObj & TimeInfo)][]) => void): void {
         this.multipleSweepHandler = handler;
     }
 }

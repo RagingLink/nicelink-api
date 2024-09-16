@@ -1,5 +1,6 @@
-import chalk from 'chalk';
 import { hrtime } from 'node:process';
+
+import chalk from 'chalk';
 
 export default class Timer {
     private startTime?: bigint;
@@ -13,24 +14,30 @@ export default class Timer {
         this.startTime = hrtime.bigint();
         return this;
     }
+
     public stop(): this {
         this.stopTime = hrtime.bigint();
         return this;
     }
+
     public reset(): this {
         this.stopTime = undefined;
         this.start();
         return this;
     }
+
     public get elapsedNanoSeconds(): bigint {
         return (this.stopTime ?? hrtime.bigint()) - (this.startTime ?? BigInt(0));
     }
+
     public get elapsedMicroSeconds(): bigint {
         return this.elapsedNanoSeconds / BigInt(1000);
     }
+
     public get elapsedMS(): bigint {
         return this.elapsedNanoSeconds / BigInt(1000_000);
     }
+
     public get elapsedBlueStr(): string {
         return chalk.hex('#00F9FF')(`(${Math.round(Number(this.elapsedMS) * 1000) / 1000}ms)`);
     }

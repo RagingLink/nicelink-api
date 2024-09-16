@@ -3,12 +3,12 @@ import '';
 declare global {
     // eslint-disable-next-line @typescript-eslint/ban-types
     type Primitive = string | number | bigint | boolean | object | Function | symbol | undefined;
-    type JToken = JObject | JArray | JValue | null | undefined;
+    type JToken = { [key: string]: JToken; } | JArray | JValue | null | undefined;
     type JValue = string | number | boolean;
-    type JObject = { [key: string]: JToken; };
+    type JObject = Record<string, JToken>;
     type JArray = JToken[];
     type JTokenType = keyof JTokenTypeMap;
-    type JTokenTypeMap = {
+    interface JTokenTypeMap {
         'string': string;
         'number': number;
         'boolean': boolean;
@@ -38,9 +38,9 @@ declare global {
     type FilteredKeys<T, U> = { [P in keyof T]: T[P] extends U ? P : never }[keyof T];
 
     interface ObjectConstructor {
-        keys<T>(value: Exclude<T, undefined | null>): Array<string & keyof T>;
-        values<T>(value: Exclude<T, undefined | null>): Array<T[keyof T]>;
-        entries<T>(value: Exclude<T, undefined | null>): Array<[string & keyof T, T[string & keyof T]]>;
+        keys<T>(value: Exclude<T, undefined | null>): (string & keyof T)[];
+        values<T>(value: Exclude<T, undefined | null>): T[keyof T][];
+        entries<T>(value: Exclude<T, undefined | null>): [string & keyof T, T[string & keyof T]][];
         // eslint-disable-next-line @typescript-eslint/ban-types
         create<T extends object>(value: T): T;
         fromEntries<TKey extends PropertyKey, TValue>(entries: Iterable<readonly [TKey, TValue]>): Record<TKey, TValue>;

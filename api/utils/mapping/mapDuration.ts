@@ -6,7 +6,7 @@ import { TypeMapping } from './types.js';
 
 const { duration } = momentTimezone;
 
-export const mapDuration: TypeMapping<momentTimezone.Duration> = createMapping(value => {
+export const mapDuration: TypeMapping<momentTimezone.Duration> = createMapping((value) => {
     try {
         switch (typeof value) {
             case 'string':

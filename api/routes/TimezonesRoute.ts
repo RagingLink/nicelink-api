@@ -1,14 +1,14 @@
-import express, { Request, Response } from 'express';
+import { Request, Response, Router } from 'express';
 
-import timezones from '../assets/data/timezones.json' assert {type: 'json'};
+import timezones from '../assets/data/timezones.json';
 
 export default class TimezonesRoute {
-    public readonly router = express.Router();
+    public readonly router = Router();
     private readonly simpleTimezones: string[];
 
     public constructor() {
         this.simpleTimezones = timezones
-            .reduce((acc : string[], item) => {
+            .reduce((acc: string[], item) => {
                 acc.push(...item.utc);
                 return acc;
             }, []).filter((item, index, self) => self.indexOf(item) === index);
@@ -17,11 +17,11 @@ export default class TimezonesRoute {
         this.router.get('/simple', (_, res) => res.type('json').send(JSON.stringify(this.simpleTimezones, null, 2)));
     }
 
-    private getTimezone (req: Request, res: Response): void {
+    private getTimezone(req: Request, res: Response): void {
         if (req.query.q === undefined) {
             return void res.type('json').send(JSON.stringify(timezones, null, 2));
         }
-        const query = req.query.q.toString().toLowerCase();
+        const query = String(req.query.q).toLowerCase();
         const timeCodes = this.simpleTimezones.filter((item) => {
             return item.toLowerCase().includes(query);
         });

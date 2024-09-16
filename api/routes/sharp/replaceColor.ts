@@ -3,7 +3,7 @@ import { StaticPool } from 'node-worker-threads-pool';
 import sharp from 'sharp';
 import { fileURLToPath } from 'url';
 
-import Image from './managers/Image.js';
+import Image from './v1/managers/Image.js';
 
 const THREAD_COUNT = 4;
 const pool = new StaticPool({

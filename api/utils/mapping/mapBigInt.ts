@@ -1,7 +1,7 @@
 import { createMapping } from './createMapping.js';
 import { result } from './result.js';
 
-export const mapBigInt = createMapping<bigint>(value => {
+export const mapBigInt = createMapping<bigint>((value) => {
     try {
         switch (typeof value) {
             case 'bigint': return result.success(value);

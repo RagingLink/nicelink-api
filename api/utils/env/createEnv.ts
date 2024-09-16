@@ -1,8 +1,8 @@
-import dotenv from 'dotenv';
+import { config } from 'dotenv';
 
 import validateEnv from './validateEnv.js';
 
-dotenv.config();
+config();
 validateEnv();
 
 export default process.env;

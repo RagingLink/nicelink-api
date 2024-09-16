@@ -2,7 +2,7 @@ import { createMapping } from './createMapping.js';
 import { result } from './result.js';
 import { TypeMapping } from './types.js';
 
-export const mapJObject: TypeMapping<JObject> = createMapping(value => {
+export const mapJObject: TypeMapping<JObject> = createMapping((value) => {
     switch (typeof value) {
         case 'object':
             if (!Array.isArray(value) && value !== null)

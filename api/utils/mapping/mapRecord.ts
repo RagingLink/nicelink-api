@@ -3,7 +3,7 @@ import { result } from './result.js';
 import { TypeMapping, TypeMappingImpl } from './types.js';
 
 export function mapRecord<T>(mapping: TypeMappingImpl<T, [key: string]>, initial?: () => Record<string, T>): TypeMapping<Record<string, T>> {
-    return createMapping(value => {
+    return createMapping((value) => {
         if (value === undefined || typeof value !== 'object' || value === null)
             return result.failed;
 

@@ -1,13 +1,13 @@
 import chalk from 'chalk';
-import express, { Request, Response, Router } from 'express';
+import { Request, Response, Router } from 'express';
 
-import config from '../config.json' assert {type: 'json'};
-import { NiceLogger } from '../Logger.js';
-import { ImageEditor } from './sharp/managers/ImageEditor.js';
-import { ImageManager } from './sharp/managers/ImageManager.js';
-import TextManager from './sharp/managers/TextManager.js';
-import Timer from './sharp/managers/Timer.js';
-import { SharpDiscord } from './sharp/SharpDiscord.js';
+import config from '../../../config.json';
+import { DefaultLogger } from '../../../utils/logging/NiceLogger.js';
+import Timer from '../../../utils/Timer.js';
+import { SharpDiscord } from '../SharpDiscord.js';
+import { ImageEditor } from './managers/ImageEditor.js';
+import { ImageManager } from './managers/ImageManager.js';
+import TextManager from './managers/TextManager.js';
 
 export default class SharpRoute {
     private readonly textManager: TextManager;
@@ -15,8 +15,8 @@ export default class SharpRoute {
     private readonly imageManager: ImageManager;
     private getRequestCount = 0;
     public readonly router: Router;
-    public constructor(public readonly logger: NiceLogger, public readonly env: NodeJS.ProcessEnv) {
-        this.router = express.Router();
+    public constructor(public readonly logger: DefaultLogger, public readonly env: NodeJS.ProcessEnv) {
+        this.router = Router();
 
         this.textManager = new TextManager(logger);
         this.imageEditor = new ImageEditor(logger, this.textManager);
@@ -30,19 +30,19 @@ export default class SharpRoute {
         setInterval(() => {
             if (this.getRequestCount === 0)
                 return;
-            this.logger.log('endpoint', 'GET', chalk.whiteBright('/sharp'), `${this.getRequestCount} request last hour`);
+            this.logger.log.endpoint('GET', chalk.whiteBright('/sharp'), `${this.getRequestCount} request last hour`);
             this.getRequestCount = 0;
         }, 3600 * 1000);
         this.router.post('*', (req, res, next) => {
             const timer = new Timer();
             res.once('close', () => {
-                this.logger.log('endpoint', 'POST', chalk.whiteBright('/sharp' + req.path), timer.elapsedBlueStr);
+                this.logger.log.endpoint('POST', chalk.whiteBright('/sharp' + req.path), timer.elapsedBlueStr);
             });
             next();
         });
         //* Endpoints
         this.router.get('/transparent.png', (_, res) => {
-            void this.imageEditor.generateImage({}).then(output => {
+            void this.imageEditor.generateImage({}).then((output) => {
                 res.contentType('png');
                 res.send(output.image.buffer);
             });
@@ -52,7 +52,7 @@ export default class SharpRoute {
         });
         this.router.get('/:image', (req, res) => this.getImage(req, res));
         this.router.post('/', (req, res) => {
-            void this.imageEditor.generateImage(<JObject>req.body).then(output => {
+            void this.imageEditor.generateImage((req.body as JObject)).then((output) => {
                 res.type('json').send(JSON.stringify(output.meta, null, 2));
             });
         });
@@ -63,6 +63,7 @@ export default class SharpRoute {
         //? Process a request and return an image or error object
         this.router.post('/process', (req, res) => this.processImage(req, res));
     }
+
     // Get image from db
     private getImage(req: Request, res: Response): void {
         try {
@@ -78,13 +79,14 @@ export default class SharpRoute {
             res.send('An error occurred!');
         }
     }
+
     // Store image
     private storeImage(req: Request, res: Response): void {
-        const body = <JObject>req.body;
-        const permanent = 'persistKey' in body && body['persistKey'] === config.persistKey;
+        const body = req.body as JObject;
+        const permanent = 'persistKey' in body && body.persistKey === config.persistKey;
 
-        void this.imageEditor.generateImage(<JObject>req.body).then(output => {
-            void this.imageManager.saveImage(output.image, output.body, permanent).then(fileName => {
+        void this.imageEditor.generateImage((req.body as JObject)).then((output) => {
+            void this.imageManager.saveImage(output.image, output.body, permanent).then((fileName) => {
                 const root = process.env.NODE_ENV !== 'dev' ? 'https://api.nicelink.xyz/sharp/' : 'http://localhost:' + (process.env.PORT ?? '') + '/sharp/';
                 res.type('json').send(JSON.stringify({
                     path: fileName,
@@ -95,6 +97,7 @@ export default class SharpRoute {
             });
         });
     }
+
     private async storeMultiple(req: Request, res: Response): Promise<void> {
         if (!Array.isArray(req.body))
             return void res.status(400).send(JSON.stringify({
@@ -104,7 +107,7 @@ export default class SharpRoute {
         const outputs = await Promise.all(req.body.map(async (imageBody) => {
             if (typeof imageBody !== 'object' || Array.isArray(imageBody) || imageBody === null)
                 return;
-            const output = await this.imageEditor.generateImage(<JObject>imageBody);
+            const output = await this.imageEditor.generateImage((imageBody as JObject));
             const fileName = await this.imageManager.saveImage(output.image, output.body);
             return {
                 path: fileName,
@@ -113,10 +116,11 @@ export default class SharpRoute {
         }));
         res.type('json').send(JSON.stringify(outputs, null, 2));
     }
+
     // Send image
     private processImage(req: Request, res: Response): void {
-        void this.imageEditor.generateImage(<JObject>req.body).then(output => {
-            void output.image.format().then(format => {
+        void this.imageEditor.generateImage((req.body as JObject)).then((output) => {
+            void output.image.format().then((format) => {
                 res.type(format);
                 if (output.image.edited) {
                     output.image.sharp.pipe(res);

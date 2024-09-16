@@ -52,6 +52,7 @@ export interface InputBody {
 }
 // Text types
 export interface InputOptions {
+    text?: string;
     font?: string;
     size?: string;
     textAlign? : 'left' | 'center' | 'right';
@@ -79,24 +80,24 @@ export interface InputOptions {
     output?: 'buffer' | 'stream' | 'dataURL' | 'canvas';
 }
 export interface DefaultOptions {
-    font: string | 'sans-serif';
-    size: string | '30px';
+    font: string// | 'sans-serif';
+    size: string// | '30px';
     textAlign : 'left' | 'center' | 'right';
     textColor: string;
     backgroundColor?: string;
-    lineSpacing: number | 0;
+    lineSpacing: number// | 0;
     maxWidth?: number;
-    strokeWidth: number | 0;
-    strokeColor: string | 'white';
-    paddingLeft: number | 0;
-    paddingRight: number | 0;
-    paddingTop: number | 0;
-    paddingBottom: number | 0;
-    borderLeftWidth: number | 0;
-    borderRightWidth: number | 0;
-    borderBottomWidth: number | 0;
-    borderTopWidth: number | 0;
-    borderColor: string | 'black';
+    strokeWidth: number// | 0;
+    strokeColor: string// | 'white';
+    paddingLeft: number// | 0;
+    paddingRight: number// | 0;
+    paddingTop: number// | 0;
+    paddingBottom: number// | 0;
+    borderLeftWidth: number// | 0;
+    borderRightWidth: number// | 0;
+    borderBottomWidth: number// | 0;
+    borderTopWidth: number// | 0;
+    borderColor: string// | 'black';
     localFontPath?: string;
     localFontName?: string;
     output: 'buffer' | 'stream' | 'dataURL' | 'canvas';

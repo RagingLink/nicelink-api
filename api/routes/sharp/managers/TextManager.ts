@@ -4,9 +4,9 @@ import fs from 'fs';
 import { parse } from 'pb-text-format-to-json';
 import { fileURLToPath } from 'url';
 
-import { NiceLogger } from '../../../Logger.js';
 import { DefaultOptions, InputOptions } from '../../../types/PayloadTypes.js';
 import { isErrnoException } from '../../../utils/index.js';
+import { NiceLogger } from '../../../utils/logging/NiceLogger.js';
 import Timer from './Timer.js';
 
 interface Font {
@@ -36,17 +36,18 @@ export default class TextManager {
     public constructor(public readonly logger: NiceLogger) {
         this.fonts = new Map();
         const fontTimer = new Timer();
-        this.loadFonts().then(responseData => {
+        this.loadFonts().then((responseData) => {
             const result: unknown[] = ['Loaded', responseData.loaded.length, 'fonts.'];
             if (responseData.missingMeta.length > 0)
                 result.push(responseData.missingMeta.length, chalk.yellow('fonts don\'t have METADATA.pb'));
             this.logger.log('info', 'TextManager', ...result, fontTimer.elapsedBlueStr);
             if (responseData.errors > 0)
                 this.logger.log('error', 'TextManager', `Encountered ${responseData.errors} errors while loading fonts`);
-        }).catch(err => {
+        }).catch((err) => {
             this.logger.log('error', 'LoadFonts', err);
         });
     }
+
     public text2png(text: string, inputOptions: InputOptions = {}): Buffer {
         //  Options
         const options = this.parseOptions(inputOptions);
@@ -105,6 +106,7 @@ export default class TextManager {
         }
         return canvas.toBuffer();
     }
+
     private parseOptions(options: InputOptions): DefaultOptions {
         return {
             font: options.font ?? 'sans-serif',
@@ -134,6 +136,7 @@ export default class TextManager {
             output: options.output ?? 'buffer'
         };
     }
+
     private getCanvasFont(parsedOptions: DefaultOptions): string {
         if (parsedOptions.font !== 'sans-serif') {
             const font = this.fonts.get(parsedOptions.font);
@@ -146,6 +149,7 @@ export default class TextManager {
         }
         return `${parsedOptions.size} "${parsedOptions.font}"`;
     }
+
     private *getLines(ctx: CanvasRenderingContext2D, text: string, font: string, max: Max, maxWidth?: number): IterableIterator<LineProp> {
         const lines = text.split('\n');
         for (const line of lines) {
@@ -180,6 +184,7 @@ export default class TextManager {
             }
         }
     }
+
     private getBoundingSize(metrics: TextMetrics, max: Max): Max {
         const boundingSize = {
             left: -1 * metrics.actualBoundingBoxLeft,
@@ -190,12 +195,14 @@ export default class TextManager {
         this.updateMaxBounding(boundingSize, max);
         return boundingSize;
     }
+
     private updateMaxBounding(currentBounding: Max, max: Max): void {
         max.left = Math.max(max.left, currentBounding.left);
         max.right = Math.max(max.right, currentBounding.right);
         max.ascent = Math.max(max.ascent, currentBounding.ascent);
         max.descent = Math.max(max.descent, currentBounding.descent);
     }
+
     private setCanvasWidth(canvas: Canvas, options: DefaultOptions, lines: LineProp[], max: Max): void {
         const lineHeight = max.ascent + max.descent + options.lineSpacing;
         const contentWidth = max.left + max.right;
@@ -218,6 +225,7 @@ export default class TextManager {
             options.paddingTop +
             options.paddingBottom;
     }
+
     private applyBorder(canvas: Canvas, ctx: CanvasRenderingContext2D, options: DefaultOptions): void {
         const hasBorder =
             options.borderLeftWidth !== 0 ||
@@ -238,6 +246,7 @@ export default class TextManager {
             }
         }
     }
+
     private applyBackgroundColour(canvas: Canvas, ctx: CanvasRenderingContext2D, options: DefaultOptions): void {
         if (options.backgroundColor !== undefined) {
             ctx.fillStyle = options.backgroundColor;
@@ -249,6 +258,7 @@ export default class TextManager {
             );
         }
     }
+
     private applyTextStyles(ctx: CanvasRenderingContext2D, options: DefaultOptions, font: string): void {
         ctx.font = font;
         ctx.fillStyle = options.textColor;
@@ -257,6 +267,7 @@ export default class TextManager {
         ctx.lineWidth = options.strokeWidth;
         ctx.strokeStyle = options.strokeColor;
     }
+
     //* Font loading
     private async loadFonts(): Promise<FontResponseData> {
         const customRes = await this.loadFontsInDir('custom/');
@@ -268,6 +279,7 @@ export default class TextManager {
             errors: customRes.errors + oflRes.errors + uflRes.errors
         };
     }
+
     private async loadFontsInDir(dir: string): Promise<FontResponseData> {
         const responseData: FontResponseData = {
             loaded: [],
@@ -311,7 +323,8 @@ export default class TextManager {
             return responseData;
         }
     }
-    private validateMetadata(input: JObject): Array<{ name: string; file: string; family: string; }> {
+
+    private validateMetadata(input: JObject): { name: string; file: string; family: string; }[] {
         const fonts = [];
         if ('name' in input && typeof input.name === 'string' && 'fonts' in input) {
             if (!Array.isArray(input.fonts))
@@ -334,6 +347,7 @@ export default class TextManager {
         }
         return fonts;
     }
+
     public get availableFontFamilies(): Record<string, string[]> {
         const familyMappedObj = [...this.fonts.values()].reduce((a: Record<string, string[]>, font) => {
             if (font.family in a) {
