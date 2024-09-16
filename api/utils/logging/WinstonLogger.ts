@@ -18,8 +18,8 @@ function createWinstonLogger<T extends AbstractConfigSetLevels>(options?: Pick<w
 }
 
 interface LoggerOptions {
-     levels: LevelsType;
-     level: string
+    levels: LevelsType;
+    level: string
 }
 
 export function createLogger(options: LoggerOptions): CreateWinstonLoggerReturn<LoggerOptions['levels']> {

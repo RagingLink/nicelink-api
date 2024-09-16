@@ -1,16 +1,17 @@
 //import _ from 'lodash';
 
+import ImageFetcher from './ImageFetcher.js';
+
 import { DefaultLogger } from '../../../../utils/logging/NiceLogger.js';
 import Timer from '../../../../utils/Timer.js';
 import { SuccessOperation } from '../Context.js';
 import Image from '../Image.js';
 import OperationHandler from '../OperationHandler.js';
 import { validateRootInput } from '../validateInput.js';
-import ImageFetcher from './ImageFetcher.js';
 
-export type CachedOperation = (SuccessOperation ) & {
+export type CachedOperation = (SuccessOperation) & {
     nextOperations?: CachedOperation[];
-}
+};
 
 export class ImageEditor {
     public readonly fetcher: ImageFetcher;

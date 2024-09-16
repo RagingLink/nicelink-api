@@ -1,4 +1,4 @@
-export type TextOption = TextBody | TextBody[]
+export type TextOption = TextBody | TextBody[];
 export type AlignmentModes = 'top-left' | 'top-middle' | 'top-right' |
 'left' | 'center' | 'right' |
 'bot-left' | 'bot-middle' | 'bot-right';
@@ -18,13 +18,13 @@ export interface TextBody extends InputOptions {
     y?: number;
     alignment?: AlignmentModes;
 }
-export type CropModes = 'auto'
+export type CropModes = 'auto';
 export type CropOption = CropModes | number | {
     width?: number;
     height?: number;
     x?: number;
     y?: number;
-}
+};
 
 export interface ChildBody extends InputBody {
     size?: 'contain';

@@ -1,12 +1,14 @@
 import { Router } from 'express';
+import sharp from 'sharp';
+
 import fs from 'fs';
 import path from 'path';
-import sharp from 'sharp';
 import url from 'url';
+
+import ImageManager from './services/ImageManager.js';
 
 import { DefaultLogger } from '../../../utils/logging/NiceLogger.js';
 import Timer from '../../../utils/Timer.js';
-import ImageManager from './services/ImageManager.js';
 
 const testImageBuffer = fs.readFileSync(path.join(url.fileURLToPath(new URL('.', import.meta.url)), '..', '..', '..', 'assets', 'img', 'testImage2.png'));
 

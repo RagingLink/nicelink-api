@@ -17,6 +17,5 @@ export interface TypeofMapping {
     'bigint': bigint;
     'symbol': symbol;
     'object': object;
-    // eslint-disable-next-line @typescript-eslint/ban-types
     'function': Function;
 }

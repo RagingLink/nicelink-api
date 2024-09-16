@@ -1,17 +1,19 @@
 import { PrismaClient } from '@prisma/client';
 import { fileTypeFromBuffer } from 'file-type';
+import { v4 as uuidv4 } from 'uuid';
+
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import { v4 as uuidv4 } from 'uuid';
+
+import Image from './Image.js';
+import { ImageEditor } from './ImageEditor.js';
 
 import { InputBody } from '../../../../types/PayloadTypes.js';
 import CacheManager from '../../../../utils/CacheManager.js';
 import { guard } from '../../../../utils/guard/index.js';
 import { NiceLogger } from '../../../../utils/logging/NiceLogger.js';
 import Prisma from '../../Prisma.js';
-import Image from './Image.js';
-import { ImageEditor } from './ImageEditor.js';
 
 export class ImageManager {
     private readonly cache: CacheManager<{ buffer: Buffer; }>;

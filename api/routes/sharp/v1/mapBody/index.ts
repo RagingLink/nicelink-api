@@ -1,6 +1,7 @@
+import * as propertyMapping from './bodyMappings.js';
+
 import { ChildBody, CropOption, InputBody, MetaBody, ResizeOption, TextBody } from '../../../../types/index.js';
 import { guard } from '../../../../utils/guard/index.js';
-import * as propertyMapping from './bodyMappings.js';
 
 const propertyAliases = {
     bg: 'background',
@@ -65,7 +66,7 @@ export default function mapBody(inputBody: JObject, meta: MetaBody, isChild = fa
                             meta.errors.push(`"${key}" doesn't have the right type`);
                             continue;
                         }
-                    } catch (e: unknown) {
+                    } catch (_: unknown) {
                         meta.errors.push(`"${key}" doesn't have the right type`);
                         continue;
                     }
@@ -106,7 +107,7 @@ function mapTextBody(textArray: JObject | JArray, meta: MetaBody): TextBody[] {
                             meta.errors.push(`"${key}" doesn't have the right type`);
                             continue;
                         }
-                    } catch (e: unknown) {
+                    } catch (_: unknown) {
                         meta.errors.push(`"${key}" doesn't have the right type`);
                         continue;
                     }
@@ -132,7 +133,7 @@ function mapCropBody(cropOption: JToken, meta: MetaBody): CropOption | undefined
                 meta.warnings.push('"crop" was converted to number');
                 mappedCropOption = cropOption;
             }
-        } catch (e: unknown) {
+        } catch (_: unknown) {
             meta.errors.push('"crop" doesn\'t have the right type');
         }
     } else if (typeof cropOption === 'object' && !Array.isArray(cropOption) && cropOption !== null) {
@@ -154,7 +155,7 @@ function mapCropBody(cropOption: JToken, meta: MetaBody): CropOption | undefined
                         meta.errors.push(`"${key}" doesn't have the right type`);
                         continue;
                     }
-                } catch (e: unknown) {
+                } catch (_: unknown) {
                     meta.errors.push(`"${key}" doesn't have the right type`);
                     continue;
                 }
@@ -205,7 +206,7 @@ function mapResizeBody(resizeOption: JToken, meta: MetaBody): ResizeOption | und
                     meta.errors.push(`"${key}" doesn't have the right type`);
                     continue;
                 }
-            } catch (e: unknown) {
+            } catch (_: unknown) {
                 meta.errors.push(`"${key}" doesn't have the right type`);
                 continue;
             }

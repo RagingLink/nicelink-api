@@ -1,13 +1,14 @@
 import chalk from 'chalk';
 
+import Context from './Context.js';
+import Image from './Image.js';
+
 import { DefaultLogger } from '../../../utils/logging/NiceLogger.js';
 import { mapping } from '../../../utils/mapping/index.js';
 import Timer from '../../../utils/Timer.js';
 import { TypeMappingResult } from '../../../utils/types.js';
-import Context from './Context.js';
-import Image from './Image.js';
 
-type DataMap<T> = (value: unknown) => TypeMappingResult<T>
+type DataMap<T> = (value: unknown) => TypeMappingResult<T>;
 
 export type IGeneralOperation = new (logger: DefaultLogger) => IOperation;
 

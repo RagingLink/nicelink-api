@@ -1,6 +1,6 @@
-import { hrtime } from 'node:process';
-
 import chalk from 'chalk';
+
+import { hrtime } from 'node:process';
 
 export default class Timer {
     private startTime?: bigint;

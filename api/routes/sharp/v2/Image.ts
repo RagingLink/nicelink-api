@@ -2,8 +2,9 @@ import sizeOf from 'buffer-image-size';
 import sharp, { Sharp } from 'sharp';
 import { v4 as uuidv4 } from 'uuid';
 
-import { DefaultLogger } from '../../../utils/logging/NiceLogger.js';
 import Context from './Context.js';
+
+import { DefaultLogger } from '../../../utils/logging/NiceLogger.js';
 
 export default class Image {
     public readonly context: Context;

@@ -1,19 +1,20 @@
-import { DefaultLogger } from '../../../utils/logging/NiceLogger.js';
 import Image from './Image.js';
 import { GenericOperation, UnknownOperation } from './Operation.js';
+
+import { DefaultLogger } from '../../../utils/logging/NiceLogger.js';
 
 export type CompletedOperation = SuccessOperation | ErrorOperation | WarningOperation;
 
 export type SuccessOperation = GenericOperation<string, unknown> & {
     duration?: number;
     buffer: Buffer;
-}
+};
 export type ErrorOperation = Omit<SuccessOperation, 'buffer'> & {
     error: string;
-}
+};
 export type WarningOperation = SuccessOperation & {
     warning: string;
-}
+};
 
 interface ContextObject {
     ops: Omit<CompletedOperation, 'buffer'>[];
@@ -69,7 +70,7 @@ export default class Context {
         };
     }
 
-    public getAppliedOperations(): (SuccessOperation )[] {
+    public getAppliedOperations(): (SuccessOperation)[] {
         return this.operations.filter((e): e is SuccessOperation => !('error' in e));
     }
 }

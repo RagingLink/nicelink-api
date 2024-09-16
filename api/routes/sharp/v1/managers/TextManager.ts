@@ -1,7 +1,8 @@
 import can, { Canvas, CanvasRenderingContext2D } from 'canvas';
 import chalk from 'chalk';
-import fs from 'fs';
 import { parse } from 'pb-text-format-to-json';
+
+import fs from 'fs';
 import { fileURLToPath } from 'url';
 
 import { DefaultOptions, InputOptions } from '../../../../types/PayloadTypes.js';

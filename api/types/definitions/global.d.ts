@@ -1,7 +1,6 @@
 import '';
 
 declare global {
-    // eslint-disable-next-line @typescript-eslint/ban-types
     type Primitive = string | number | bigint | boolean | object | Function | symbol | undefined;
     type JToken = { [key: string]: JToken; } | JArray | JValue | null | undefined;
     type JValue = string | number | boolean;
@@ -18,10 +17,9 @@ declare global {
         'object': JObject;
     }
 
-    // eslint-disable-next-line @typescript-eslint/ban-types
     type ClassOf<T> = (Function & { prototype: T; }) | (abstract new (...args: never) => T);
     type PropertyNamesOfType<T, P> = { [K in keyof T]: T[K] extends P ? K : never }[keyof T];
-    type PropertiesOfType<T, P> = { [K in PropertyNamesOfType<T, P>]: T[K] }
+    type PropertiesOfType<T, P> = { [K in PropertyNamesOfType<T, P>]: T[K] };
     type Intersect<T1, T2> = { [K in (keyof T1 & keyof T2)]: T1[K] extends T2[K] ? T2[K] extends T1[K] ? T1[K] : never : never };
 
     type UppercaseFirst<T extends string> = T extends `${infer L}${infer R}` ? `${Uppercase<L>}${R}` : T;
@@ -32,8 +30,7 @@ declare global {
     type Numeric = '0' | '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9';
     type Alphanumeric = Letter | Numeric;
 
-    type Mutable<T> = { -readonly [P in keyof T]: T[P] }
-    // eslint-disable-next-line @typescript-eslint/ban-types
+    type Mutable<T> = { -readonly [P in keyof T]: T[P] };
     type DeepMutable<T> = T extends Exclude<Primitive, object> ? T : { -readonly [P in keyof T]: DeepMutable<T[P]>; };
     type FilteredKeys<T, U> = { [P in keyof T]: T[P] extends U ? P : never }[keyof T];
 
@@ -41,7 +38,6 @@ declare global {
         keys<T>(value: Exclude<T, undefined | null>): (string & keyof T)[];
         values<T>(value: Exclude<T, undefined | null>): T[keyof T][];
         entries<T>(value: Exclude<T, undefined | null>): [string & keyof T, T[string & keyof T]][];
-        // eslint-disable-next-line @typescript-eslint/ban-types
         create<T extends object>(value: T): T;
         fromEntries<TKey extends PropertyKey, TValue>(entries: Iterable<readonly [TKey, TValue]>): Record<TKey, TValue>;
     }

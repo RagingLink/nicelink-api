@@ -1,13 +1,15 @@
 import can, { Canvas, CanvasRenderingContext2D, TextMetrics } from 'canvas';
 import chalk from 'chalk';
-import fs from 'fs';
 import { parse } from 'pb-text-format-to-json';
+
+import fs from 'fs';
 import { fileURLToPath } from 'url';
+
+import Timer from './Timer.js';
 
 import { DefaultOptions, InputOptions } from '../../../types/PayloadTypes.js';
 import { isErrnoException } from '../../../utils/index.js';
 import { NiceLogger } from '../../../utils/logging/NiceLogger.js';
-import Timer from './Timer.js';
 
 interface Font {
     name: string;

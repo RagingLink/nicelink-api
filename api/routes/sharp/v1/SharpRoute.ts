@@ -1,13 +1,14 @@
 import chalk from 'chalk';
 import { Request, Response, Router } from 'express';
 
+import { ImageEditor } from './managers/ImageEditor.js';
+import { ImageManager } from './managers/ImageManager.js';
+import TextManager from './managers/TextManager.js';
+
 import config from '../../../config.json';
 import { DefaultLogger } from '../../../utils/logging/NiceLogger.js';
 import Timer from '../../../utils/Timer.js';
 import { SharpDiscord } from '../SharpDiscord.js';
-import { ImageEditor } from './managers/ImageEditor.js';
-import { ImageManager } from './managers/ImageManager.js';
-import TextManager from './managers/TextManager.js';
 
 export default class SharpRoute {
     private readonly textManager: TextManager;
@@ -77,6 +78,7 @@ export default class SharpRoute {
             });
         } catch (e: unknown) {
             res.send('An error occurred!');
+            this.logger.log.error(e);
         }
     }
 

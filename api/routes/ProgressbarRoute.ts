@@ -1,8 +1,9 @@
 import Color from 'color';
 import { Request, Response, Router } from 'express';
+import sharp from 'sharp';
+
 import fs from 'fs';
 import path from 'path';
-import sharp from 'sharp';
 import * as url from 'url';
 
 import CacheManager from '../utils/CacheManager.js';
@@ -20,7 +21,7 @@ export default class ProgressBarRoute {
 
         this.router.get('/', (req, res) => void this.getProgressbar(req, res));
         this.cache.registerMultipleSweepHandler((items) => {
-            if (items.length === 0 )
+            if (items.length === 0)
                 return;
             this.logger.log.info('ProgressbarRoute', `Deleted ${items.length} cached bars`);
         });
@@ -66,7 +67,7 @@ export default class ProgressBarRoute {
             }).composite([{ input: this.pillShape, blend: 'dest-in' }]).png().toBuffer().then((data) => {
                 void sharp(data).extract({ top: 0, left: 0, height: 60, width: Math.round(996 / 100 * percentage) }).png().toBuffer().then((pillBuffer) => {
                     void sharp(this.pillBg).composite([{ input: pillBuffer, top: 2, left: 2 }]).toBuffer().then((buffer) => {
-                        this.cache.set( colour + percentage.toString(), { buffer });
+                        this.cache.set(colour + percentage.toString(), { buffer });
                         res.set('Content-Type', 'image/png');
                         res.send(buffer);
                     });

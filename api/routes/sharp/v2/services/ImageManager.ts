@@ -1,6 +1,7 @@
+import { ImageEditor } from './ImageEditor.js';
+
 import { DefaultLogger } from '../../../../utils/logging/NiceLogger.js';
 import Image from '../Image.js';
-import { ImageEditor } from './ImageEditor.js';
 
 export default class ImageManager {
     private readonly editor: ImageEditor;

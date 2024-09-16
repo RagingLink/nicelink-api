@@ -1,6 +1,7 @@
 import Color from 'color';
 import { StaticPool } from 'node-worker-threads-pool';
 import sharp from 'sharp';
+
 import { fileURLToPath } from 'url';
 
 import Image from './v1/managers/Image.js';

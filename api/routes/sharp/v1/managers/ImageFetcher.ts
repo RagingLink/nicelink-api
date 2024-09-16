@@ -1,10 +1,11 @@
-import fs from 'fs';
 import fetch from 'node-fetch';
+
+import fs from 'fs';
 import path from 'path';
 import * as url from 'url';
 
 import CacheManager from '../../../../utils/CacheManager.js';
-import { NiceLogger } from '../../../../utils/logging/NiceLogger.js';
+import { DefaultLogger } from '../../../../utils/logging/NiceLogger.js';
 
 const assetsPath = path.join(url.fileURLToPath(new URL('.', import.meta.url)), '..', '..', '..', '..', 'assets', 'img');
 const transparentImagePath = path.join(assetsPath, 'transparent.png');
@@ -19,7 +20,7 @@ export class ImageFetcher {
     private readonly _circleImageBuffer = fs.readFileSync(circleImagePath);
     private readonly _blackImageBuffer = fs.readFileSync(blackImagePath);
 
-    public constructor(public readonly logger: NiceLogger, retention = 3600) {
+    public constructor(public readonly logger: DefaultLogger, retention = 3600) {
         this.retention = retention;
         this.cache = new CacheManager({});
     }
@@ -46,7 +47,7 @@ export class ImageFetcher {
         try {
             const arrayBuffer = await (await fetch(src)).arrayBuffer();
             return Buffer.from(arrayBuffer);
-        } catch (e: unknown) {
+        } catch (_: unknown) {
             throw Error('Invalid image');
         }
     }

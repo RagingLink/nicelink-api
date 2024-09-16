@@ -1,7 +1,8 @@
 import sharp from 'sharp';
 
-import Image from '../routes/sharp/v1/managers/Image.js';
 import { InputBody } from './PayloadTypes.js';
+
+import Image from '../routes/sharp/v1/managers/Image.js';
 
 export interface MetaBody {
     children: MetaBody[];

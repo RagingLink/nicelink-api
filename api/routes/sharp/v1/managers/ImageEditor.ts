@@ -3,14 +3,15 @@ import chalk from 'chalk';
 import sharp, { Blend, OverlayOptions } from 'sharp';
 import getUuidByString from 'uuid-by-string';
 
-import { AlignmentModes, ChildBody, InputBody, MetaBody, OutputBody, TextBody } from '../../../../types/index.js';
-import CacheManager from '../../../../utils/CacheManager.js';
-import { NiceLogger } from '../../../../utils/logging/NiceLogger.js';
-import Timer from '../../../../utils/Timer.js';
-import mapBody from '../mapBody/index.js';
 import Image from './Image.js';
 import { ImageFetcher } from './ImageFetcher.js';
 import TextManager from './TextManager.js';
+
+import { AlignmentModes, ChildBody, InputBody, MetaBody, OutputBody, TextBody } from '../../../../types/index.js';
+import CacheManager from '../../../../utils/CacheManager.js';
+import { DefaultLogger } from '../../../../utils/logging/NiceLogger.js';
+import Timer from '../../../../utils/Timer.js';
+import mapBody from '../mapBody/index.js';
 
 interface SizeObject {
     width: number;
@@ -28,7 +29,7 @@ export class ImageEditor {
         meta?: MetaBody;
     }>;
 
-    public constructor(public readonly logger: NiceLogger, public readonly textManager: TextManager) {
+    public constructor(public readonly logger: DefaultLogger, public readonly textManager: TextManager) {
         this.imageFetcher = new ImageFetcher(logger, 100000);
         //? Refresh every half hour and keep edited images cached for 6 hours
         this.cache = new CacheManager({ hours: 6, refresh: 0.5 });
@@ -52,7 +53,7 @@ export class ImageEditor {
         try {
             await this.editImage(fetchedImage, body, meta, timer);
         } catch (e: unknown) {
-            this.logger.log('error', 'Editor', e);
+            this.logger.log.error('Editor', e);
             meta.errors.push('Unexpected error during image editing');
             fetchedImage.sharp = sharp(this.imageFetcher.defaultImageBuffer);
         }
@@ -71,6 +72,7 @@ export class ImageEditor {
             return new Image(buffer, this.cache.get(this.getBodyStr(inputBody)) !== undefined);
         } catch (e: unknown) {
             meta.errors.push('Invalid background image');
+            this.logger.log.error(e);
             return new Image(this.imageFetcher.defaultImageBuffer);
         }
     }
@@ -129,7 +131,7 @@ export class ImageEditor {
             }
             image.sharp = sharp(await image.sharp.toBuffer());
             if (operationTimer.elapsedMS > 500 && property !== 'images')
-                this.logger.log('image', 'EditOperation', chalk.white(property), operationTimer.elapsedBlueStr);
+                this.logger.log.image('EditOperation', chalk.white(property), operationTimer.elapsedBlueStr);
         }
         if (compositeOptions.length > 0) {
             this.compositeImages(image, compositeOptions);
@@ -137,7 +139,7 @@ export class ImageEditor {
         if (image.edited) {
             void image.sharp.toBuffer().then((buffer) => {
                 if (timer !== undefined)
-                    this.logger.log('image', 'Editor', 'Generated image', timer.elapsedBlueStr);
+                    this.logger.log.image('Editor', 'Generated image', timer.elapsedBlueStr);
                 this.cache.set(this.getBodyStr(body), {
                     buffer,
                     inputBody: body,
@@ -146,7 +148,7 @@ export class ImageEditor {
             });
         } else {
             if (timer !== undefined)
-                this.logger.log('image', 'Editor', 'Generated image', timer.elapsedBlueStr);
+                this.logger.log.image('Editor', 'Generated image', timer.elapsedBlueStr);
             this.cache.set(this.getBodyStr(body), {
                 buffer: image.buffer,
                 inputBody: body,
@@ -248,7 +250,7 @@ export class ImageEditor {
                 if (!childImage.preEdited)
                     await this.editImage(childImage, childObject, meta.children[meta.children.length - 1]);
             } catch (e: unknown) {
-                this.logger.log('error', 'Editor', e);
+                this.logger.log.error('Editor', e);
                 meta.errors.push('Unexpected error during image generation');
                 childImage.sharp = sharp(this.imageFetcher.defaultImageBuffer);
             }
