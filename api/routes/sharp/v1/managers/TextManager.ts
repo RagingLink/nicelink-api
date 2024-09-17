@@ -1,4 +1,4 @@
-import can, { Canvas, CanvasRenderingContext2D } from 'canvas';
+import can, { Canvas, CanvasRenderingContext2D, TextMetrics } from 'canvas';
 import chalk from 'chalk';
 import { parse } from 'pb-text-format-to-json';
 
@@ -7,7 +7,7 @@ import { fileURLToPath } from 'url';
 
 import { DefaultOptions, InputOptions } from '../../../../types/PayloadTypes.js';
 import { isErrnoException } from '../../../../utils/index.js';
-import { NiceLogger } from '../../../../utils/logging/NiceLogger.js';
+import { DefaultLogger } from '../../../../utils/logging/NiceLogger.js';
 import Timer from '../../../../utils/Timer.js';
 
 interface Font {
@@ -34,18 +34,18 @@ export default class TextManager {
     private readonly fonts: Map<string, Font>;
     private readonly FONTS_ASSETS_DIR = fileURLToPath(new URL('.', import.meta.url)) + '../../../assets/fonts/';
 
-    public constructor(public readonly logger: NiceLogger) {
+    public constructor(public readonly logger: DefaultLogger) {
         this.fonts = new Map();
         const fontTimer = new Timer();
         this.loadFonts().then((responseData) => {
             const result: unknown[] = ['Loaded', responseData.loaded.length, 'fonts.'];
             if (responseData.missingMeta.length > 0)
                 result.push(responseData.missingMeta.length, chalk.yellow('fonts don\'t have METADATA.pb'));
-            this.logger.log('info', 'TextManager', ...result, fontTimer.elapsedBlueStr);
+            this.logger.log.info('TextManager', ...result, fontTimer.elapsedBlueStr);
             if (responseData.errors > 0)
-                this.logger.log('error', 'TextManager', `Encountered ${responseData.errors} errors while loading fonts`);
+                this.logger.log.error('TextManager', `Encountered ${responseData.errors} errors while loading fonts`);
         }).catch((err) => {
-            this.logger.log('error', 'LoadFonts', err);
+            this.logger.log.error('LoadFonts', err);
         });
     }
 
@@ -319,7 +319,7 @@ export default class TextManager {
             }
             return responseData;
         } catch (err: unknown) {
-            this.logger.log('error', 'LoadFonts', err);
+            this.logger.log.error('LoadFonts', err);
             responseData.errors += 1;
             return responseData;
         }
