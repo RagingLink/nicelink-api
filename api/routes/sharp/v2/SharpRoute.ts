@@ -1,16 +1,9 @@
 import { Router } from 'express';
-import sharp from 'sharp';
-
-import fs from 'fs';
-import path from 'path';
-import url from 'url';
 
 import ImageManager from './services/ImageManager.js';
 
 import { DefaultLogger } from '../../../utils/logging/NiceLogger.js';
 import Timer from '../../../utils/Timer.js';
-
-const testImageBuffer = fs.readFileSync(path.join(url.fileURLToPath(new URL('.', import.meta.url)), '..', '..', '..', 'assets', 'img', 'testImage2.png'));
 
 export default class SharpRoute {
     public readonly router = Router();
@@ -18,10 +11,6 @@ export default class SharpRoute {
 
     public constructor(public readonly logger: DefaultLogger) {
         this.manager = new ImageManager(logger);
-
-        this.router.get('/testImage.png', (_, res) => {
-            sharp(testImageBuffer).pipe(res);
-        });
 
         this.router.post('/image', (req, res) => {
             const body = req.body as JObject;
