@@ -19,7 +19,7 @@
     "lint:fix": "eslint --ext .ts --fix ./"
   },
   "dependencies": {
-    "@prisma/client": "^4.7.1",
+    "@prisma/client": "^5.19.1",
     "buffer-image-size": "^0.6.4",
     "canvas": "2.11.0",
     "cat-loggr": "^1.2.2",
