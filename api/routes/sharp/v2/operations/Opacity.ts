@@ -14,7 +14,16 @@ export default class Opacity extends Operation<number> {
     }
 
     private changeOpacity(image: Image, data: number): Image {
-        image.sharp.removeAlpha().ensureAlpha(data);
+        image.sharp.composite([{
+            input: Buffer.from([0, 0, 0, Math.round(data * 255)]),
+            raw: {
+                width: 1,
+                height: 1,
+                channels: 4
+            },
+            tile: true,
+            blend: 'dest-in'
+        }]);
         return image;
     }
 }

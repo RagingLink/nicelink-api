@@ -1,11 +1,14 @@
 import chalk from 'chalk';
+//import { duration } from 'moment-timezone';
 
 import Context from './Context.js';
 import Image from './Image.js';
+import OperationDetails from './OperationSummary.js';
+import ImageContext from './Context.js';
+import OperationSummary from './OperationSummary.js';
 
 import { DefaultLogger } from '../../../utils/logging/NiceLogger.js';
 import { mapping } from '../../../utils/mapping/index.js';
-import Timer from '../../../utils/Timer.js';
 import { TypeMappingResult } from '../../../utils/types.js';
 
 type DataMap<T> = (value: unknown) => TypeMappingResult<T>;
@@ -23,7 +26,7 @@ interface OperationInfo<T> {
     name: string;
     aliases?: string[];
     mapping: DataMap<T>;
-    execute: (image: Image, data: T) => Promise<Image> | Image;
+    execute: (image: Image, data: T, summary?: OperationSummary) => Promise<Image> | Image;
     dataPropertyAliases?: Record<string, string>;
 }
 
@@ -32,29 +35,24 @@ export interface GenericOperation<T extends string, D> {
     data: D;
 }
 
-export interface UnknownOperation {
-    type: string;
-    data: unknown;
-}
-
 export default class Operation<OpData> implements IOperation {
     public readonly name: string;
     public readonly aliases: string[];
     public readonly dataPropertyAliases?: Record<string, string>;
     public readonly mapping: DataMap<OpData>;
 
-    #execute: (image: Image, data: OpData) => Promise<Image> | Image;
+    #execute: (image: Image, data: OpData, details: OperationDetails) => Promise<Image> | Image;
 
-    public constructor(public readonly logger: DefaultLogger, operation: OperationInfo<OpData>) {
-        this.name = operation.name;
-        this.dataPropertyAliases = operation.dataPropertyAliases;
-        this.aliases = operation.aliases ?? [];
+    public constructor(public readonly logger: DefaultLogger, info: OperationInfo<OpData>) {
+        this.name = info.name;
+        this.dataPropertyAliases = info.dataPropertyAliases;
+        this.aliases = info.aliases ?? [];
 
-        this.mapping = operation.mapping;
-        this.#execute = operation.execute;
+        this.mapping = info.mapping;
+        this.#execute = info.execute;
     }
 
-    private convertAliases(_: Context, data: unknown, aliases: Record<string, string> | undefined): unknown {
+    private convertAliases(_: ImageContext, data: unknown, aliases: Record<string, string> | undefined): unknown {
         if (aliases !== undefined) {
             const objectMapping = mapping.jObject(data);
             if (objectMapping.valid) {
@@ -79,24 +77,34 @@ export default class Operation<OpData> implements IOperation {
     }
 
     public async execute(image: Image, data: unknown): Promise<Image> {
-        const opTimer = new Timer(true);
+        const summary = new OperationSummary(this.name, data, image);
+
         const validatedData = this.validateData(image.context, data);
         if (validatedData === undefined) {
-            image.context.addOperationError({ type: this.name, data }, 'Invalid data', 0);
+            this.error(summary, 'Invalid data');
             return image;
         }
 
         try {
-            const imageAfter = await this.#execute(image, validatedData);
+            const imageAfter = await this.#execute(image, validatedData, summary);
             const newBuffer = await image.updateBuffer();
-            image.context.addOperation({
-                type: this.name,
-                data: validatedData
-            }, newBuffer, Number(opTimer.elapsedMS));
+            image.context.addOperation(summary, newBuffer);
+
             return imageAfter;
         } catch (err: unknown) {
-            this.logger.log.operation(chalk.red(`${this.name} UNCAUGHT ERROR:`), err);
+            this.logger.log.operation(chalk.red.bold(`${this.name}`, err));
+
+            this.error(summary, String(err));
             return image;
         }
+    }
+
+    protected error(summary: OperationSummary, error: string, halt = true): void {
+        summary.addError(error);
+        if (halt) {
+            summary.halt();
+            summary.image.context.addOperation(summary);
+        }
+        this.logger.log.verbose(error);
     }
 }

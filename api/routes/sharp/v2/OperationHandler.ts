@@ -4,14 +4,14 @@ import _ from 'lodash';
 import fs from 'fs';
 import { fileURLToPath } from 'url';
 
-import Context, { SuccessOperation } from './Context.js';
+import Context, { CompletedOperationObject } from './Context.js';
 import Image from './Image.js';
 import Operation, { IGeneralOperation, IOperation } from './Operation.js';
 import { CachedOperation } from './services/ImageEditor.js';
 import { ValidInputObject } from './validateInput.js';
+import OperationSummary from './OperationSummary.js';
 
 import { DefaultLogger } from '../../../utils/logging/NiceLogger.js';
-import { guard } from '../../../utils/guard/index.js';
 
 interface ExportObj {
     default: unknown;
@@ -28,27 +28,24 @@ export default class OperationHandler {
 
     public getOperation(context: Context, inputOperation: JObject): IOperation | undefined {
         // Maybe remove the errors from this
-        if (!guard.hasProperty(inputOperation, 'type') || typeof inputOperation.type !== 'string') {
+        if (!('type' in inputOperation) || typeof inputOperation.type !== 'string') {
             this.logger.log.operation(chalk.red('Invalid operation object:'), chalk.red.bold(JSON.stringify(inputOperation)));
-            context.addOperationError({
-                type: 'unknown',
-                data: inputOperation
-            }, 'Invalid operation object');
+            // Create stubby summary objecy for the invalid object
+            const invalidOperationSummary = this.createHaltedSummary(context, `Invalid operation object: ${JSON.stringify(inputOperation)}`);
+            context.addOperation(invalidOperationSummary);
             return;
         }
         const operation = this.operations.get(inputOperation.type);
         if (operation === undefined) {
             this.logger.log.operation(chalk.red('Invalid operation type:'), chalk.red.bold(inputOperation.type));
-            context.addOperationError({
-                type: inputOperation.type,
-                data: inputOperation
-            }, 'Invalid operation type', Number(inputOperation.elapsedMS));
+            const invalidTypeSummary = this.createHaltedSummary(context, 'Invalid operation type', { type: inputOperation.type, data: inputOperation.data });
+            context.addOperation(invalidTypeSummary);
             return;
         }
         return operation;
     }
 
-    public getBuffer(image: Image, input: ValidInputObject): { buffer: Buffer; remainingOperations: JObject[]; } | undefined {
+    public getCachedBuffer(image: Image, input: ValidInputObject): { buffer: Buffer; remainingOperations: JObject[]; } | undefined {
         if (!(input.background in this.cache))
             return;
         let remainingOperations: JObject[] = input.operations;
@@ -74,7 +71,8 @@ export default class OperationHandler {
 
             for (const cachedOperation of cachedOperations) {
                 if (this.isEqual(validOperationObject, cachedOperation)) {
-                    image.context.addOperation(cachedOperation, cachedOperation.buffer, 0);
+                    const cachedSummary = new OperationSummary(cachedOperation.type, cachedOperation.data, image);
+                    image.context.addOperation(cachedSummary, cachedOperation.buffer);
                     currentOperation = cachedOperation;
                     cachedUntilOperation = i + 1;
                     this.logger.log.operation(operation.name, 'Using cache');
@@ -136,7 +134,7 @@ export default class OperationHandler {
 
     private async initOperations(): Promise<void> {
         let operationCount = 0;
-        const operations = await this.loadOperations(this.logger);
+        const operations = await this.loadOperations();
         for (const operationClass of operations) {
             const operation = new operationClass(this.logger);
             if (this.operations.has(operation.name)) {
@@ -160,7 +158,7 @@ export default class OperationHandler {
         this.logger.log.operation(`Initialized ${operationCount} operations`);
     }
 
-    private async loadOperations(logger: DefaultLogger): Promise<IGeneralOperation[]> {
+    private async loadOperations(): Promise<IGeneralOperation[]> {
         const operations: IGeneralOperation[] = [];
         const operationFiles = fs.readdirSync(operationPath);
 
@@ -171,13 +169,14 @@ export default class OperationHandler {
             await import(operationPath + fileName).then((contents: unknown) => {
                 //? Check if it's an object with a 'default' property
                 if (this.isExportObject(contents)) {
-                    if (contents.default instanceof Operation) {
+                    if (this.isOperation(contents)) {
+                        this.logger.log.operation('yes');
                         // The infamous as unknown as 'type' moment
                         operations.push(contents.default as unknown as IGeneralOperation);
                     }
                 }
             }).catch((err) => {
-                logger.log.error(err);
+                this.logger.log.error(err);
             });
         }
         return operations;
@@ -190,11 +189,23 @@ export default class OperationHandler {
         return false;
     }
 
-    private isEqual(operation: JObject | (SuccessOperation), cachedOperation: CachedOperation): boolean {
+    private isOperation(contents: ExportObj): boolean {
+        if (typeof contents.default !== 'function')
+            return false;
+        return Operation.prototype.isPrototypeOf(contents.default.prototype);
+    }
+
+    private createHaltedSummary(context: Context, error: string, info?: { type?: string; data?: unknown; }): OperationSummary {
+        const unknownOperationSummary = new OperationSummary(info?.type ?? '', info?.data ?? undefined, context.image);
+        unknownOperationSummary.addError(error).halt();
+        return unknownOperationSummary;
+    };
+
+    private isEqual(operation: JObject | CompletedOperationObject, cachedOperation: CachedOperation): boolean {
         return _.isEqual(this.removeCacheKeys(operation), this.removeCacheKeys(cachedOperation));
     }
 
-    private removeCacheKeys(object: CachedOperation | JObject, include = ['type', 'data']): JObject {
+    private removeCacheKeys(object: JObject | CachedOperation | CompletedOperationObject, include = ['type', 'data']): JObject {
         return _.omit(object, Object.keys(object).filter((e) => !include.includes(e)));
     }
 }

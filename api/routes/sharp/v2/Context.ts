@@ -1,76 +1,63 @@
 import Image from './Image.js';
-import { GenericOperation, UnknownOperation } from './Operation.js';
+import { OperationSummaryObject } from './OperationSummary.js';
+import OperationSummary from './OperationSummary.js';
 
 import { DefaultLogger } from '../../../utils/logging/NiceLogger.js';
 
-export type CompletedOperation = SuccessOperation | ErrorOperation | WarningOperation;
+export type CompletedOperationObject = OperationSummaryObject & { buffer?: Buffer };
+export type CompletedWithBuffer = OperationSummaryObject & { buffer: Buffer };
 
-export type SuccessOperation = GenericOperation<string, unknown> & {
-    duration?: number;
-    buffer: Buffer;
-};
-export type ErrorOperation = Omit<SuccessOperation, 'buffer'> & {
-    error: string;
-};
-export type WarningOperation = SuccessOperation & {
-    warning: string;
-};
+type CompletedWithoutBuffer = Omit<CompletedOperationObject, 'buffer'>;
 
 interface ContextObject {
-    ops: Omit<CompletedOperation, 'buffer'>[];
-    warnings: Omit<WarningOperation, 'buffer'>[];
-    errors: ErrorOperation[];
+    operations: CompletedWithoutBuffer[];
+    warnings: CompletedWithoutBuffer[];
+    errors: CompletedWithoutBuffer[]
 }
-export default class Context {
-    public operations: CompletedOperation[] = [];
+
+export default class ImageContext {
+    public operations: CompletedOperationObject[] = [];
     public constructor(public readonly logger: DefaultLogger, public readonly image: Image) {
-
     }
 
-    public addOperationError(operation: UnknownOperation, error: string, duration = 0): void {
+    // public addOperationError(operation: UnknownOperation, error: string, duration = 0): void {
+    //     this.operations.push({
+    //         ...operation,
+    //         duration,
+    //         error
+    //     });
+    // }
+
+    // public addOperationWarning(operation: UnknownOperation, buffer: Buffer, warning: string | string [], duration = 0): void {
+    //     this.operations.push({
+    //         ...operation,
+    //         buffer,
+    //         duration,
+    //         Array.isArray(warning) ? warning : warning
+    //     });
+    // }
+
+    public addOperation(operationSummary: OperationSummary, buffer?: Buffer): void {
         this.operations.push({
-            ...operation,
-            duration,
-            error
+            ...operationSummary.toJSON(),
+            buffer
         });
-    }
+    };
 
-    public addOperationWarning(operation: UnknownOperation, buffer: Buffer, warning: string, duration = 0): void {
-        this.operations.push({
-            ...operation,
-            buffer,
-            duration,
-            warning
-        });
-    }
-
-    public addOperation(operation: UnknownOperation, buffer: Buffer, duration: number): void {
-        this.operations.push({ ...operation, buffer, duration });
+    // Get all operations that changed the image (buffer)
+    public getAppliedOperations(): (CompletedWithBuffer)[] {
+        return this.operations.filter((e): e is CompletedWithBuffer => !e.halted && e.buffer !== undefined);
     }
 
     public toJSON(): ContextObject {
-        const warnings = this.operations.filter((e): e is WarningOperation => 'warning' in e).map((e) => {
-            return {
-                type: e.type,
-                data: e.data,
-                warning: e.warning
-            };
-        });
-        const errors = this.operations.filter((e): e is ErrorOperation => 'error' in e).map((e) => {
-            return {
-                type: e.type,
-                data: e.data,
-                error: e.error
-            };
-        });
         return {
-            ops: this.operations.map((e) => Object.assign({}, e, { buffer: undefined })),
-            warnings: warnings,
-            errors: errors
+            operations: this.operations.map((e) => this.omitBuffer(e)),
+            warnings: this.operations.filter((e) => e.debug.warnings.length > 0).map((e) => this.omitBuffer(e)),
+            errors: this.operations.filter((e) => e.halted || e.debug.errors.length > 0).map((e) => this.omitBuffer(e))
         };
     }
 
-    public getAppliedOperations(): (SuccessOperation)[] {
-        return this.operations.filter((e): e is SuccessOperation => !('error' in e));
+    private omitBuffer(opObject: CompletedOperationObject): CompletedWithoutBuffer {
+        return Object.assign(opObject, { buffer: undefined });
     }
 }

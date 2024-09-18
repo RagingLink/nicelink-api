@@ -4,12 +4,13 @@ import ImageFetcher from './ImageFetcher.js';
 
 import { DefaultLogger } from '../../../../utils/logging/NiceLogger.js';
 import Timer from '../../../../utils/Timer.js';
-import { SuccessOperation } from '../Context.js';
 import Image from '../Image.js';
 import OperationHandler from '../OperationHandler.js';
 import { validateRootInput } from '../validateInput.js';
+import { CompletedOperationObject } from '../Context.js';
 
-export type CachedOperation = (SuccessOperation) & {
+export type CachedOperation = (CompletedOperationObject) & {
+    buffer: Buffer;
     nextOperations?: CachedOperation[];
 };
 
@@ -33,11 +34,12 @@ export class ImageEditor {
             return new Image(this.logger, this.fetcher.defaultImageBuffer, 'invalid'); // TODO HANDLE INVALID BACKGROUND
 
         const image = new Image(this.logger, imageBuffer, validatedInput.background);
-        // Caching vars
-        const operationCache = this.operationHandler.getBuffer(image, validatedInput);
+        // Use the cache of any operation that is already cached
+        const operationCache = this.operationHandler.getCachedBuffer(image, validatedInput);
         if (operationCache !== undefined)
             image.setBuffer(operationCache.buffer);
 
+        // Execute operations that are not cached
         for (const inputObj of operationCache !== undefined ? operationCache.remainingOperations : validatedInput.operations) {
             const opTimer = new Timer(true);
             const operation = this.operationHandler.getOperation(image.context, inputObj);
