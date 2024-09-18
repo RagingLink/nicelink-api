@@ -1,6 +1,6 @@
 import Eris, { Client } from 'eris';
 
-import config from '../../config.json';
+import config from '../../config.json' assert {type: 'json'};
 import { DefaultLogger } from '../../utils/logging/NiceLogger.js';
 
 export class SharpDiscord {

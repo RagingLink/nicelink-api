@@ -32,7 +32,7 @@ interface LineProp extends Max {
 }
 export default class TextManager {
     private readonly fonts: Map<string, Font>;
-    private readonly FONTS_ASSETS_DIR = fileURLToPath(new URL('.', import.meta.url)) + '../../../assets/fonts/';
+    private readonly FONTS_ASSETS_DIR = fileURLToPath(new URL('.', import.meta.url)) + '../../../../assets/fonts/';
 
     public constructor(public readonly logger: DefaultLogger) {
         this.fonts = new Map();

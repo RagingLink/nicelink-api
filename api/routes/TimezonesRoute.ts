@@ -1,6 +1,6 @@
 import { Request, Response, Router } from 'express';
 
-import timezones from '../assets/data/timezones.json';
+import timezones from '../assets/data/timezones.json' assert {type: 'json'};
 
 export default class TimezonesRoute {
     public readonly router = Router();

@@ -2,7 +2,7 @@
     "compilerOptions": {
         "noImplicitAny": true,
         "strict": true,
-        "module": "ES2022",
+        "module": "esnext",
         "resolveJsonModule": true,
         "esModuleInterop": true,
         "target": "ES2022",

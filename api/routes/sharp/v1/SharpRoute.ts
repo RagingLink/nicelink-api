@@ -5,7 +5,7 @@ import { ImageEditor } from './managers/ImageEditor.js';
 import { ImageManager } from './managers/ImageManager.js';
 import TextManager from './managers/TextManager.js';
 
-import config from '../../../config.json';
+import config from '../../../config.json' assert {type: 'json'};
 import { DefaultLogger } from '../../../utils/logging/NiceLogger.js';
 import Timer from '../../../utils/Timer.js';
 import { SharpDiscord } from '../SharpDiscord.js';
