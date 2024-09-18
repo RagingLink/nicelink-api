@@ -8,7 +8,7 @@ import CacheManager from '../../../../utils/CacheManager.js';
 import { DefaultLogger } from '../../../../utils/logging/NiceLogger.js';
 import Timer from '../../../../utils/Timer.js';
 
-const transparentImagePath = path.join(url.fileURLToPath(new URL('.', import.meta.url)), '..', '..', '..', 'assets', 'img', 'transparent.png');
+const transparentImagePath = path.join(url.fileURLToPath(new URL('.', import.meta.url)), '..', '..', '..', '..', 'assets', 'img', 'transparent.png');
 
 export default class ImageFetcher {
     public cache: CacheManager<{ buffer: Buffer; }>;

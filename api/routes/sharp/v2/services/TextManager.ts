@@ -33,16 +33,16 @@ interface LineProp extends Max {
 
 export class TextManager {
     private readonly fonts: Map<string, Font>;
-    private readonly FONTS_ASSETS_DIR = fileURLToPath(new URL('.', import.meta.url)) + '../../../assets/fonts/';
+    private readonly FONTS_ASSETS_DIR = fileURLToPath(new URL('.', import.meta.url)) + '../../../../assets/fonts/';
 
     public constructor(public readonly logger: DefaultLogger) {
         this.fonts = new Map();
         const fontTimer = new Timer();
         this.loadFonts().then((responseData) => {
-            const result: unknown[] = ['Loaded', responseData.loaded.length, 'fonts.'];
+            let result: string = `Loaded ${responseData.loaded.length} fonts.`;
             if (responseData.missingMeta.length > 0)
-                result.push(responseData.missingMeta.length, chalk.yellow('fonts don\'t have METADATA.pb'));
-            this.logger.log.info('TextManager', ...result, fontTimer.elapsedBlueStr);
+                result += `\n${responseData.missingMeta.length} ${chalk.yellow('fonts don\'t have METADATA.pb')}`;
+            this.logger.log.info('TextManager', result, fontTimer.elapsedBlueStr);
             if (responseData.errors > 0)
                 this.logger.log.error('TextManager', `Encountered ${responseData.errors} errors while loading fonts`);
         }).catch((err) => {
