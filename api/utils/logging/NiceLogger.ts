@@ -1,5 +1,7 @@
 import chalk, { ChalkInstance } from 'chalk';
 
+import util from 'util';
+
 import { createLogger } from './WinstonLogger.js';
 
 type LoggerFunction = (...args: unknown[]) => void;
@@ -33,10 +35,11 @@ export class NiceLogger<L extends Record<string, ChalkInstance>> {
         for (const level of Object.keys(levels)) {
             logger[level] = (...args: unknown[]) => {
                 this.logHistory.push({ level, log: args, timestamp: Date.now() });
-                (this.#logger[level] as LoggerFunction)(...args);
+                (this.#logger[level] as LoggerFunction)(util.format(...args));
             };
         }
         this.log = logger as Record<keyof L, LoggerFunction>;
+
     }
 }
 

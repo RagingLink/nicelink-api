@@ -10,7 +10,7 @@ import env from './utils/env/createEnv.js';
 import HttpException from './utils/HttpException.js';
 import { defaultLogLevels, NiceLogger } from './utils/logging/NiceLogger.js';
 
-const logger = new NiceLogger({ levels: defaultLogLevels });
+const logger = new NiceLogger({ levels: defaultLogLevels, defaultLevel: 'verbose' });
 const app = express();
 app.get('/', (_, res) => {
     res.redirect('https://api.nicelink.xyz/docs');

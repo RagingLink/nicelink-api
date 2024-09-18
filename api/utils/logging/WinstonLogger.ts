@@ -48,6 +48,7 @@ export function createLogger(options: LoggerOptions): CreateWinstonLoggerReturn<
     function timestampLevelFormat(info: winston.Logform.TransformableInfo): string {
         return `${chalk.bgWhite.black(padTimestamp((info.timestamp as string)))}${config.colors[info.level](levelPadding(info.level))}`;
     }
+
     return createWinstonLogger({
         level: options.level,
         levels: config.levels,
