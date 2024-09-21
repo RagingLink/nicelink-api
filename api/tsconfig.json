@@ -20,8 +20,20 @@
         "allowUnusedLabels": false,
         "moduleResolution": "Node",
         "types": [],
-        "lib": ["ES2021"],
+        "lib": [
+            "ES2021"
+        ],
+        "rootDir": "./src",
         "baseUrl": "./",
-        "skipLibCheck": true
-    }
+        "outDir": "out",
+        "skipLibCheck": true,
+    },
+    "include": [
+        "src/**/*.ts"
+    ],
+    "exclude": [
+        "**/*.disabled",
+        "node_modules",
+        "out"
+    ]
 }

@@ -8,8 +8,8 @@ import importPluginX from 'eslint-plugin-import-x';
 
 export default tseslint.config(
     {
-        files: ['**/*.ts', '**/*.tsx', 'eslint.config.mjs'],
-        ignores: ['**/*.js', '**/*.jsx', 'node_modules'],
+        files: ['src/**/*.ts', 'eslint.config.mjs'],
+        ignores: ['**/*.js', 'out/**/*.js', 'node_modules'],
         plugins: {
             '@typescript-eslint': tseslintPlugin,
             '@stylistic': stylistic,
@@ -19,9 +19,11 @@ export default tseslint.config(
         languageOptions: {
             parser: tsParser,
             parserOptions: {
-                project: './tsconfig.json',
-                tsconfigRootDir: import.meta.dirname
-            }
+                project: './eslint.tsconfig.json',
+                tsconfigRootDir: import.meta.dirname,
+                warnOnUnsupportedTypeScriptVersion: false
+            },
+            ecmaVersion: 'latest'
         },
         rules: {
             ...tseslint.configs.recommended.rules,
@@ -59,6 +61,9 @@ export default tseslint.config(
                     }
                 ],
             'import-x/newline-after-import': 'warn',
+            'import-x/extensions': ['error', 'always', {
+                ignorePackages: true
+            }],
             'sort-imports': ['error', {
                 'ignoreCase': true,
                 'ignoreDeclarationSort': true
@@ -111,7 +116,8 @@ export default tseslint.config(
             }],
 
             '@stylistic/semi': [2, 'always'],
-
+            '@stylistic/semi-spacing': 'error',
+            '@stylistic/no-whitespace-before-property': 'error',
             //Typescript
             '@typescript-eslint/explicit-member-accessibility': 'error',
             '@typescript-eslint/class-literal-property-style': 'error',
