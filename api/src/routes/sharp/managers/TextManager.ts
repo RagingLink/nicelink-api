@@ -7,8 +7,9 @@ import { fileURLToPath } from 'url';
 
 import Timer from '../../../utils/Timer.js';
 import { DefaultOptions, InputOptions } from '../../../types/PayloadTypes.js';
-import { isErrnoException } from '../../../utils/index.js';
+import { isErrnoException } from '../../../utils/isErrnoException.js';
 import { DefaultLogger } from '../../../utils/logging/NiceLogger.js';
+import { GenericRecordType } from '../../../utils/typebox/index.js';
 
 interface Font {
     name: string;
@@ -325,7 +326,7 @@ export default class TextManager {
         }
     }
 
-    private validateMetadata(input: JObject): { name: string; file: string; family: string; }[] {
+    private validateMetadata(input: GenericRecordType): { name: string; file: string; family: string; }[] {
         const fonts = [];
         if ('name' in input && typeof input.name === 'string' && 'fonts' in input) {
             if (!Array.isArray(input.fonts))

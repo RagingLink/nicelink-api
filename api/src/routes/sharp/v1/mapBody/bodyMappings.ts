@@ -1,70 +1,98 @@
-import { mapping } from './mapping/index.js';
+import { Static, Type } from '@sinclair/typebox';
+import { TypeCompiler } from '@sinclair/typebox/compiler';
 
-export const body = {
-    cacheDuration: mapping.number.optional,
-    background: mapping.string.optional,
-    width: mapping.number.optional,
-    height: mapping.number.optional,
-    opacity: mapping.number.optional,
-    rotate: mapping.number.optional,
-    flip: mapping.in(1, 2, 3).optional,
-    shape: mapping.choice(mapping.in('circle')).optional,
-    replaceColor: mapping.object({
-        target: mapping.string,
-        replace: mapping.string,
-        delta: mapping.number.optional
-    }).optional
-};
-export const child = {
-    size: mapping.choice(mapping.in('contain')).optional,
-    mask: mapping.boolean.optional,
-    x: mapping.number.optional,
-    y: mapping.number.optional,
-    alignment: mapping.choice(mapping.in('top-left', 'top-middle', 'top-right', 'left', 'center', 'right', 'bot-left', 'bot-middle', 'bot-right')).optional,
-    blendMode: mapping.string.optional,
-    ...body
-};
-const textBody = {
-    text: mapping.string.optional,
-    size: mapping.string.optional,
-    font: mapping.string.optional,
-    textAlign: mapping.in('left', 'center', 'right').optional,
-    color: mapping.string.optional,
-    textColor: mapping.string.optional,
-    backgroundColor: mapping.string.optional,
-    bgColor: mapping.string.optional,
-    lineSpacing: mapping.number.optional,
-    maxWidth: mapping.number.optional,
-    strokeWidth: mapping.number.optional,
-    strokeColor: mapping.string.optional,
-    padding: mapping.number.optional,
-    paddingLeft: mapping.number.optional,
-    paddingRight: mapping.number.optional,
-    paddingTop: mapping.number.optional,
-    paddingBottom: mapping.number.optional,
-    borderWidth: mapping.number.optional,
-    borderLeftWidth: mapping.number.optional,
-    borderRightWidth: mapping.number.optional,
-    borderBottomWidth: mapping.number.optional,
-    borderTopWidth: mapping.number.optional,
-    borderColor: mapping.string.optional,
-    localFontPath: mapping.string.optional,
-    localFontName: mapping.string.optional,
-    output: mapping.in('buffer', 'stream', 'dataURL', 'canvas').optional
-};
-export const text = {
-    x: mapping.number.optional,
-    y: mapping.number.optional,
-    alignment: mapping.in('top-left', 'top-middle', 'top-right', 'left', 'center', 'right', 'bot-left', 'bot-middle', 'bot-right').optional,
-    ...textBody
-};
-export const crop = {
-    width: mapping.number.optional,
-    height: mapping.number.optional,
-    x: mapping.number.optional,
-    y: mapping.number.optional
-};
-export const resize = {
-    width: mapping.number.optional,
-    height: mapping.number.optional
-};
+const alignmentSchema = Type.Union([
+    Type.Literal('top-left'),
+    Type.Literal('top-middle'),
+    Type.Literal('top-right'),
+    Type.Literal('left'),
+    Type.Literal('center'),
+    Type.Literal('right'),
+    Type.Literal('bot-left'),
+    Type.Literal('bot-middle'),
+    Type.Literal('bot-right')
+]);
+
+const textSchema = Type.Partial(Type.Object({
+    text: Type.String(),
+    size: Type.String(),
+    font: Type.String(),
+    textAlign: Type.Union([Type.Literal('left'), Type.Literal('center'), Type.Literal('right')]),
+    x: Type.Number(),
+    y: Type.Number(),
+    alignment: alignmentSchema,
+    color: Type.String(),
+    textColor: Type.String(),
+    backgroundColor: Type.String(),
+    bgColor: Type.String(),
+    lineSpacing: Type.Number(),
+    maxWidth: Type.Number(),
+    strokeWidth: Type.Number(),
+    strokeColor: Type.String(),
+    padding: Type.Number(),
+    paddingLeft: Type.Number(),
+    paddingRight: Type.Number(),
+    paddingTop: Type.Number(),
+    paddingBottom: Type.Number(),
+    borderWidth: Type.Number(),
+    borderLeftWidth: Type.Number(),
+    borderRightWidth: Type.Number(),
+    borderBottomWidth: Type.Number(),
+    borderTopWidth: Type.Number(),
+    borderColor: Type.String(),
+    localFontPath: Type.String(),
+    localFontName: Type.String(),
+    output: Type.Union([Type.Literal('buffer'), Type.Literal('stream'), Type.Literal('dataURL'), Type.Literal('canvas')])
+}));
+
+export const bodyWithoutChild = Type.Partial(Type.Object({
+    cacheDuration: Type.Number(),
+    background: Type.String(),
+    width: Type.Number(),
+    height: Type.Number(),
+    opacity: Type.Number(),
+    rotate: Type.Number(),
+    flip: Type.Union([Type.Literal(1), Type.Literal(2), Type.Literal(3)]),
+    shape: Type.Union([Type.Literal('circle')]),
+    replaceColor: Type.Object({
+        target: Type.String(),
+        replace: Type.String(),
+        delta: Type.Optional(Type.Number())
+    }),
+    crop: Type.Partial(Type.Object({
+        width: Type.Number(),
+        height: Type.Number(),
+        x: Type.Number(),
+        y: Type.Number()
+    })),
+    resize: Type.Partial(Type.Object({
+        width: Type.Number(),
+        height: Type.Number()
+    })),
+    text: Type.Union([Type.Array(textSchema), textSchema])
+}));
+
+const childSchema = Type.Partial(Type.Object({
+    ...bodyWithoutChild.properties,
+    size: Type.Union([Type.Literal('contain')]),
+    mask: Type.Boolean(),
+    x: Type.Number(),
+    y: Type.Number(),
+    alignment: alignmentSchema,
+    blendMode: Type.String()
+}));
+
+export const BodySchema = Type.Partial(Type.Object({
+    ...bodyWithoutChild.properties,
+    images: Type.Array(childSchema)
+}));
+
+export type BodyType = Static<typeof BodySchema>;
+
+const BodyTypeCheck = TypeCompiler.Compile(BodySchema);
+
+export const BodyCheck = BodyTypeCheck.Check;
+export const BodyErrors = BodyTypeCheck.Errors;
+
+export type TextType = Static<typeof textSchema>;
+export type ChildType = Static<typeof childSchema>;

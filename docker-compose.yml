@@ -17,6 +17,7 @@ services:
     #  - POSTGRES_DB
       - DATABASE_URL
       - PORT=${API_PORT}
+      - DOCS_HOST
       - NODE_ENV
     volumes:
       - ./api/assets:/usr/src/app/assets

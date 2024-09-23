@@ -1,8 +1,7 @@
 import sharp from 'sharp';
 
-import { InputBody } from './PayloadTypes.js';
-
 import Image from '../routes/sharp/v1/managers/Image.js';
+import { BodyType } from '../routes/sharp/v1/mapBody/bodyMappings.js';
 
 export interface MetaBody {
     children: MetaBody[];
@@ -13,7 +12,7 @@ export interface MetaBody {
 export interface OutputBody {
     image: Image;
     meta: MetaBody;
-    body: InputBody;
+    body: BodyType;
 }
 
 export interface ImageOutput {

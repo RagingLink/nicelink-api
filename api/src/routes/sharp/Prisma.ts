@@ -8,6 +8,6 @@ export default class Prisma {
         this.client = new PrismaClient();
         this.client.$connect().then(() => {
             this.logger.log.prisma('Connected to Postgres');
-        }).catch((e) => logger.log.error('Prisma', e));
+        }).catch((e) => logger.log.error(e));
     }
 }

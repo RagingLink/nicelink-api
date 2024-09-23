@@ -1,12 +1,12 @@
 import { Type } from '@sinclair/typebox';
 import { Value } from '@sinclair/typebox/value';
 
-import { mapping } from '../v1/mapBody/mapping/index.js';
+import { GenericObjectType, GenericRecordType } from '../../../utils/typebox/index.js';
 
 export interface ValidInputObject {
     background: string;
     cacheDuration?: number;
-    operations: JObject[];
+    operations: GenericRecordType[];
 }
 
 // Aliases on base object or
@@ -47,11 +47,11 @@ const RootInputBox = Type.Object({
     responseType: Type.Optional(Type.Union([
         Type.Literal('image'),
         Type.Literal('link')
-    ])),
+    ], {})),
     operations: Type.Optional(Type.Array(Type.Unknown()))
 });
 
-export function validateRootInput(input: JObject): ValidInputObject | undefined {
+export function validateRootInput(input: GenericObjectType): ValidInputObject | undefined {
     convertAliases(input);
 
     try {
@@ -72,7 +72,7 @@ export function validateRootInput(input: JObject): ValidInputObject | undefined 
     }
 }
 
-function convertAliases(input: JObject): JObject {
+function convertAliases(input: GenericRecordType): GenericRecordType {
     for (const key of Object.keys(input))
         if (key in propertyAliases) {
             input[propertyAliases[key as keyof typeof propertyAliases]] = input[key];
@@ -81,15 +81,9 @@ function convertAliases(input: JObject): JObject {
     return input;
 }
 
-function generateInvalidOperation(operation: unknown): JObject {
-    const mappedJtoken = mapping.jToken(operation);
-    if (mappedJtoken.valid)
-        return {
-            type: 'invalid_operation',
-            data: mappedJtoken.value
-        };
+function generateInvalidOperation(operation: unknown): GenericRecordType {
     return {
         type: 'invalid_operation',
-        data: 'undefined'
+        data: operation
     };
 }

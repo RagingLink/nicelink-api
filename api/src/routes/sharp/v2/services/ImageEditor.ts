@@ -8,6 +8,7 @@ import Timer from '../../../../utils/Timer.js';
 import Image from '../Image.js';
 import { validateRootInput } from '../validateInput.js';
 import { CompletedOperationObject } from '../Context.js';
+import { GenericObjectType } from '../../../../utils/typebox/index.js';
 
 export type CachedOperationMap = Record<string, CachedOperation[]>;
 export type CachedOperation = (CompletedOperationObject) & {
@@ -23,7 +24,7 @@ export class ImageEditor {
         this.operationHandler = new OperationHandler(logger);
     }
 
-    public async editImage(input: JObject): Promise<Image> {
+    public async editImage(input: GenericObjectType): Promise<Image> {
         const editImageTimer = new Timer(true);
         const validatedInput = validateRootInput(input);
 

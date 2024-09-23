@@ -13,6 +13,7 @@ import Operation, { IGeneralOperation, IOperation } from '../Operation.js';
 import { ValidInputObject } from '../validateInput.js';
 import OperationSummary from '../OperationSummary.js';
 import { DefaultLogger } from '../../../../utils/logging/NiceLogger.js';
+import { GenericRecordType } from '../../../../utils/typebox/index.js';
 
 interface ExportObj {
     default: unknown;
@@ -27,7 +28,7 @@ export default class OperationHandler {
         void this.initOperations();
     }
 
-    public getOperation(context: Context, inputOperation: JObject): IOperation | undefined {
+    public getOperation(context: Context, inputOperation: GenericRecordType): IOperation | undefined {
         // Maybe remove the errors from this
         if (!('type' in inputOperation) || typeof inputOperation.type !== 'string') {
             this.logger.log.operation(chalk.red('Invalid operation object:'), chalk.red.bold(JSON.stringify(inputOperation)));
@@ -46,10 +47,10 @@ export default class OperationHandler {
         return operation;
     }
 
-    public getCachedBuffer(image: Image, input: ValidInputObject): { buffer: Buffer; remainingOperations: JObject[]; } | undefined {
+    public getCachedBuffer(image: Image, input: ValidInputObject): { buffer: Buffer; remainingOperations: GenericRecordType[]; } | undefined {
         if (!(input.background in this.cache))
             return;
-        let remainingOperations: JObject[] = input.operations;
+        let remainingOperations: GenericRecordType[] = input.operations;
         // The cached operation that it's currently using
         let currentOperation: CachedOperation | undefined;
         // The array of operations that are cached
@@ -199,11 +200,11 @@ export default class OperationHandler {
         return unknownOperationSummary;
     };
 
-    private isEqual(operation: JObject | CompletedOperationObject, cachedOperation: CachedOperation): boolean {
+    private isEqual(operation: GenericRecordType | CompletedOperationObject, cachedOperation: CachedOperation): boolean {
         return _.isEqual(this.removeCacheKeys(operation), this.removeCacheKeys(cachedOperation));
     }
 
-    private removeCacheKeys(object: JObject | CachedOperation | CompletedOperationObject, include = ['type', 'data']): JObject {
+    private removeCacheKeys(object: GenericRecordType | CachedOperation | CompletedOperationObject, include = ['type', 'data']): GenericRecordType {
         return _.omit(object, Object.keys(object).filter((e) => !include.includes(e)));
     }
 }

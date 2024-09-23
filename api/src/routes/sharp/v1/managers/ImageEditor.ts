@@ -12,7 +12,9 @@ import { DefaultLogger } from '../../../../utils/logging/NiceLogger.js';
 import Timer from '../../../../utils/Timer.js';
 import mapBody from '../mapBody/index.js';
 import { MetaBody, OutputBody } from '../../../../types/ImageTypes.js';
-import { AlignmentModes, ChildBody, InputBody, TextBody } from '../../../../types/PayloadTypes.js';
+import { BodyType, ChildType, TextType } from '../mapBody/bodyMappings.js';
+import { GenericObjectType } from '../../../../utils/typebox/index.js';
+import { AlignmentModes, TextBody } from '../../../../types/PayloadTypes.js';
 
 interface SizeObject {
     width: number;
@@ -26,17 +28,20 @@ export class ImageEditor {
     private readonly imageFetcher: ImageFetcher;
     private readonly cache: CacheManager<{
         buffer: Buffer;
-        inputBody?: InputBody;
+        inputBody?: BodyType;
         meta?: MetaBody;
     }>;
 
+    public defaultImage: Buffer;
+
     public constructor(public readonly logger: DefaultLogger, public readonly textManager: TextManager) {
         this.imageFetcher = new ImageFetcher(logger, 100000);
+        this.defaultImage = this.imageFetcher.defaultImageBuffer;
         //? Refresh every half hour and keep edited images cached for 6 hours
         this.cache = new CacheManager({ hours: 6, refresh: 0.5 });
     }
 
-    public async generateImage(inputBody: JObject): Promise<OutputBody> {
+    public async generateImage(inputBody: GenericObjectType = {}): Promise<OutputBody> {
         const timer = new Timer();
         const meta: MetaBody = {
             errors: [],
@@ -65,7 +70,7 @@ export class ImageEditor {
         };
     }
 
-    public async fetchImage(src = '', inputBody: InputBody, meta: MetaBody): Promise<Image> {
+    public async fetchImage(src = '', inputBody: BodyType, meta: MetaBody): Promise<Image> {
         try {
             const cachedBuffer = this.cache.get(this.getBodyStr(inputBody));
             const buffer = cachedBuffer?.buffer ??
@@ -78,7 +83,7 @@ export class ImageEditor {
         }
     }
 
-    public async editImage(image: Image, body: InputBody, meta: MetaBody, timer?: Timer): Promise<Image> {
+    public async editImage(image: Image, body: BodyType, meta: MetaBody, timer?: Timer): Promise<Image> {
         let resized = false;
         const compositeOptions: OverlayOptions[] = [];
 
@@ -110,7 +115,8 @@ export class ImageEditor {
                 }
                 case 'text': {
                     if (body.text !== undefined)
-                        image.sharp.composite(await this.addTextImages(image, body.text));
+                        image.sharp.composite(await this.addTextImages(image, Array.isArray(body.text) ? body.text : [body.text]));
+
                     break;
                 }
                 case 'images': {
@@ -192,7 +198,7 @@ export class ImageEditor {
         }]);
     }
 
-    private async addTextImages(image: Image, textObjects: TextBody[]): Promise<sharp.OverlayOptions[]> {
+    private async addTextImages(image: Image, textObjects: TextType[]): Promise<sharp.OverlayOptions[]> {
         const textArray: { buffer: Buffer; body: TextBody; }[] = [];
         for (const textObject of textObjects) {
             const textObjectMaxWidth = { ...textObject, maxWidth: textObject.maxWidth ?? image.width };
@@ -237,7 +243,7 @@ export class ImageEditor {
         return overlayOptions;
     }
 
-    private async addChildImages(image: Image, childObjects: ChildBody[], meta: MetaBody): Promise<OverlayOptions[]> {
+    private async addChildImages(image: Image, childObjects: ChildType[], meta: MetaBody): Promise<OverlayOptions[]> {
         const childArray: OverlayOptions[] = [];
         for (const childObject of childObjects) {
             meta.children[meta.children.length] = {
@@ -418,7 +424,7 @@ export class ImageEditor {
         }
     }
 
-    private getBodyStr(body: InputBody | TextBody, type?: 'text'): string {
+    private getBodyStr(body: BodyType | TextBody, type?: 'text'): string {
         const ignoreProps = { cacheDuration: undefined, alignment: undefined, x: undefined, y: undefined, blendMode: undefined, size: undefined };
         switch (type) {
             case 'text':

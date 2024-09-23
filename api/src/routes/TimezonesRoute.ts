@@ -1,6 +1,8 @@
-import { Request, Response, Router } from 'express';
 import { Static, Type } from '@sinclair/typebox';
 import { Value } from '@sinclair/typebox/value';
+import { FastifyPluginCallback, FastifyReply, FastifyRequest } from 'fastify';
+
+import API from '../api.js';
 
 const singleTimezoneSchema = Type.Object({
     value: Type.String(),
@@ -12,33 +14,50 @@ const singleTimezoneSchema = Type.Object({
 });
 const timezonesArraySchema = Type.Array(singleTimezoneSchema);
 
+const TimezoneRequestQuerySchema = Type.Object({
+    q: Type.Optional(Type.String())
+});
+
 export default class TimezonesRoute {
-    public readonly router = Router();
     private simpleTimezones: string[] = [];
+    public plugin: FastifyPluginCallback;
 
     #timezones: Static<typeof timezonesArraySchema> = [];
 
-    public constructor() {
-        import('../../assets/data/timezones.json', { with: { type: 'json' } }).then((data) => {
-            if(!Value.Check(timezonesArraySchema, data))
-                return;
-            this.#timezones = data;
-            this.simpleTimezones = this.#timezones
-                .reduce((acc: string[], item) => {
-                    acc.push(...item.utc);
-                    return acc;
-                }, []).filter((item, index, self) => self.indexOf(item) === index);
+    public constructor(public readonly api: API) {
+        this.loadTimezonesJson().catch((err: unknown) => {
+            api.logger.log.error(err);
         });
 
-        this.router.get('/', (req, res) => this.getTimezone(req, res));
-        this.router.get('/simple', (_, res) => res.type('json').send(JSON.stringify(this.simpleTimezones, null, 2)));
+        this.plugin = (fastify, { }, done) => {
+            fastify.get<{ Querystring: Static<typeof TimezoneRequestQuerySchema> }>('/', {
+                schema: {
+                    querystring: TimezoneRequestQuerySchema
+                }
+            }, (req, reply) => {
+                this.getTimezone(req, reply);
+            });
+            fastify.get('/simple', (_, reply) => reply.type('json').send(JSON.stringify(this.simpleTimezones, null, 2)));
+            done();
+        };
     }
 
-    private getTimezone(req: Request, res: Response): void {
-        if (req.query.q === undefined) {
+    private async loadTimezonesJson(): Promise<void> {
+        const data = import('../../assets/data/timezones.json', { with: { type: 'json' } });
+        if (!Value.Check(timezonesArraySchema, data))
+            return;
+        this.#timezones = data;
+        this.simpleTimezones = this.#timezones.reduce<string[]>((acc, item) => {
+            acc.push(...item.utc);
+            return acc;
+        }, []).filter((item, index, self) => self.indexOf(item) === index);
+    }
+
+    private getTimezone(req: FastifyRequest<{ Querystring: Static<typeof TimezoneRequestQuerySchema> }>, res: FastifyReply): void {
+        if (req.query.q === undefined)
             return void res.type('json').send(JSON.stringify(this.#timezones, null, 2));
-        }
-        const query = String(req.query.q).toLowerCase();
+
+        const query = req.query.q.toLowerCase();
         const timeCodes = this.simpleTimezones.filter((item) => {
             return item.toLowerCase().includes(query);
         });

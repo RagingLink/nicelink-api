@@ -10,7 +10,7 @@ export class SharpDiscord {
         this.client = Eris(config.discord.token);
         this.client.on('ready', () => {
             if (Date.now() - this.discordLastDisconnect > 60000)
-                logger.log.info('Discord', 'Client ready');
+                logger.log.info('Discord Client ready');
         });
         this.client.on('disconnect', () => {
             this.discordLastDisconnect = Date.now();

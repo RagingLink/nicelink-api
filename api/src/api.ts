@@ -1,53 +1,73 @@
-import express, { json, NextFunction, Request, Response, urlencoded } from 'express';
-
-import http from 'http';
+import Fastify, { FastifyInstance } from 'fastify';
+// import { TypeBoxTypeProvider, TypeBoxValidatorCompiler } from '@fastify/type-provider-typebox';
 
 import ProgressBarRoute from './routes/ProgressbarRoute.js';
 import SharpRoute from './routes/sharp/v1/SharpRoute.js';
 import SharpRouteV2 from './routes/sharp/v2/SharpRoute.js';
 import TimezonesRoute from './routes/TimezonesRoute.js';
-import env from './utils/env/createEnv.js';
-import HttpException from './utils/HttpException.js';
-import { defaultLogLevels, NiceLogger } from './utils/logging/NiceLogger.js';
-import loadConfig from './utils/loadConfig.js';
+//import HttpException from './utils/HttpException.js';
+import { DefaultLogger, defaultLogLevels, NiceLogger } from './utils/logging/NiceLogger.js';
+import { Config } from './types/Config.js';
+import { getConfig } from './utils/loadConfig.js';
+import parseEnv, { Env } from './utils/env/parseEnv.js';
 
-// Maybe I should make API its own class so I can more 'cleanly' expose common properties like config/env etc by just passing API to each route/module
+//TODO rework logger maybe to specify log levels here and add emoji aliases for style
 const logger = new NiceLogger({ levels: defaultLogLevels, defaultLevel: 'verbose' });
-const app = express();
 
-loadConfig().then((config) => {
-    app.get('/', (_, res) => {
-        res.redirect('https://api.nicelink.xyz/docs');
-    });
-    app.set('trust proxy', 1);
+export default class API {
+    public readonly logger: DefaultLogger;
+    public config: Config;
+    public env: Env;
+    public server: FastifyInstance;
 
-    app.use(urlencoded({ extended: false }));
-    app.use(json({ strict: false }));
-
-    const sharpRoute = new SharpRoute(logger, env, config);
-    const sharpRouteV2 = new SharpRouteV2(logger);
-    //* Alias
-    app.use('/sharp/v2', sharpRouteV2.router);
-    app.use('/sharp/v1', sharpRoute.router);
-    //app.use('/jimp', sharpRoute.router);
-
-    app.use('/misc/progressbar', new ProgressBarRoute(logger).router);
-    app.use('/timezones', new TimezonesRoute().router);
-
-    app.use((err: HttpException, _: Request, res: Response, next: NextFunction): void => {
-        if (err.status === 400 && 'body' in err) {
-            if (err instanceof SyntaxError) {
-                logger.log.error('API', `${err.name}: ${err.message}`);
-            } else
-                logger.log.error('error', err);
-            return void res.status(400).send({ status: 400, message: err.message });
+    public constructor() {
+        this.logger = logger;
+        try {
+            this.config = getConfig();
+            this.env = parseEnv();
+            this.server = Fastify({ trustProxy: true });
+            // ? Typebox right now seems to be having an issue with infering the type. https://github.com/fastify/fastify-type-provider-typebox/issues/167
+            // .setValidatorCompiler(TypeBoxValidatorCompiler)
+            // .withTypeProvider<TypeBoxTypeProvider>();
+        } catch (err: unknown) {
+            throw err;
         }
-        next();
-    });
-});
 
-const server = http.createServer(app);
+        this.server.get('/', (_, reply) => {
+            //Instead of redirecting I could maybe setup a proxy to the docs since that's hosted on the same machine anyways
+            reply.redirect(this.env.DOCS_HOST);
+        });
 
-server.listen(env.PORT, () => {
-    logger.log.info('API', 'Listening on port', +(env.PORT ?? ''));
-});
+        this.loadRoutes().catch((err) => {
+            this.logger.log.error(err);
+        });
+    }
+
+    public async start(): Promise<void> {
+        const response = await this.server.listen({ port: this.env.PORT });
+        this.logger.log.info(`Listening on port: ${this.env.PORT}`, response);
+    }
+
+    private async loadRoutes(): Promise<void> {
+        const timezoneRoute = new TimezonesRoute(this);
+        this.server.register(timezoneRoute.plugin, {
+            prefix: '/timezones'
+        });
+        const progressBarRoute = new ProgressBarRoute(this);
+        this.server.register(progressBarRoute.plugin, {
+            prefix: '/misc/progressbar'
+        });
+        const sharpRoute = new SharpRoute(this);
+        this.server.register(sharpRoute.plugin, {
+            prefix: '/sharp/v1'
+        });
+        const sharpRouteV2 = new SharpRouteV2(this);
+        this.server.register(sharpRouteV2.plugin, {
+            prefix: '/sharp/v2'
+        });
+    }
+}
+
+const api = new API();
+
+void api.start();

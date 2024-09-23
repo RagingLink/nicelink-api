@@ -5,6 +5,7 @@ import { v4 as uuidv4 } from 'uuid';
 import Context from './Context.js';
 
 import { DefaultLogger } from '../../../utils/logging/NiceLogger.js';
+import { getMimeType } from '../../../utils/constants/MimeTypes.js';
 
 export default class Image {
     public readonly context: Context;
@@ -76,8 +77,13 @@ export default class Image {
         return buffer;
     }
 
-    public async getFormat(defaultFormat = 'png'): Promise<string> {
-        return (await this.#sharp.metadata()).format ?? defaultFormat;
+    public async getFormat(): Promise<string> {
+        return (await this.#sharp.metadata()).format ?? '';
+    }
+
+    public async getMimeType(): Promise<string> {
+        const imageFormat = await this.getFormat();
+        return getMimeType(imageFormat) ?? 'image/png';
     }
 
     private setDimensions(buffer: Buffer): void {

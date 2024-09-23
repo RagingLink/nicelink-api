@@ -1,12 +1,14 @@
 import can, { Canvas, CanvasRenderingContext2D, TextMetrics } from 'canvas';
 import chalk from 'chalk';
 import { parse } from 'pb-text-format-to-json';
+import { TypeCompiler } from '@sinclair/typebox/compiler';
+import { Type } from '@sinclair/typebox';
 
 import fs from 'fs';
 import { fileURLToPath } from 'url';
 
 import { DefaultOptions, InputOptions } from '../../../../types/PayloadTypes.js';
-import { isErrnoException } from '../../../../utils/index.js';
+import { isErrnoException } from '../../../../utils/isErrnoException.js';
 import { DefaultLogger } from '../../../../utils/logging/NiceLogger.js';
 import Timer from '../../../../utils/Timer.js';
 
@@ -30,6 +32,17 @@ interface Max {
 interface LineProp extends Max {
     line: string;
 }
+
+const fontSchema = Type.Object({
+    filename: Type.String(),
+    full_name: Type.String()
+});
+
+const checkFontData = TypeCompiler.Compile(Type.Object({
+    name: Type.String(),
+    fonts: Type.Union([fontSchema, Type.Array(fontSchema)])
+})).Check;
+
 export default class TextManager {
     private readonly fonts: Map<string, Font>;
     private readonly FONTS_ASSETS_DIR = fileURLToPath(new URL('.', import.meta.url)) + '../../../../../assets/fonts/';
@@ -325,31 +338,24 @@ export default class TextManager {
         }
     }
 
-    private validateMetadata(input: JObject): { name: string; file: string; family: string; }[] {
+    private validateMetadata(input: unknown): { name: string; file: string; family: string; }[] {
         const fonts = [];
-        if ('name' in input && typeof input.name === 'string' && 'fonts' in input) {
+        if (checkFontData(input)) {
             if (!Array.isArray(input.fonts))
                 input.fonts = [input.fonts];
 
-            if (Array.isArray(input.fonts)) {
-                for (const font of input.fonts) {
-                    if (typeof font !== 'object' || font === null)
-                        continue;
-
-                    if ('filename' in font && 'full_name' in font)
-                        if (typeof font.filename === 'string' && typeof font.full_name === 'string')
-                            fonts.push({
-                                name: font.full_name,
-                                file: font.filename,
-                                family: input.name
-                            });
-                }
+            for (const font of input.fonts) {
+                fonts.push({
+                    name: font.full_name,
+                    file: font.filename,
+                    family: input.name
+                });
             }
         }
         return fonts;
     }
 
-    public get availableFontFamilies(): Record<string, string[]> {
+    public get availableFontFamilies(): Record < string, string[] > {
         const familyMappedObj = [...this.fonts.values()].reduce((a: Record<string, string[]>, font) => {
             if (font.family in a) {
                 a[font.family].push(font.name);

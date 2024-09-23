@@ -9,11 +9,12 @@ import { fileURLToPath } from 'url';
 import Image from './Image.js';
 import { ImageEditor } from './ImageEditor.js';
 
-import { InputBody } from '../../../../types/PayloadTypes.js';
 import CacheManager from '../../../../utils/CacheManager.js';
 import { guard } from '../../../../utils/guard/index.js';
 import { DefaultLogger } from '../../../../utils/logging/NiceLogger.js';
 import Prisma from '../../Prisma.js';
+import { GenericObjectType } from '../../../../utils/typebox/index.js';
+import { BodyType } from '../mapBody/bodyMappings.js';
 
 export class ImageManager {
     private readonly cache: CacheManager<{ buffer: Buffer; }>;
@@ -39,7 +40,7 @@ export class ImageManager {
         return fileName;
     }
 
-    public async saveImage(image: Image, body?: InputBody, persist = false): Promise<string> {
+    public async saveImage(image: Image, body?: BodyType, persist = false): Promise<string> {
         let fileType: string;
         if (image.edited) {
             fileType = (await image.sharp.metadata()).format ?? 'png';
@@ -65,7 +66,7 @@ export class ImageManager {
         return fileName;
     }
 
-    public async saveImageToDB(fileName: string, body?: InputBody, persist = false): Promise<void> {
+    public async saveImageToDB(fileName: string, body?: BodyType, persist = false): Promise<void> {
         const cache_duration = body?.cacheDuration ?? 7;
         await this.prisma.image.create({
             data: {
@@ -128,7 +129,7 @@ export class ImageManager {
                 }
             });
             if (image !== null) {
-                const body = JSON.parse(image.body) as JObject;
+                const body = JSON.parse(image.body) as GenericObjectType;
                 const output = await this.editor.generateImage(body);
                 const buffer = output.image.edited ? await output.image.sharp.toBuffer() : output.image.buffer;
                 this.cache.set(fileName, { buffer });
@@ -181,11 +182,11 @@ export class ImageManager {
         };
         const result: string[] = [];
         if (deletedCount.fs > 0)
-            result.push(`eleted ${deletedCount.fs} images from FS`);
+            result.push(`Deleted ${deletedCount.fs} images from FS`);
         if (deletedCount.pg > 0)
-            result.push(`eleted ${deletedCount.pg} images from PG`);
+            result.push(`Deleted ${deletedCount.pg} images from PG`);
         if (result.length > 0)
-            this.logger.log.prisma('D' + result.join(' and d'));
+            this.logger.log.prisma(result.join('\n'));
 
         this.prisma.image.count().then(async (prismaCount) => {
             const files = await fs.promises.readdir(this.#storedImagesPath).catch((err) => {
