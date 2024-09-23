@@ -118,6 +118,7 @@ export default tseslint.config(
             '@stylistic/semi': [2, 'always'],
             '@stylistic/semi-spacing': 'error',
             '@stylistic/no-whitespace-before-property': 'error',
+            '@stylistic/keyword-spacing': 'error',
             //Typescript
             '@typescript-eslint/explicit-member-accessibility': 'error',
             '@typescript-eslint/class-literal-property-style': 'error',
@@ -141,7 +142,8 @@ export default tseslint.config(
                 argsIgnorePattern: '^_',
                 varsIgnorePattern: '^_',
                 caughtErrorsIgnorePattern: '^_'
-            }]
+            }],
+            '@typescript-eslint/no-floating-promises': 'error'
         }
     }
 );

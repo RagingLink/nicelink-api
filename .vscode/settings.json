@@ -8,8 +8,9 @@
     "editor.codeActionsOnSave": {
         "source.fixAll.eslint": "explicit"
     },
+    "eslint.format.enable": true,
+    "editor.defaultFormatter": "dbaeumer.vscode-eslint",
     "eslint.useFlatConfig": true,
-    "editor.defaultFormatter": "vscode.typescript-language-features",
     "npm.packageManager": "yarn",
     "files.eol": "\n",
     "typescript.preferences.importModuleSpecifier": "relative",
@@ -19,13 +20,13 @@
         "editor.unicodeHighlight.invisibleCharacters": false,
         "editor.wordWrap": "off"
     },
-    "[typescript]": {
-        "editor.defaultFormatter": "vscode.typescript-language-features"
-    },
     "[shellscript]": {
         "editor.defaultFormatter": "shakram02.bash-beautify"
     },
     "[jsonc]": {
         "editor.defaultFormatter": "vscode.json-language-features"
+    },
+    "[typescript]": {
+        "editor.defaultFormatter": "dbaeumer.vscode-eslint"
     }
 }
