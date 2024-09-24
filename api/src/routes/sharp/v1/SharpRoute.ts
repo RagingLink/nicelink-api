@@ -161,20 +161,16 @@ export default class SharpRoute {
     }
 
     // Send image
-    private processImage(req: FastifyRequest<{ Body: GenericRecordType }>, reply: FastifyReply): void {
-        void this.imageEditor.generateImage(req.body).then((output) => {
-            void output.image.format().then((format) => {
-                reply.type(format);
-                if (output.image.edited) {
-                    const stream = new PassThrough();
-                    output.image.sharp.pipe(stream);
-                    reply.send(stream);
-                } else {
-                    reply.send(output.image.buffer);
-                }
-            });
-
-        });
+    private async processImage(req: FastifyRequest<{ Body: GenericRecordType }>, reply: FastifyReply): Promise<FastifyReply> {
+        const output = await this.imageEditor.generateImage(req.body);
+        const mimeType = await output.image.getMimeType();
+        reply.type(mimeType);
+        // not sure if this even makes a performance difference
+        if (output.image.edited) {
+            const stream = new PassThrough();
+            output.image.sharp.pipe(stream);
+            return reply.send(stream);
+        }
+        return reply.send(output.image.buffer);
     }
-
 }

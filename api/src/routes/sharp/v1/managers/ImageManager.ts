@@ -10,7 +10,6 @@ import Image from './Image.js';
 import { ImageEditor } from './ImageEditor.js';
 
 import CacheManager from '../../../../utils/CacheManager.js';
-import { guard } from '../../../../utils/guard/index.js';
 import { DefaultLogger } from '../../../../utils/logging/NiceLogger.js';
 import Prisma from '../../Prisma.js';
 import { GenericObjectType } from '../../../../utils/typebox/index.js';
@@ -40,52 +39,66 @@ export class ImageManager {
         return fileName;
     }
 
-    public async saveImage(image: Image, body?: BodyType, persist = false): Promise<string> {
-        let fileType: string;
-        if (image.edited) {
-            fileType = (await image.sharp.metadata()).format ?? 'png';
-        } else {
-            fileType = (await fileTypeFromBuffer(image.buffer))?.ext ?? 'png';
-        }
-        const fileName = uuidv4() + '.' + fileType;
-        if (image.edited) {
-            this.awaitingSharpBuffer[fileName] = image.sharp.toBuffer().then((buffer) => {
-                this.cache.set(fileName, { buffer });
+    public async saveImage(image: Image, body?: BodyType, persist = false): Promise<string | undefined> {
+        try {
+            let fileType: string;
+            if (image.edited) {
+                fileType = (await image.sharp.metadata()).format ?? 'png';
+            } else {
+                fileType = (await fileTypeFromBuffer(image.buffer))?.ext ?? 'png';
+            }
+            const fileName = uuidv4() + '.' + fileType;
+            if (image.edited) {
+                this.awaitingSharpBuffer[fileName] = image.sharp.toBuffer().then((buffer) => {
+                    this.cache.set(fileName, { buffer });
 
-                delete this.awaitingSharpBuffer[fileName];
-                this.writeFile(buffer, fileName);
-            });
-        } else {
-            this.cache.set(fileName, { buffer: image.buffer });
-            this.writeFile(image.buffer, fileName);
+                    delete this.awaitingSharpBuffer[fileName];
+                    void this.writeFile(buffer, fileName);
+                });
+            } else {
+                this.cache.set(fileName, { buffer: image.buffer });
+                void this.writeFile(image.buffer, fileName);
+            }
+            if (body !== undefined)
+                this.saveImageToDB(fileName, body, persist).catch((err) => {
+                    this.logger.log.error('ImageManager', err);
+                });
+            return fileName;
+        } catch (err: unknown) {
+            this.logger.log.error('Error saving image:', err);
+            return;
         }
-        if (body !== undefined)
-            this.saveImageToDB(fileName, body, persist).catch((err) => {
-                this.logger.log.error('ImageManager', err);
-            });
-        return fileName;
     }
 
     public async saveImageToDB(fileName: string, body?: BodyType, persist = false): Promise<void> {
-        const cache_duration = body?.cacheDuration ?? 7;
-        await this.prisma.image.create({
-            data: {
-                id: fileName,
-                body: JSON.stringify(body),
-                created_at: new Date(),
-                last_accessed: new Date(),
-                cache_duration: cache_duration <= 30 ? cache_duration : 30,
-                persisted: persist
-            }
-        });
+        try {
+            const cache_duration = body?.cacheDuration ?? 7;
+            await this.prisma.image.create({
+                data: {
+                    id: fileName,
+                    body: JSON.stringify(body),
+                    created_at: new Date(),
+                    last_accessed: new Date(),
+                    cache_duration: cache_duration <= 30 ? cache_duration : 30,
+                    persisted: persist
+                }
+            });
+        } catch (err: unknown) {
+            this.logger.log.error('Error saving image:', err);
+        }
     }
 
-    public async saveBuffer(buffer: Buffer): Promise<string> {
-        const fileType = await fileTypeFromBuffer(buffer);
-        const fileName = uuidv4() + '.' + (fileType?.ext ?? 'png');
-        this.cache.set(fileName, { buffer });
-        this.writeFile(buffer, fileName);
-        return fileName;
+    public async saveBuffer(buffer: Buffer): Promise<string | void> {
+        try {
+            const fileType = await fileTypeFromBuffer(buffer);
+            const fileName = uuidv4() + '.' + (fileType?.ext ?? 'png');
+            this.cache.set(fileName, { buffer });
+            void this.writeFile(buffer, fileName);
+            return fileName;
+        } catch (err: unknown) {
+            this.logger.log.error('Error saving image', err);
+            return;
+        }
     }
 
     public hasFile(fileName: string): boolean {
@@ -96,33 +109,38 @@ export class ImageManager {
         return fs.existsSync(path.join(this.#legacyImagesPath, fileName));
     }
 
-    public writeFile(buffer: Buffer, fileName: string): void {
-        fs.writeFile(path.join(this.#storedImagesPath, fileName), buffer, (err) => {
-            if (err !== null)
-                return this.logger.log.error('ImageManager', err);
-        });
+    public async writeFile(buffer: Buffer, fileName: string): Promise<void> {
+        try {
+            await fs.promises.writeFile(path.join(this.#storedImagesPath, fileName), buffer);
+        } catch (err) {
+            this.logger.log.error('Error writing file:', err);
+        }
     }
 
-    public deleteFile(fileName: string): void {
-        fs.rmSync(path.join(this.#storedImagesPath, fileName));
+    public async deleteFile(fileName: string): Promise<void> {
+        try {
+            await fs.promises.rm(path.join(this.#storedImagesPath, fileName));
+        } catch (err) {
+            this.logger.log.error('Error deleting file:', err);
+        }
     }
 
     public async getImage(fileName: string): Promise<Buffer | void> {
-        if (guard.hasProperty(this.awaitingSharpBuffer, fileName))
-            await this.awaitingSharpBuffer[fileName];
-        const cachedObj = this.cache.get(fileName);
-        if (cachedObj !== undefined) {
-            this.updateLastAccessed(fileName);
-            return cachedObj.buffer;
-        } else if (this.hasFile(fileName)) {
-            this.updateLastAccessed(fileName);
-            this.cache.set(fileName, { buffer: fs.readFileSync(path.join(this.#storedImagesPath, fileName)) });
-
-            return this.cache.get(fileName)?.buffer;
-        } else if (this.hasLegacyFile(fileName)) {
-            return fs.readFileSync(path.join(this.#legacyImagesPath, fileName));
-        }
         try {
+            if (fileName in this.awaitingSharpBuffer)
+                await this.awaitingSharpBuffer[fileName];
+            const cachedObj = this.cache.get(fileName);
+            if (cachedObj !== undefined) {
+                void this.updateLastAccessed(fileName);
+                return cachedObj.buffer;
+            } else if (this.hasFile(fileName)) {
+                void this.updateLastAccessed(fileName);
+                this.cache.set(fileName, { buffer: fs.readFileSync(path.join(this.#storedImagesPath, fileName)) });
+
+                return this.cache.get(fileName)?.buffer;
+            } else if (this.hasLegacyFile(fileName)) {
+                return fs.readFileSync(path.join(this.#legacyImagesPath, fileName));
+            }
             const image = await this.prisma.image.findUnique({
                 where: {
                     id: fileName
@@ -133,8 +151,8 @@ export class ImageManager {
                 const output = await this.editor.generateImage(body);
                 const buffer = output.image.edited ? await output.image.sharp.toBuffer() : output.image.buffer;
                 this.cache.set(fileName, { buffer });
-                this.writeFile(buffer, fileName);
-                this.updateLastAccessed(fileName);
+                void this.writeFile(buffer, fileName);
+                void this.updateLastAccessed(fileName);
                 return buffer;
             }
         } catch (e: unknown) {
@@ -143,30 +161,32 @@ export class ImageManager {
 
     }
 
-    public updateLastAccessed(fileName: string): void {
-        this.prisma.image.findUnique({
-            where: {
-                id: fileName
-            }
-        }).then((image) => {
-            if (image === null)
+    public async updateLastAccessed(fileName: string): Promise<void> {
+        try {
+            const image = await this.prisma.image.findUnique({
+                where: {
+                    id: fileName
+                }
+            });
+            if (image === null) {
                 this.saveImageToDB(fileName).then(() => {
                     this.logger.log.prisma('Saved (legacy) image to DB');
                 }).catch((err) => {
-                    this.logger.log.prisma(err);
+                    this.logger.log.error(err);
                 });
-            else
-                void this.prisma.image.update({
+            } else {
+                await this.prisma.image.update({
                     where: {
                         id: fileName
                     }, data: {
                         last_accessed: new Date()
                     }
                 });
-        }).catch(() => {
-            this.logger.log.error('Prisma', `Failed to update last accessed for "${fileName}"`);
-        });
-        this.cache.refreshTimestamp(fileName);
+            }
+            this.cache.refreshTimestamp(fileName);
+        } catch (err) {
+            this.logger.log.error(err);
+        }
     }
 
     private startImageSweep(): void {
@@ -176,53 +196,60 @@ export class ImageManager {
     }
 
     private async sweepImages(): Promise<void> {
-        const deletedCount = {
-            fs: await this.sweepFsImages(),
-            pg: await this.sweepPgImages()
-        };
-        const result: string[] = [];
-        if (deletedCount.fs > 0)
-            result.push(`Deleted ${deletedCount.fs} images from FS`);
-        if (deletedCount.pg > 0)
-            result.push(`Deleted ${deletedCount.pg} images from PG`);
-        if (result.length > 0)
-            this.logger.log.prisma(result.join('\n'));
+        try {
+            const deletedCount = {
+                fs: await this.sweepFsImages(),
+                pg: await this.sweepPgImages()
+            };
+            const result: string[] = [];
+            if (deletedCount.fs > 0)
+                result.push(`Deleted ${deletedCount.fs} images from FS`);
+            if (deletedCount.pg > 0)
+                result.push(`Deleted ${deletedCount.pg} images from PG`);
+            if (result.length > 0)
+                this.logger.log.prisma(result.join('\n'));
 
-        this.prisma.image.count().then(async (prismaCount) => {
+            const prismaCount = await this.prisma.image.count();
             const files = await fs.promises.readdir(this.#storedImagesPath).catch((err) => {
                 this.logger.log.error(this.#storedImagesPath, err);
                 return [];
             });
             this.logger.log.prisma(`Currently storing ${files.length} images on disk and ${prismaCount} in Prisma`);
-
-        }).catch((err) => this.logger.log.error('ImageManager', err));
+        } catch (err) {
+            this.logger.log.error('Error sweeping images', err);
+        }
     }
 
     private async sweepFsImages(): Promise<number> {
-        let deletedN = 0;
-        const expiredImages = (await this.prisma.image.findMany({
-            where: {
-                last_accessed: {
-                    lte: new Date(Date.now() - 24 * 3600 * 1000)
-                },
-                persisted: {
-                    not: true
+        try {
+            let deletedN = 0;
+            const expiredImages = (await this.prisma.image.findMany({
+                where: {
+                    last_accessed: {
+                        lte: new Date(Date.now() - 24 * 3600 * 1000)
+                    },
+                    persisted: {
+                        not: true
+                    }
+                }
+            })).filter((image) => {
+                return Date.now() > image.last_accessed.getMilliseconds() + image.cache_duration * 24 * 3600 * 1000;
+            });
+            for (const image of expiredImages) {
+                try {
+                    if (!this.hasFile(image.id))
+                        continue;
+                    void this.deleteFile(image.id);
+                    deletedN++;
+                } catch (e: unknown) {
+                    this.logger.log.error('ImageManager', e);
                 }
             }
-        })).filter((image) => {
-            return Date.now() > image.last_accessed.getMilliseconds() + image.cache_duration * 24 * 3600 * 1000;
-        });
-        for (const image of expiredImages) {
-            try {
-                if (!this.hasFile(image.id))
-                    continue;
-                this.deleteFile(image.id);
-                deletedN++;
-            } catch (e: unknown) {
-                this.logger.log.error('ImageManager', e);
-            }
+            return deletedN;
+        } catch (err) {
+            this.logger.log.error('Error sweeping FS images:', err);
+            return 0;
         }
-        return deletedN;
     }
 
     private async sweepPgImages(): Promise<number> {

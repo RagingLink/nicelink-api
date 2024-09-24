@@ -59,12 +59,14 @@ export const bodyWithoutChild = Type.Partial(Type.Object({
         replace: Type.String(),
         delta: Type.Optional(Type.Number())
     }),
-    crop: Type.Partial(Type.Object({
-        width: Type.Number(),
-        height: Type.Number(),
-        x: Type.Number(),
-        y: Type.Number()
-    })),
+    crop: Type.Union([
+        Type.Literal('auto'),
+        Type.Partial(Type.Object({
+            width: Type.Number(),
+            height: Type.Number(),
+            x: Type.Number(),
+            y: Type.Number()
+        }))]),
     resize: Type.Partial(Type.Object({
         width: Type.Number(),
         height: Type.Number()
@@ -89,10 +91,7 @@ export const BodySchema = Type.Partial(Type.Object({
 
 export type BodyType = Static<typeof BodySchema>;
 
-const BodyTypeCheck = TypeCompiler.Compile(BodySchema);
-
-export const BodyCheck = BodyTypeCheck.Check;
-export const BodyErrors = BodyTypeCheck.Errors;
+export const BodyTypeCheck = TypeCompiler.Compile(BodySchema);
 
 export type TextType = Static<typeof textSchema>;
 export type ChildType = Static<typeof childSchema>;

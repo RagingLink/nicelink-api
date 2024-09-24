@@ -4,6 +4,7 @@ import sharp, { Sharp } from 'sharp';
 
 import { CropOption, InputBody, ReplaceColorBody } from '../../../../types/PayloadTypes.js';
 import replaceColor from '../../replaceColor.js';
+import { getMimeType, MimeType } from '../../../../utils/constants/MimeTypes.js';
 
 export default class Image {
     #sharpImage?: Sharp;
@@ -21,6 +22,11 @@ export default class Image {
 
     public async format(): Promise<string> {
         return (this.edited ? (await this.sharp.metadata()).format : (await fileTypeFromBuffer(this.buffer))?.ext) ?? 'png';
+    }
+
+    public async getMimeType(): Promise<MimeType> {
+        const format = await this.format();
+        return getMimeType(format) ?? 'image/png';
     }
 
     //* Getters and setters

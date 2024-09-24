@@ -1,7 +1,9 @@
-import { BodyCheck, BodyErrors, BodyType } from './bodyMappings.js';
+/* eslint-disable no-console */
+
+import { BodyType, BodyTypeCheck } from './bodyMappings.js';
 
 import { MetaBody } from '../../../../types/ImageTypes.js';
-import { GenericArrayType, GenericObjectType, GenericRecordCheck, GenericRecordType } from '../../../../utils/typebox/index.js';
+import { GenericArrayType, GenericObjectType, GenericRecordType, GenericRecordTypeCheck } from '../../../../utils/typebox/index.js';
 
 const propertyAliases = {
     bg: 'background',
@@ -17,9 +19,10 @@ const propertyAliases = {
 
 export default function mapBody(inputBody: GenericObjectType, meta: MetaBody): BodyType {
     convertAliases(inputBody);
-    if (BodyCheck(inputBody))
+    console.log(inputBody);
+    if (BodyTypeCheck.Check(inputBody))
         return inputBody;
-    const errors = [...BodyErrors(inputBody)].map((err) => {
+    const errors = [...BodyTypeCheck.Errors(inputBody)].map((err) => {
         return err.message;
     });
     meta.errors.push(...errors);
@@ -34,14 +37,14 @@ export default function mapBody(inputBody: GenericObjectType, meta: MetaBody): B
 function convertAliases(inputBody: GenericRecordType | GenericArrayType): void {
     if (Array.isArray(inputBody)) {
         for (const element of inputBody) {
-            if (GenericRecordCheck(element))
+            if (GenericRecordTypeCheck.Check(element))
                 convertAliases(element);
         }
         return;
     }
     const keys = Object.keys(inputBody);
     for (const key of keys) {
-        if (GenericRecordCheck(inputBody[key]))
+        if (GenericRecordTypeCheck.Check(inputBody[key]))
             convertAliases(inputBody[key]);
         if (!(key in propertyAliases))
             continue;

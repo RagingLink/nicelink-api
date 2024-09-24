@@ -28,10 +28,14 @@ export default class ImageFetcher {
             return cachedImage.buffer;
 
         try {
-            const arrayBuffer = await (await fetch(src)).arrayBuffer();
-            const buffer = Buffer.from(arrayBuffer);
+            const response = await fetch(src);
+            // Caching invalid images may not be the best response in case the image gets 'fixed', but whatever
+            if (response.status === 404) {
+                this.logger.log.error('404 Image not found');
+                return this.cache.set(src, { buffer: this.defaultImageBuffer }).buffer;
+            }
             this.logger.log.time('Fetched image', timer.stop().elapsedBlueStr);
-            return this.cache.set(src, { buffer }).buffer;
+            return this.cache.set(src, { buffer: Buffer.from(await response.arrayBuffer()) }).buffer;
         } catch (e: unknown) {
             //throw Error('Invalid image');
             this.logger.log.error(e);

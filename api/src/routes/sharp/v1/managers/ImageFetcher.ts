@@ -34,7 +34,7 @@ export class ImageFetcher {
             this.cache.refreshTimestamp(src);
             return cachedImage.buffer;
         }
-        const buffer = await this.load(src);
+        const buffer = await this.load(src) ?? this.defaultImageBuffer;
         this.store(src, buffer);
         return buffer;
     }
@@ -43,9 +43,14 @@ export class ImageFetcher {
         this.cache.set(src, { buffer });
     }
 
-    public async load(src: string): Promise<Buffer> {
+    public async load(src: string): Promise<Buffer | void> {
         try {
-            const arrayBuffer = await (await fetch(src)).arrayBuffer();
+            const response = await fetch(src);
+            if (response.status === 404) {
+                this.logger.log.error(src, 'not found');
+                return;
+            }
+            const arrayBuffer = await response.arrayBuffer();
             return Buffer.from(arrayBuffer);
         } catch (_: unknown) {
             throw Error('Invalid image');
