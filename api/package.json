@@ -21,7 +21,7 @@
     "lint:inspect": "yarn dlx @eslint/config-inspector@latest"
   },
   "dependencies": {
-    "@prisma/client": "^5.10.2",
+    "@prisma/client": "5.20.0",
     "@sinclair/typebox": "^0.33.12",
     "buffer-image-size": "^0.6.4",
     "canvas": "2.11.2",
@@ -65,7 +65,7 @@
     "del-cli": "^5.1.0",
     "eslint": "^9.0.0",
     "eslint-plugin-import-x": "^4.2.1",
-    "prisma": "^5.10.2",
+    "prisma": "5.20.0",
     "typescript": "^5.6.2",
     "typescript-eslint": "^8.6.0"
   },
