@@ -1,0 +1,17 @@
+name: Typescript & Linting
+on: push
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - uses: actions/setup-node@v4
+      with:
+        node-version: 20
+    - run: cd ./api
+    - name: Install modules
+      run: yarn install
+    - name: Transpile typescript
+      run: yarn run build
+    - name: Lint files
+      run: yarn run lint:fix
