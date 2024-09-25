@@ -7,9 +7,11 @@ import stylisticTs from '@stylistic/eslint-plugin-ts';
 import importPluginX from 'eslint-plugin-import-x';
 
 export default tseslint.config(
+    { // Having this as a separate object is apparently needed to actually ignore the .js files AND IT DOESN"T MAKE SENSE!!!!!
+        ignores: ['**/*.js', 'out/**/*.js', 'node_modules' ]
+    },
     {
         files: ['src/**/*.ts', 'eslint.config.mjs'],
-        ignores: ['**/*.js', 'out/**/*.js', 'node_modules'],
         plugins: {
             '@typescript-eslint': tseslintPlugin,
             '@stylistic': stylistic,
