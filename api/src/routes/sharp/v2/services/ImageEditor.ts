@@ -41,7 +41,7 @@ export class ImageEditor {
             const imageBuffer = await this.fetcher.fetchImage(validatedInput.background);
             if (imageBuffer === undefined) {
                 image.fetchDuration = Number(fetchTimer.elapsedMS);
-                image.context.addDebug('error', 'Invalid background source');
+                image.context.addDebug('error', `Invalid background source: ${validatedInput.background}`);
                 return image;
             }
             image.setBuffer(imageBuffer);
@@ -54,6 +54,7 @@ export class ImageEditor {
         // Execute operations that are not cached
         for (const inputObj of remainingOperations) {
             const operation = this.operationHandler.getOperation(image.context, inputObj);
+            // I'm thinking of handling the errors here instead of in getOperation
             if (operation === undefined)
                 continue;
 

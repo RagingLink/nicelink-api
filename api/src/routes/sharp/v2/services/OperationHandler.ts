@@ -11,7 +11,7 @@ import Context, { CompletedOperationObject } from '../Context.js';
 import Image from '../Image.js';
 import Operation, { IGeneralOperation, IOperation } from '../Operation.js';
 import { ValidInputObject } from '../validateInput.js';
-import OperationSummary from '../OperationSummary.js';
+import OperationMeta from '../OperationMeta.js';
 import { DefaultLogger } from '../../../../utils/logging/NiceLogger.js';
 import { GenericRecordType } from '../../../../utils/typebox/index.js';
 
@@ -64,9 +64,10 @@ export default class OperationHandler {
                 continue;
 
             const isValid = operation.isValidData(input.operations[i].data);
-            if (!isValid)
-                continue; //TODO error/warning
-
+            if (!isValid) {
+                image.context.addDebug('error', `[${operation.name}:${i}]: Invalid data`);
+                continue;
+            }
             const validOperationObject = {
                 type: operation.name,
                 data: input.operations[i].data
@@ -75,7 +76,7 @@ export default class OperationHandler {
             if (validOperationObject.type in cachedOperations) {
                 for (const cachedOperation of cachedOperations[validOperationObject.type]) {
                     if (this.isEqual(validOperationObject, cachedOperation)) {
-                        const cachedSummary = new OperationSummary(cachedOperation.type, cachedOperation.data, image);
+                        const cachedSummary = new OperationMeta(cachedOperation.type, cachedOperation.data, image);
                         image.context.addOperation(cachedSummary, cachedOperation.buffer);
 
                         currentOperation = cachedOperation;
@@ -128,8 +129,6 @@ export default class OperationHandler {
             currentBranch[type].push(nextBranch);
             currentBranch = nextBranch.nextOperationMap!;
         }
-
-        //this.logger.log.operation('OperationHandler', `Added ${newOperations} operations`);
     }
 
     private async initOperations(): Promise<void> {
@@ -194,10 +193,10 @@ export default class OperationHandler {
         return Operation.prototype.isPrototypeOf(contents.default.prototype);
     }
 
-    private createHaltedSummary(context: Context, error: string, info?: { type?: string; data?: unknown; }): OperationSummary {
-        const unknownOperationSummary = new OperationSummary(info?.type ?? '', info?.data ?? undefined, context.image);
-        unknownOperationSummary.addError(error).halt();
-        return unknownOperationSummary;
+    private createHaltedSummary(context: Context, error: string, info?: { type?: string; data?: unknown; }): OperationMeta {
+        const unknownOperationMeta = new OperationMeta(info?.type ?? '', info?.data ?? undefined, context.image);
+        unknownOperationMeta.addError(error).halt();
+        return unknownOperationMeta;
     };
 
     private isEqual(operation: GenericRecordType | CompletedOperationObject, cachedOperation: CachedOperation): boolean {

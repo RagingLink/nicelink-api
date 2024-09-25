@@ -1,6 +1,6 @@
 import Image from './Image.js';
-import { OperationSummaryObject } from './OperationSummary.js';
-import OperationSummary from './OperationSummary.js';
+import { OperationSummaryObject } from './OperationMeta.js';
+import OperationSummary from './OperationMeta.js';
 
 import { DefaultLogger } from '../../../utils/logging/NiceLogger.js';
 

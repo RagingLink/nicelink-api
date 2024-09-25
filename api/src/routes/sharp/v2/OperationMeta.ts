@@ -17,7 +17,7 @@ export type OperationDebugObject = {
 };
 
 // I'm not sure about the naming of this class, but oh well!
-export default class OperationSummary {
+export default class OperationMeta {
     private errors: string[] = [];
     private warnings: string[] = [];
     private halted: boolean = false;

@@ -6,15 +6,15 @@ export const envSchema = Type.Object({
     DOCS_HOST: Type.String(),
     PORT: Type.Number(),
     DATABASE_URL: Type.String()
-})
+});
 
 export type Env = Static<typeof envSchema>;
 
 export default function parseEnv(): Env {
-    const env = dotenv.config().parsed
+    const env = dotenv.config().parsed;
     try {
         return Value.Parse(envSchema, env);
-    } catch (err: unknown) {
+    } catch {
         throw Error('Missing/invalid environment variables');
     }
 }

@@ -89,6 +89,7 @@ export class ImageEditor {
 
         //? If you don't make any changes to the image itself with sharp, you can keep the original Buffer
         //? This cuts out the time needed to go from sharp -> buffer (buffer -> sharp is negligible)
+        // ! OK BOZO then do it (v.2.0)
         for (const property of Object.keys(body)) {
             const operationTimer = new Timer();
             switch (property) {

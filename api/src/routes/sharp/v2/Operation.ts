@@ -3,8 +3,8 @@ import { Static, TSchema, Type } from '@sinclair/typebox';
 import { TypeCheck, TypeCompiler } from '@sinclair/typebox/compiler';
 
 import Image from './Image.js';
-import OperationDetails from './OperationSummary.js';
-import OperationSummary from './OperationSummary.js';
+import OperationDetails from './OperationMeta.js';
+import OperationSummary from './OperationMeta.js';
 
 import { DefaultLogger } from '../../../utils/logging/NiceLogger.js';
 
@@ -74,7 +74,7 @@ export default class Operation<D extends TSchema> implements IOperation {
             const errorIterables = this.compiler.Errors(data);
             const errors: string[] = [];
             for (const error of errorIterables) {
-                // Properties have a leading / in front, I'm not sure if this has any negative effects so this is still W.I.P
+                // ! Properties have a leading / in front, I'm not sure if this has any negative effects so this is still W.I.P
                 const valuePath = error.path.slice(1);
                 errors.push(`${valuePath} ${error.message}`.trimStart());
             }
