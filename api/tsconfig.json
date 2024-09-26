@@ -2,10 +2,10 @@
     "compilerOptions": {
         "noImplicitAny": true,
         "strict": true,
-        "module": "NodeNext",
+        "module": "esnext",
         "resolveJsonModule": true,
         "esModuleInterop": true,
-        "target": "ES2021",
+        "target": "ES2022",
         "strictNullChecks": true,
         "sourceMap": true,
         "noImplicitReturns": true,
@@ -13,15 +13,28 @@
         "strictBindCallApply": true,
         "strictPropertyInitialization": true,
         "forceConsistentCasingInFileNames": true,
+        "useUnknownInCatchVariables": true,
         "alwaysStrict": true,
         "noUnusedLocals": true,
         "noUnusedParameters": true,
         "allowUnreachableCode": false,
         "allowUnusedLabels": false,
-        "moduleResolution": "NodeNext",
+        "moduleResolution": "Node",
         "types": [],
-        "lib": ["ES2021"],
+        "lib": [
+            "ES2021"
+        ],
+        "rootDir": "./src",
         "baseUrl": "./",
-        "skipLibCheck": true
-    }
+        "outDir": "out",
+        "skipLibCheck": true,
+    },
+    "include": [
+        "src/**/*.ts"
+    ],
+    "exclude": [
+        "**/*.disabled",
+        "node_modules",
+        "out"
+    ]
 }

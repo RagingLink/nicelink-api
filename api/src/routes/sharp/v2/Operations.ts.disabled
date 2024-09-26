@@ -1,0 +1,76 @@
+// //import { mapping } from '../../../utils/mapping/index.js';
+
+// export interface BaseImageObject extends ImageObject {
+//     cacheDuration?: number;
+// }
+
+// export type ChildImageObject = ImageObject;
+
+// export interface ImageObject {
+//     background: string;
+//     operations: AnyOperation[];
+// }
+
+// export interface GenericOperation<T extends string, D> {
+//     type: T;
+//     data: D;
+// }
+
+// export interface UnknownOperation {
+//     type: string;
+//     data: unknown;
+// }
+
+// export type AnyOperation = ResizeOperation | OpacityOperation | RotateOperation | ShapeOperation | FlipOperation | CropOperation | ReplaceColorOperation | ChildOperation | InvalidOperation;
+
+// export type ResizeOperation = GenericOperation<'resize', {width?: number; height?: number;}>
+// export type OpacityOperation = GenericOperation<'opacity', number>
+// export type RotateOperation = GenericOperation<'rotate', number>;
+// export type ShapeOperation = GenericOperation<'shape', 'circle'>;
+
+// export type FlipOperation = GenericOperation<'flip', FlipData>;
+// export type CropOperation = GenericOperation<'crop', CropData>;
+// export type ReplaceColorOperation = GenericOperation<'replaceColor', ReplaceColorData>;
+// type FlipData = {vertical: boolean;} | {horizontal: boolean;} | {vertical: boolean; horizontal: boolean;};
+// export type CropData = 'auto' | { x?: number; y?: number; width?: number; height?: number;};
+// interface ReplaceColorData {
+//     target: string;
+//     replace: string;
+//     delta?: number;
+// }
+
+// export type ChildOperation = GenericOperation<'children', ChildImageObject>
+
+// export type InvalidOperation = GenericOperation<'invalid_operation', unknown>;
+
+// // const optionalXandY = {x: mapping.number.optional, y: mapping.number.optional};
+
+// // export const actionMappings = {
+// //     resize: mapping.choice(
+// //         mapping.object({width: mapping.number}),
+// //         mapping.object({height: mapping.number}),
+// //         mapping.object({width: mapping.number, height: mapping.number})
+// //     ),
+// //     opacity: mapping.number,
+// //     rotate: mapping.number,
+// //     shape: mapping.in('circle'),
+// //     flip: mapping.choice(
+// //         mapping.object({vertical: mapping.boolean, horizontal: mapping.boolean}),
+// //         mapping.object({vertical: mapping.boolean}),
+// //         mapping.object({horizontal: mapping.boolean})
+// //     ),
+// //     crop: mapping.choice(
+// //         mapping.in('auto'),
+// //         mapping.number,
+// //         mapping.choice(
+// //             mapping.object({width: mapping.number, height: mapping.number, ...optionalXandY}),
+// //             mapping.object({height: mapping.number, ...optionalXandY}),
+// //             mapping.object({width: mapping.number, ...optionalXandY})
+// //         )
+// //     ),
+// //     replacecolor: mapping.object({
+// //         target: mapping.string,
+// //         replace: mapping.string,
+// //         delta: mapping.number.optional
+// //     })
+// // };

@@ -19,4 +19,5 @@ model Image {
   last_accessed DateTime
   cache_duration Int
   persisted Boolean?
+  api_version Int @default(1)
 }

@@ -1,16 +1,16 @@
 {
     "files.exclude": {
-        "**/*.js": {
-            "when": "$(basename).ts"
-        },
+        "**/out": true,
         "**/*.js.map": true,
         "**/node_modules": true
     },
     "eslint.workingDirectories": ["./api"],
     "editor.codeActionsOnSave": {
-        "source.fixAll.eslint": true
+        "source.fixAll.eslint": "explicit"
     },
-    "editor.defaultFormatter": "vscode.typescript-language-features",
+    "eslint.format.enable": true,
+    "editor.defaultFormatter": "dbaeumer.vscode-eslint",
+    "eslint.useFlatConfig": true,
     "npm.packageManager": "yarn",
     "files.eol": "\n",
     "typescript.preferences.importModuleSpecifier": "relative",
@@ -20,13 +20,13 @@
         "editor.unicodeHighlight.invisibleCharacters": false,
         "editor.wordWrap": "off"
     },
-    "[typescript]": {
-        "editor.defaultFormatter": "vscode.typescript-language-features"
-    },
     "[shellscript]": {
         "editor.defaultFormatter": "shakram02.bash-beautify"
     },
     "[jsonc]": {
         "editor.defaultFormatter": "vscode.json-language-features"
+    },
+    "[typescript]": {
+        "editor.defaultFormatter": "dbaeumer.vscode-eslint"
     }
 }

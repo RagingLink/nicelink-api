@@ -6,7 +6,7 @@
     "configurations": [
 
         {
-            "type": "pwa-node",
+            "type": "node",
             "request": "launch",
             "name": "Debug main",
             "skipFiles": [
@@ -18,7 +18,8 @@
             "program": "${workspaceFolder}/api/api.ts",
             "outFiles": [
                 "${workspaceFolder}/**/*.js"
-            ]
+            ],
+            "envFile": "${workspaceFolder}/api/.env"
         }
     ]
 }
