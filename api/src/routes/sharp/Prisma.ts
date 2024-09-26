@@ -4,6 +4,7 @@ import { DefaultLogger } from '../../utils/logging/NiceLogger.js';
 
 export default class Prisma {
     public readonly client: PrismaClient;
+
     public constructor(public readonly logger: DefaultLogger) {
         this.client = new PrismaClient();
         this.client.$connect().then(() => {

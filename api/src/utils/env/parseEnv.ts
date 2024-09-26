@@ -5,7 +5,11 @@ import dotenv from 'dotenv';
 export const envSchema = Type.Object({
     DOCS_HOST: Type.String(),
     PORT: Type.Number(),
-    DATABASE_URL: Type.String()
+    DATABASE_URL: Type.String(),
+    NODE_ENV: Type.Union([
+        Type.Literal('dev'),
+        Type.Literal('prod')
+    ])
 });
 
 export type Env = Static<typeof envSchema>;

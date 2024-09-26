@@ -6,6 +6,7 @@ import { Config } from '../../types/Config.js';
 export class SharpDiscord {
     private client: Client;
     private discordLastDisconnect = 0;
+
     public constructor(public readonly logger: DefaultLogger, config: Config) {
         this.client = Eris(config.discord.token);
         this.client.on('ready', () => {

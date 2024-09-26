@@ -12,6 +12,7 @@ export default class Image {
     #height: number;
     public readonly operations: { action: keyof InputBody; data: InputBody[keyof InputBody]; }[];
     public edited: boolean;
+
     public constructor(public readonly buffer: Buffer, public readonly preEdited = false) {
         const { width, height } = sizeOf(buffer);
         this.#width = width;

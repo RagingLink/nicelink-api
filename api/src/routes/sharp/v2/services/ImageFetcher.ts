@@ -5,16 +5,19 @@ import path from 'path';
 import url from 'url';
 
 import CacheManager from '../../../../utils/CacheManager.js';
-import { DefaultLogger } from '../../../../utils/logging/NiceLogger.js';
 import Timer from '../../../../utils/Timer.js';
+import API from '../../../../api.js';
+import SharpRoute from '../SharpRoute.js';
 
 const transparentImagePath = path.join(url.fileURLToPath(new URL('.', import.meta.url)), '..', '..', '..', '..', '..', 'assets', 'img', 'transparent.png');
 
 export default class ImageFetcher {
+    public readonly logger: API['logger'];
     public cache: CacheManager<{ buffer: Buffer; }>;
     public readonly defaultImageBuffer = fs.readFileSync(transparentImagePath);
 
-    public constructor(public readonly logger: DefaultLogger) {
+    public constructor(public readonly sharpRoute: SharpRoute) {
+        this.logger = sharpRoute.logger;
         this.cache = new CacheManager({ refresh: 0.5, hours: 48 });
     }
 
@@ -28,6 +31,10 @@ export default class ImageFetcher {
             return cachedImage.buffer;
 
         try {
+            const url = new URL(src);
+            if (url.hostname === this.sharpRoute.hostname) {
+                //
+            }
             const response = await fetch(src);
             // Caching invalid images may not be the best response in case the image gets 'fixed', but whatever
             if (response.status === 404) {

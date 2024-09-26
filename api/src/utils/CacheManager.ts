@@ -20,6 +20,7 @@ export default class CacheManager<DataObj> {
     private readonly cache: Map<string, DataObj & TimeInfo>;
     private singleSweepHandler: ((id: string, obj: (DataObj & TimeInfo)) => void) | undefined;
     private multipleSweepHandler: ((items: [string, (DataObj & TimeInfo)][]) => void) | undefined;
+
     public constructor(inputObj: CacheManagerArgument = {}) {
         this.durations = Object.assign({ hours: 24, refresh: 6 }, inputObj);
         this.cache = new Map();

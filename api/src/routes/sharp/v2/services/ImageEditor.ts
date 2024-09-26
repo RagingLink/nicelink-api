@@ -3,12 +3,12 @@
 import ImageFetcher from './ImageFetcher.js';
 import OperationHandler from './OperationHandler.js';
 
-import { DefaultLogger } from '../../../../utils/logging/NiceLogger.js';
 import Timer from '../../../../utils/Timer.js';
 import Image from '../Image.js';
 import { validateRootInput } from '../validateInput.js';
 import { CompletedOperationObject } from '../Context.js';
 import { GenericObjectType } from '../../../../utils/typebox/index.js';
+import SharpRoute from '../SharpRoute.js';
 
 export type CachedOperationMap = Record<string, CachedOperation[]>;
 export type CachedOperation = (CompletedOperationObject) & {
@@ -19,9 +19,12 @@ export type CachedOperation = (CompletedOperationObject) & {
 export class ImageEditor {
     public readonly fetcher: ImageFetcher;
     public readonly operationHandler: OperationHandler;
-    public constructor(public readonly logger: DefaultLogger) {
-        this.fetcher = new ImageFetcher(logger);
-        this.operationHandler = new OperationHandler(logger);
+    public readonly logger: SharpRoute['logger'];
+
+    public constructor(public readonly sharpRoute: SharpRoute) {
+        this.fetcher = sharpRoute.fetcher;
+        this.operationHandler = new OperationHandler(sharpRoute);
+        this.logger = sharpRoute.logger;
     }
 
     public async editImage(input: GenericObjectType): Promise<Image> {

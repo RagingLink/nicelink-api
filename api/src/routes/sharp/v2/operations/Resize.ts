@@ -3,14 +3,21 @@ import { Type } from '@sinclair/typebox';
 import { DefaultLogger } from '../../../../utils/logging/NiceLogger.js';
 import Operation from '../Operation.js';
 
-export interface ResizeData {
-    width?: number;
-    height?: number;
-}
-
+//TODO position/gravity option and background option
 const resizeSchema = Type.Object({
     width: Type.Optional(Type.Number()),
-    height: Type.Optional(Type.Number())
+    height: Type.Optional(Type.Number()),
+    fit:  Type.Optional(
+        Type.Union([
+            Type.Literal('cover'),
+            Type.Literal('contain'),
+            Type.Literal('fill'),
+            Type.Literal('inside'),
+            Type.Literal('outside')
+        ], {
+            default: 'fill'
+        })
+    )
 });
 
 export default class ResizeOperation extends Operation<typeof resizeSchema> {
@@ -28,7 +35,8 @@ export default class ResizeOperation extends Operation<typeof resizeSchema> {
 
                 if (image.width === targetWidth && image.height === targetHeight)
                     return image;
-                image.sharp.resize(data.width ?? null, data.height ?? null);
+                // ? in v1 I set the default to 'fill', but I may make sense to change it to sharp.js' default.
+                image.sharp.resize(data.width ?? null, data.height ?? null, { fit: data.fit ?? 'fill' });
                 return image;
             }
 

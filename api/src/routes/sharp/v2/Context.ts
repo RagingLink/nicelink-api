@@ -23,6 +23,7 @@ export default class ImageContext {
     public operations: CompletedOperationObject[] = [];
     private generalWarnings: string[] = [];
     private generalErrors: string[] = [];
+
     public constructor(public readonly logger: DefaultLogger, public readonly image: Image) {
     }
 

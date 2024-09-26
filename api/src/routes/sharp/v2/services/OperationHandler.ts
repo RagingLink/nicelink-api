@@ -12,8 +12,8 @@ import Image from '../Image.js';
 import Operation, { IGeneralOperation, IOperation } from '../Operation.js';
 import { ValidInputObject } from '../validateInput.js';
 import OperationMeta from '../OperationMeta.js';
-import { DefaultLogger } from '../../../../utils/logging/NiceLogger.js';
 import { GenericRecordType } from '../../../../utils/typebox/index.js';
+import SharpRoute from '../SharpRoute.js';
 
 interface ExportObj {
     default: unknown;
@@ -21,10 +21,12 @@ interface ExportObj {
 const operationPath = path.join(fileURLToPath(new URL('.', import.meta.url)), '..', 'operations');
 
 export default class OperationHandler {
+    public readonly logger: SharpRoute['logger'];
     private readonly cache: Record<string, CachedOperationMap> = {};
     private readonly operations = new Map<string, IOperation>();
 
-    public constructor(public readonly logger: DefaultLogger) {
+    public constructor(public readonly sharpRoute: SharpRoute) {
+        this.logger = sharpRoute.logger;
         void this.initOperations();
     }
 
