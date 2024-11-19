@@ -198,10 +198,10 @@
   dependencies:
     "@types/node" "*"
 
-"@types/delta-e@^0.0.0":
-  version "0.0.0"
-  resolved "https://registry.yarnpkg.com/@types/delta-e/-/delta-e-0.0.0.tgz#f2d99a1613995631f39d2494757559bd634a675c"
-  integrity sha512-ePlXUpSy1oU/JOayGaAoyVDoQB1m1gguj8k+gxASP6+uutrwaKobWwyTZOzUIJ9fqI4wxfHKmBTx2ogP7uMv7w==
+"@types/delta-e@^0.0.2":
+  version "0.0.2"
+  resolved "https://registry.yarnpkg.com/@types/delta-e/-/delta-e-0.0.2.tgz#fa7d1e7d4525b6536fb125334f22343a16277994"
+  integrity sha512-DLvqCZ+ce6qVLp8HIxx8rrLjog1t0NlSLXOzz2FbYC31xHMSADMEz+MrJTvYTeuHez6Wtm0dDYgGtBY+7Dgf4Q==
 
 "@types/express-serve-static-core@^4.17.33":
   version "4.17.43"
