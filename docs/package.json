@@ -9,7 +9,7 @@
     "build:start": "yarn run build && yarn run start"
   },
   "dependencies": {
-    "ejs": "^3.1.8",
+    "ejs": "^3.1.10",
     "express": "^4.18.2"
   }
 }
