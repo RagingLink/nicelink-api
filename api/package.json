@@ -41,7 +41,7 @@
     "node-worker-threads-pool": "^1.5.1",
     "pb-text-format-to-json": "^1.1.1",
     "pg": "^8.8.0",
-    "sharp": "^0.31.3",
+    "sharp": "^0.33.5",
     "uuid": "^9.0.0",
     "uuid-by-string": "^4.0.0"
   },
