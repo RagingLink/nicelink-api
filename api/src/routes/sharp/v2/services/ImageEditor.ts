@@ -17,24 +17,22 @@ export type CachedOperation = (CompletedOperationObject) & {
 };
 
 export class ImageEditor {
-    public readonly fetcher: ImageFetcher;
     public readonly operationHandler: OperationHandler;
     public readonly logger: SharpRoute['logger'];
 
     public constructor(public readonly sharpRoute: SharpRoute) {
-        this.fetcher = sharpRoute.fetcher;
-        this.operationHandler = new OperationHandler(sharpRoute);
         this.logger = sharpRoute.logger;
+        this.operationHandler = new OperationHandler(this);
     }
 
-    public async editImage(input: GenericObjectType): Promise<Image> {
+    public async editImage(input: GenericObjectType, parentImage?: Image): Promise<Image> {
         const editImageTimer = new Timer(true);
         const validatedInput = validateRootInput(input);
 
         if (validatedInput === undefined)
-            return new Image(this.logger, this.fetcher.defaultImageBuffer, 'Invalid input', 0); // TODO HANDLE INVALID INPUT
+            return this.createDefaultImage('Invalid input', parentImage); // TODO HANDLE INVALID INPUT
 
-        const image = this.createDefaultImage(validatedInput.background);
+        const image = this.createDefaultImage(validatedInput.background, parentImage);
 
         // Use the cache of any operation that is already cached
         const cachedImage = this.operationHandler.getCachedBuffer(image, validatedInput);
@@ -56,13 +54,13 @@ export class ImageEditor {
         const remainingOperations = cachedImage !== undefined ? cachedImage.remainingOperations : validatedInput.operations;
         // Execute operations that are not cached
         for (const inputObj of remainingOperations) {
-            const operation = this.operationHandler.getOperation(image.context, inputObj);
+            const operation = this.operationHandler.getOperation(inputObj);
             // I'm thinking of handling the errors here instead of in getOperation
-            if (operation === undefined)
+            if ('error' in operation)
                 continue;
 
             const opTimer = new Timer(true);
-            await operation.execute(image, inputObj.data);
+            await operation.instance.execute(image, inputObj.data);
             this.logger.log.operation(`Executed ${inputObj.type}`, opTimer.elapsedBlueStr);
         }
 
@@ -72,8 +70,18 @@ export class ImageEditor {
         return image;
     }
 
-    private createDefaultImage(src = ''): Image {
-        return new Image(this.logger, this.fetcher.defaultImageBuffer, src);
+    private createDefaultImage(src = '', parentImage?: Image): Image {
+        return new Image(this.logger, {
+            buffer: this.fetcher.defaultImageBuffer,
+            background: src,
+            parent: parentImage
+        });
+    }
+
+    // previously fetcher was undefined when ImageEditor was created, because ImageEditor is made before ImageFetcher in SharpRoute
+    // Maybe this could be made better, but this is what I went with for now.
+    public get fetcher(): ImageFetcher {
+        return this.sharpRoute.fetcher;
     }
 
 }

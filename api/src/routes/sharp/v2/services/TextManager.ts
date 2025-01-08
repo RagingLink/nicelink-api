@@ -7,9 +7,9 @@ import { fileURLToPath } from 'url';
 
 import { DefaultOptions, InputOptions } from '../../../../types/PayloadTypes.js';
 import { isErrnoException } from '../../../../utils/isErrnoException.js';
-import { DefaultLogger } from '../../../../utils/logging/NiceLogger.js';
 import Timer from '../../../../utils/Timer.js';
 import { GenericRecordType } from '../../../../utils/typebox/index.js';
+import API from '../../../../api.js';
 
 interface Font {
     name: string;
@@ -36,7 +36,7 @@ export class TextManager {
     private readonly fonts: Map<string, Font>;
     private readonly FONTS_ASSETS_DIR = fileURLToPath(new URL('.', import.meta.url)) + '../../../../assets/fonts/';
 
-    public constructor(public readonly logger: DefaultLogger) {
+    public constructor(public readonly logger: API['logger']) {
         this.fonts = new Map();
         const fontTimer = new Timer();
         this.loadFonts().then((responseData) => {

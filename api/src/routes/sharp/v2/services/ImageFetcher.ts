@@ -4,10 +4,10 @@ import fs from 'fs';
 import path from 'path';
 import url from 'url';
 
-import CacheManager from '../../../../utils/CacheManager.js';
 import Timer from '../../../../utils/Timer.js';
-import API from '../../../../api.js';
 import SharpRoute from '../SharpRoute.js';
+import CacheManager from '../../../../utils/CacheManager.js';
+import API from '../../../../api.js';
 
 const transparentImagePath = path.join(url.fileURLToPath(new URL('.', import.meta.url)), '..', '..', '..', '..', '..', 'assets', 'img', 'transparent.png');
 

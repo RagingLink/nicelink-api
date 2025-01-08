@@ -13,7 +13,7 @@ import Timer from '../../../utils/Timer.js';
 import { SharpDiscord } from '../SharpDiscord.js';
 import API from '../../../api.js';
 import { GenericRecord, GenericRecordType } from '../../../utils/typebox/index.js';
-import { getMimeType } from '../../../utils/constants/MimeTypes.js';
+import { getImageMimeType } from '../../../utils/constants/MimeTypes.js';
 
 export default class SharpRoute {
     public readonly logger: API['logger'];
@@ -112,7 +112,7 @@ export default class SharpRoute {
                     reply.code(404).send(req.params.image + ' not found.');
                 } else {
                     const paramExtension = req.params.image.split('.').slice(-1)[0];
-                    const mimeType = getMimeType(paramExtension) ?? 'image/png';
+                    const mimeType = getImageMimeType(paramExtension) ?? 'image/png';
                     // ? Maybe just infer the image type from the image itself???
                     reply.type(mimeType);
                     reply.code(200).send(buffer);

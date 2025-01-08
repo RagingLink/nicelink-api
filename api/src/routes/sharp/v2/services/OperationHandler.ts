@@ -5,9 +5,9 @@ import fs from 'fs';
 import { fileURLToPath } from 'url';
 import path from 'path';
 
-import { CachedOperation, CachedOperationMap } from './ImageEditor.js';
+import { CachedOperation, CachedOperationMap, ImageEditor } from './ImageEditor.js';
 
-import Context, { CompletedOperationObject } from '../Context.js';
+import { CompletedOperationObject } from '../Context.js';
 import Image from '../Image.js';
 import Operation, { IGeneralOperation, IOperation } from '../Operation.js';
 import { ValidInputObject } from '../validateInput.js';
@@ -15,9 +15,17 @@ import OperationMeta from '../OperationMeta.js';
 import { GenericRecordType } from '../../../../utils/typebox/index.js';
 import SharpRoute from '../SharpRoute.js';
 
+const operationAliases = {
+    t: 'type',
+    d: 'data'
+};
+
 interface ExportObj {
     default: unknown;
 }
+
+export type OperationReturn = { instance: IOperation } | { error: string };
+
 const operationPath = path.join(fileURLToPath(new URL('.', import.meta.url)), '..', 'operations');
 
 export default class OperationHandler {
@@ -25,28 +33,30 @@ export default class OperationHandler {
     private readonly cache: Record<string, CachedOperationMap> = {};
     private readonly operations = new Map<string, IOperation>();
 
-    public constructor(public readonly sharpRoute: SharpRoute) {
-        this.logger = sharpRoute.logger;
+    public constructor(public readonly editor: ImageEditor) {
+        this.logger = editor.logger;
         void this.initOperations();
     }
 
-    public getOperation(context: Context, inputOperation: GenericRecordType): IOperation | undefined {
-        // Maybe remove the errors from this
+    public getOperation(inputOperation: GenericRecordType): OperationReturn {
+        // Convert any aliases
+        for (const key of Object.keys(inputOperation)) {
+            if (!(key in operationAliases))
+                continue;
+            inputOperation[operationAliases[key as keyof typeof operationAliases]] = inputOperation[key];
+            delete inputOperation[key];
+        }
+        // Maybe remove the error logging from this
         if (!('type' in inputOperation) || typeof inputOperation.type !== 'string') {
             this.logger.log.operation(chalk.red('Invalid operation object:'), chalk.red.bold(JSON.stringify(inputOperation)));
-            // Create stubby summary objecy for the invalid object
-            const invalidOperationSummary = this.createHaltedSummary(context, `Invalid operation object: ${JSON.stringify(inputOperation)}`);
-            context.addOperation(invalidOperationSummary);
-            return;
+            return { error: `Invalid operation object: ${JSON.stringify(inputOperation)}` };
         }
         const operation = this.operations.get(inputOperation.type);
         if (operation === undefined) {
             this.logger.log.operation(chalk.red('Invalid operation type:'), chalk.red.bold(inputOperation.type));
-            const invalidTypeSummary = this.createHaltedSummary(context, 'Invalid operation type', { type: inputOperation.type, data: inputOperation.data });
-            context.addOperation(invalidTypeSummary);
-            return;
+            return { error: `Invalid operation type: ${inputOperation.type}` };
         }
-        return operation;
+        return { instance: operation };
     }
 
     public getCachedBuffer(image: Image, input: ValidInputObject): { buffer: Buffer; remainingOperations: GenericRecordType[]; } | undefined {
@@ -61,17 +71,18 @@ export default class OperationHandler {
 
         mainOperationLoop:
         for (let i = 0; i < input.operations.length; i++) {
-            const operation = this.getOperation(image.context, input.operations[i]);
-            if (operation === undefined)
+            const operation = this.getOperation(input.operations[i]);
+            if ('error' in operation) {
                 continue;
+            }
 
-            const isValid = operation.isValidData(input.operations[i].data);
+            const isValid = operation.instance.isValidData(input.operations[i].data);
             if (!isValid) {
-                image.context.addDebug('error', `[${operation.name}:${i}]: Invalid data`);
+                image.context.addDebug('error', `[${operation.instance.name}:${i}]: Invalid data`);
                 continue;
             }
             const validOperationObject = {
-                type: operation.name,
+                type: operation.instance.name,
                 data: input.operations[i].data
             };
 
@@ -137,7 +148,7 @@ export default class OperationHandler {
         let operationCount = 0;
         const operations = await this.loadOperations();
         for (const operationClass of operations) {
-            const operation = new operationClass(this.logger);
+            const operation = new operationClass(this.editor);
             if (this.operations.has(operation.name)) {
                 this.logger.log.error('OPERATION:', operation.name, 'already exists');
                 this.logger.log.error('Cancelled loading of operations');
@@ -172,7 +183,7 @@ export default class OperationHandler {
                 if (this.isExportObject(contents)) {
                     if (this.isOperation(contents)) {
                         // The infamous as unknown as 'type' moment
-                        operations.push(contents.default as unknown as IGeneralOperation);
+                        operations.push(contents.default as IGeneralOperation);
                     }
                 }
             }).catch((err) => {
@@ -181,6 +192,12 @@ export default class OperationHandler {
         }
         return operations;
     }
+
+    // private createHaltedSummary(context: Context, error: string, info?: { type?: string; data?: unknown; }): OperationMeta {
+    //     const unknownOperationMeta = new OperationMeta(info?.type ?? '', info?.data ?? undefined, context.image);
+    //     unknownOperationMeta.addError(error).halt();
+    //     return unknownOperationMeta;
+    // };
 
     private isExportObject(contents: unknown): contents is ExportObj {
         if (typeof contents === 'object' && !Array.isArray(contents) && contents !== null) {
@@ -194,12 +211,6 @@ export default class OperationHandler {
             return false;
         return Operation.prototype.isPrototypeOf(contents.default.prototype);
     }
-
-    private createHaltedSummary(context: Context, error: string, info?: { type?: string; data?: unknown; }): OperationMeta {
-        const unknownOperationMeta = new OperationMeta(info?.type ?? '', info?.data ?? undefined, context.image);
-        unknownOperationMeta.addError(error).halt();
-        return unknownOperationMeta;
-    };
 
     private isEqual(operation: GenericRecordType | CompletedOperationObject, cachedOperation: CachedOperation): boolean {
         return _.isEqual(this.removeCacheKeys(operation), this.removeCacheKeys(cachedOperation));

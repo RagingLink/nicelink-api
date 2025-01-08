@@ -5,7 +5,7 @@ import path from 'path';
 import * as url from 'url';
 
 import CacheManager from '../../../../utils/CacheManager.js';
-import { DefaultLogger } from '../../../../utils/logging/NiceLogger.js';
+import API from '../../../../api.js';
 
 const assetsPath = path.join(url.fileURLToPath(new URL('.', import.meta.url)), '..', '..', '..', '..', '..', 'assets', 'img');
 const transparentImagePath = path.join(assetsPath, 'transparent.png');
@@ -20,7 +20,7 @@ export class ImageFetcher {
     private readonly _circleImageBuffer = fs.readFileSync(circleImagePath);
     private readonly _blackImageBuffer = fs.readFileSync(blackImagePath);
 
-    public constructor(public readonly logger: DefaultLogger, retention = 3600) {
+    public constructor(public readonly logger: API['logger'], retention = 3600) {
         this.retention = retention;
         this.cache = new CacheManager({});
     }

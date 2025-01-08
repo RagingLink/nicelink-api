@@ -2,47 +2,35 @@ import Image from './Image.js';
 import { OperationSummaryObject } from './OperationMeta.js';
 import OperationSummary from './OperationMeta.js';
 
-import { DefaultLogger } from '../../../utils/logging/NiceLogger.js';
+import API from '../../../api.js';
 
+// after at least a week of not looking at this code I was confused why I did it like this,
+// but an operation can be 'completed' without a buffer (error), so that's why buffer is optional
+// buffer not being optional is for operations that have been applied, maybe there is a neater way to do this
 export type CompletedOperationObject = OperationSummaryObject & { buffer?: Buffer };
 export type CompletedWithBuffer = OperationSummaryObject & { buffer: Buffer };
-
-type CompletedWithoutBuffer = Omit<CompletedOperationObject, 'buffer'>;
 
 interface ContextObject {
     background: {
         src: string;
         duration: number;
     }
-    operations: CompletedWithoutBuffer[];
+    operations: CompletedOperationObject[];
     warnings: string[];
-    errors: string[]
+    errors: string[];
 }
 
 export default class ImageContext {
     public operations: CompletedOperationObject[] = [];
+    public parentContext?: ImageContext;
+
     private generalWarnings: string[] = [];
     private generalErrors: string[] = [];
 
-    public constructor(public readonly logger: DefaultLogger, public readonly image: Image) {
+    public constructor(public readonly logger: API['logger'], public readonly image: Image, parent?: ImageContext) {
+        if (parent !== undefined)
+            this.parentContext = parent;
     }
-
-    // public addOperationError(operation: UnknownOperation, error: string, duration = 0): void {
-    //     this.operations.push({
-    //         ...operation,
-    //         duration,
-    //         error
-    //     });
-    // }
-
-    // public addOperationWarning(operation: UnknownOperation, buffer: Buffer, warning: string | string [], duration = 0): void {
-    //     this.operations.push({
-    //         ...operation,
-    //         buffer,
-    //         duration,
-    //         Array.isArray(warning) ? warning : warning
-    //     });
-    // }
 
     public addOperation(operationSummary: OperationSummary, buffer?: Buffer): void {
         this.operations.push({
@@ -88,7 +76,7 @@ export default class ImageContext {
         }, []);
     }
 
-    private omitBuffer(opObject: CompletedOperationObject): CompletedWithoutBuffer {
+    private omitBuffer(opObject: CompletedOperationObject): OperationSummaryObject {
         const { buffer: _, ...obj } = opObject;
         return obj;
     }

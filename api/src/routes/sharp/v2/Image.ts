@@ -4,23 +4,31 @@ import { v4 as uuidv4 } from 'uuid';
 
 import Context from './Context.js';
 
-import { DefaultLogger } from '../../../utils/logging/NiceLogger.js';
-import { getMimeType } from '../../../utils/constants/MimeTypes.js';
+import { getImageMimeType } from '../../../utils/constants/MimeTypes.js';
+import API from '../../../api.js';
+
+interface ImageOptions {
+    buffer: Buffer;
+    background: string;
+    fetchDuration?: number
+    parent?: Image
+}
 
 export default class Image {
     public readonly context: Context;
     public readonly id: string;
     public readonly background: string;
     public fetchDuration: number;
+    public parentImage?: Image;
 
     #sharp: Sharp;
     #width: number;
     #height: number;
     #buffer: Buffer;
 
-    public constructor(public readonly logger: DefaultLogger, buffer: Buffer, background: string, fetchDuration = 0) {
+    public constructor(public readonly logger: API['logger'], { buffer, background, fetchDuration = 0, parent }: ImageOptions) {
 
-        this.context = new Context(logger, this);
+        this.context = new Context(logger, this, parent?.context);
         this.id = uuidv4();
 
         this.background = background;
@@ -32,6 +40,8 @@ export default class Image {
 
         this.#sharp = sharp(buffer);
         this.#buffer = buffer;
+        if (parent !== undefined)
+            this.parentImage = parent;
     }
 
     public get sharp(): Sharp {
@@ -83,7 +93,7 @@ export default class Image {
 
     public async getMimeType(): Promise<string> {
         const imageFormat = await this.getFormat();
-        return getMimeType(imageFormat) ?? 'image/png';
+        return getImageMimeType(imageFormat) ?? 'image/png';
     }
 
     private setDimensions(buffer: Buffer): void {

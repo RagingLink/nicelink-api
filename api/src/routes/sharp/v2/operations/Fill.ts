@@ -1,26 +1,26 @@
 import sharp from 'sharp';
 import { Type } from '@sinclair/typebox';
 
-import { DefaultLogger } from '../../../../utils/logging/NiceLogger.js';
 import Operation from '../Operation.js';
+import { ImageEditor } from '../services/ImageEditor.js';
 
 const fillSchema = Type.String();
 
 export default class Fill extends Operation<typeof fillSchema> {
-    public constructor(public readonly logger: DefaultLogger) {
-        super(logger, {
+    public constructor(editor: ImageEditor) {
+        super(editor, {
             name: 'fill',
             schema: fillSchema,
-            execute: (image, data) => {
+            execute: (image, data, meta) => {
                 if (image.background !== '')
-                    return image; //TODO replace colour??
+                    return meta; //TODO replace colour??
                 image.sharp = sharp({ create: {
                     channels: 4,
                     background: data,
                     width: image.width,
                     height: image.height
                 } }).png();
-                return image;
+                return meta;
             }
         });
     }

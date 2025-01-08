@@ -1,12 +1,13 @@
 import { Type } from '@sinclair/typebox';
 
-import { DefaultLogger } from '../../../../utils/logging/NiceLogger.js';
 import Operation from '../Operation.js';
+import NumberResolver, { DynamicNumber } from '../services/NumberResolver.js';
+import { ImageEditor } from '../services/ImageEditor.js';
 
 //TODO position/gravity option and background option
 const resizeSchema = Type.Object({
-    width: Type.Optional(Type.Number()),
-    height: Type.Optional(Type.Number()),
+    width: Type.Optional(DynamicNumber),
+    height: Type.Optional(DynamicNumber),
     fit:  Type.Optional(
         Type.Union([
             Type.Literal('cover'),
@@ -21,25 +22,29 @@ const resizeSchema = Type.Object({
 });
 
 export default class ResizeOperation extends Operation<typeof resizeSchema> {
-    public constructor(public readonly logger: DefaultLogger) {
-        super(logger, {
+    private resolver: NumberResolver;
+
+    public constructor(editor: ImageEditor) {
+        super(editor, {
             name: 'resize',
             dataPropertyAliases: {
                 w: 'width',
                 h: 'height'
             },
             schema: resizeSchema,
-            execute: (image, data) => {
-                const targetWidth = data.width ?? image.width;
-                const targetHeight = data.height ?? image.height;
-
+            execute: (image, data, meta) => {
+                const [targetWidth, targetHeight] = this.resolver.eval(image, data.width, data.height);
+                meta.changeData({
+                    width: targetWidth,
+                    height: targetHeight
+                });
                 if (image.width === targetWidth && image.height === targetHeight)
-                    return image;
+                    return meta;
                 // ? in v1 I set the default to 'fill', but I may make sense to change it to sharp.js' default.
-                image.sharp.resize(data.width ?? null, data.height ?? null, { fit: data.fit ?? 'fill' });
-                return image;
+                image.sharp.resize(targetWidth ?? null, targetHeight ?? null, { fit: data.fit ?? 'fill' });
+                return meta;
             }
-
         });
+        this.resolver = new NumberResolver(this.logger);
     }
 }

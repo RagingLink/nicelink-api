@@ -1,16 +1,16 @@
 import { Type } from '@sinclair/typebox';
 
-import { DefaultLogger } from '../../../../utils/logging/NiceLogger.js';
 import Operation from '../Operation.js';
+import { ImageEditor } from '../services/ImageEditor.js';
 
 const flipSchema = Type.Union([Type.Literal(1), Type.Literal(2), Type.Literal(3)]);
 
 export default class Flip extends Operation<typeof flipSchema> {
-    public constructor(public readonly logger: DefaultLogger) {
-        super(logger, {
+    public constructor(editor: ImageEditor) {
+        super(editor, {
             name: 'flip',
             schema: flipSchema,
-            execute: (image, data) => {
+            execute: (image, data, meta) => {
                 switch (data) {
                     case 1:
                         image.sharp.flip();
@@ -22,7 +22,7 @@ export default class Flip extends Operation<typeof flipSchema> {
                         image.sharp.flip().flop();
                         break;
                 }
-                return image;
+                return meta;
             }
         });
     }

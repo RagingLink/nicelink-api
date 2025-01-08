@@ -8,13 +8,13 @@ import { ImageFetcher } from './ImageFetcher.js';
 import TextManager from './TextManager.js';
 
 import CacheManager from '../../../../utils/CacheManager.js';
-import { DefaultLogger } from '../../../../utils/logging/NiceLogger.js';
 import Timer from '../../../../utils/Timer.js';
 import mapBody from '../mapBody/index.js';
 import { MetaBody, OutputBody } from '../../../../types/ImageTypes.js';
 import { BodyType, ChildType, TextType } from '../mapBody/bodyMappings.js';
 import { GenericObjectType } from '../../../../utils/typebox/index.js';
 import { AlignmentModes, TextBody } from '../../../../types/PayloadTypes.js';
+import API from '../../../../api.js';
 
 interface SizeObject {
     width: number;
@@ -34,7 +34,7 @@ export class ImageEditor {
 
     public defaultImage: Buffer;
 
-    public constructor(public readonly logger: DefaultLogger, public readonly textManager: TextManager) {
+    public constructor(public readonly logger: API['logger'], public readonly textManager: TextManager) {
         this.imageFetcher = new ImageFetcher(logger, 100000);
         this.defaultImage = this.imageFetcher.defaultImageBuffer;
         //? Refresh every half hour and keep edited images cached for 6 hours

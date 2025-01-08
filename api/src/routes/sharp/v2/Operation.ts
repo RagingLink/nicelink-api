@@ -3,12 +3,12 @@ import { Static, TSchema, Type } from '@sinclair/typebox';
 import { TypeCheck, TypeCompiler } from '@sinclair/typebox/compiler';
 
 import Image from './Image.js';
-import OperationDetails from './OperationMeta.js';
-import OperationSummary from './OperationMeta.js';
+import OperationMeta from './OperationMeta.js';
+import { ImageEditor } from './services/ImageEditor.js';
 
-import { DefaultLogger } from '../../../utils/logging/NiceLogger.js';
+import API from '../../../api.js';
 
-export type IGeneralOperation = new (logger: DefaultLogger) => IOperation;
+export type IGeneralOperation = new (editor: ImageEditor) => IOperation;
 
 export interface IOperation {
     name: string;
@@ -21,7 +21,7 @@ export interface OperationInfo<D extends TSchema> {
     name: string;
     aliases?: string[];
     schema: D;
-    execute: (image: Image, data: Static<D>, summary?: OperationSummary) => Promise<Image> | Image;
+    execute: (image: Image, data: Static<D>, summary: OperationMeta) => Promise<OperationMeta> | OperationMeta;
     dataPropertyAliases?: Record<string, string>;
 }
 
@@ -35,21 +35,21 @@ export default class Operation<D extends TSchema> implements IOperation {
     public readonly aliases: string[];
     public readonly dataPropertyAliases?: Record<string, string>;
     public readonly schema: D;
-
+    public readonly logger: API['logger'];
     private compiler: TypeCheck<D>;
 
     #genericObject = TypeCompiler.Compile(Type.Record(Type.String(), Type.Unknown()));
 
-    #execute: (image: Image, data: Static<D>, details: OperationDetails) => Promise<Image> | Image;
+    #execute: (image: Image, data: Static<D>, details: OperationMeta) => Promise<OperationMeta> | OperationMeta;
 
-    public constructor(public readonly logger: DefaultLogger, info: OperationInfo<D>) {
+    public constructor(public readonly editor: ImageEditor, info: OperationInfo<D>) {
+        this.logger = editor.logger;
         this.name = info.name;
         this.dataPropertyAliases = info.dataPropertyAliases;
         this.aliases = info.aliases ?? [];
 
         this.schema = info.schema;
         this.compiler = TypeCompiler.Compile(this.schema);
-
         this.#execute = info.execute;
     }
 
@@ -68,7 +68,7 @@ export default class Operation<D extends TSchema> implements IOperation {
     }
 
     public async execute(image: Image, data: unknown): Promise<Image> {
-        const summary = new OperationSummary(this.name, data, image);
+        const summary = new OperationMeta(this.name, data, image);
 
         if (!this.isValidData(data)) {
             const errorIterables = this.compiler.Errors(data);
@@ -83,15 +83,14 @@ export default class Operation<D extends TSchema> implements IOperation {
         }
 
         try {
-            const imageAfter = await this.#execute(image, data, summary);
-            const newBuffer = await image.updateBuffer();
+            const operationMeta = await this.#execute(image, data, summary);
+            const newBuffer = await operationMeta.image.updateBuffer();
             image.context.addOperation(summary, newBuffer);
-
             /*
                 Currently nothing actually requires execute() to return anything, so....
                 (and no operation changes the image class either)
             */
-            return imageAfter;
+            return operationMeta.image;
         } catch (err: unknown) {
             this.logger.log.operation(chalk.red.bold(`${this.name}`, err));
 
@@ -100,7 +99,7 @@ export default class Operation<D extends TSchema> implements IOperation {
         }
     }
 
-    protected error(summary: OperationSummary, error: string, halt = true): void {
+    protected error(summary: OperationMeta, error: string, halt = true): void {
         summary.addError(error);
         if (halt) {
             summary.halt();

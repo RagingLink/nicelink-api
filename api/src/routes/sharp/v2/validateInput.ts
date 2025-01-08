@@ -12,17 +12,18 @@ export interface ValidInputObject {
 // Aliases on base object or
 const propertyAliases = {
     bg: 'background',
-    h: 'height',
-    w: 'width',
+    // h: 'height',
+    // w: 'width',
     t: 'type',
     d: 'data',
     // txt: 'text',
     // o: 'opacity',
     // r: 'rotate',
     // s: 'shape',
-    align: 'alignment',
+    // align: 'alignment',
     // children: 'images',
-    ops: 'operations'
+    ops: 'operations',
+    reply: 'responseType'
 };
 
 /* const imageMapping = mapping.object({
@@ -41,13 +42,13 @@ const propertyAliases = {
 //     operations: mapping.array(mapping.unknown).optional
 // });
 
-const RootInputBox = Type.Object({
+export const RootInputSchema = Type.Object({
     background: Type.Optional(Type.String()),
     cacheDuration: Type.Optional(Type.Number()),
     responseType: Type.Optional(Type.Union([
         Type.Literal('image'),
         Type.Literal('link')
-    ], {})),
+    ])),
     operations: Type.Optional(Type.Array(Type.Unknown()))
 });
 
@@ -55,7 +56,7 @@ export function validateRootInput(input: GenericObjectType): ValidInputObject | 
     convertAliases(input);
 
     try {
-        const rootImageInput = Value.Parse(RootInputBox, input);
+        const rootImageInput = Value.Parse(RootInputSchema, input);
         const operations = [];
 
         if ('operations' in rootImageInput && Array.isArray(rootImageInput.operations)) {
@@ -63,7 +64,7 @@ export function validateRootInput(input: GenericObjectType): ValidInputObject | 
                 if (!Value.Check(Type.Object({}, { additionalProperties: true }), element))
                     operations.push(generateInvalidOperation(element));
                 else
-                    operations.push(convertAliases(element));
+                    operations.push(element);
             }
         }
         return { background: rootImageInput.background ?? '', operations };
@@ -72,7 +73,7 @@ export function validateRootInput(input: GenericObjectType): ValidInputObject | 
     }
 }
 
-function convertAliases(input: GenericRecordType): GenericRecordType {
+export function convertAliases(input: GenericRecordType): GenericRecordType {
     for (const key of Object.keys(input))
         if (key in propertyAliases) {
             input[propertyAliases[key as keyof typeof propertyAliases]] = input[key];

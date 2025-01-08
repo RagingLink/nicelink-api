@@ -10,10 +10,10 @@ import Image from './Image.js';
 import { ImageEditor } from './ImageEditor.js';
 
 import CacheManager from '../../../../utils/CacheManager.js';
-import { DefaultLogger } from '../../../../utils/logging/NiceLogger.js';
 import Prisma from '../../Prisma.js';
 import { GenericObjectType } from '../../../../utils/typebox/index.js';
 import { BodyType } from '../mapBody/bodyMappings.js';
+import API from '../../../../api.js';
 
 export class ImageManager {
     private readonly cache: CacheManager<{ buffer: Buffer; }>;
@@ -25,7 +25,7 @@ export class ImageManager {
     #storedImagesPath = path.join(fileURLToPath(new URL('.', import.meta.url)), '..', '..', '..', '..', '..', '..', 'data', 'images');
     #legacyImagesPath = path.join(this.#storedImagesPath, '..', 'legacyImages');
 
-    public constructor(public readonly editor: ImageEditor, public readonly logger: DefaultLogger) {
+    public constructor(public readonly editor: ImageEditor, public readonly logger: API['logger']) {
         this.prisma = new Prisma(logger).client;
         this.cache = new CacheManager({ refresh: 6, hours: 48 });
         this.startImageSweep();
